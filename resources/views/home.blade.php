@@ -14,7 +14,8 @@
                         </div>
                     @endif
 
-                    {{ __('You are logged in!') }}
+                    {{-- @includeWhen(auth()->user()->can('access dashboard dosen'),'dashboard.dosen') --}}
+                    @includeWhen(auth()->user()->hasRole('admin'),'dashboard.admin')
                 </div>
             </div>
         </div>

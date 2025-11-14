@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use App\Models\User;
+use App\Models\Permission;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class CreateAdminUserSeeder extends Seeder
@@ -22,10 +22,10 @@ class CreateAdminUserSeeder extends Seeder
                 'password' => bcrypt('asdfasdf')
             ]);
 
-        // $role = Role::create(['name' => 'admin']);
-        // Permission::create(['name' => 'active'])->assignRole('admin');
+        $role = Role::create(['name' => 'admin']);
+        Permission::create(['name' => 'active'])->assignRole('admin');
 
 
-        // $user->assignRole([$role->id]);
+        $user->assignRole('admin');
     }
 }
