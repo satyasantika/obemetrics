@@ -23,10 +23,6 @@
                         </div>
                     @endif
 
-                    @if(request()->segment(2)!="")
-                        <a href="{{ route(request()->segment(2).'.create') }}" class="btn btn-sm btn-success mb-3"><i class="bi bi-plus-lg"></i> User</a>
-                    @endif
-
                     {{ $dataTable->table()}}
                     @stack('body')
                 </div>

@@ -7,8 +7,10 @@
         <div class="card">
             <div class="card-header">Manajemen OBEmetrics</div>
             <div class="card-body">
-                menu user:<br>
+                Manajemen Akun:<br>
                 <a href="{{ route('users.index') }}" class="btn btn-sm btn-primary">User</a>
+                <a href="{{ route('roles.index') }}" class="btn btn-sm btn-primary">Role</a>
+                <a href="{{ route('permissions.index') }}" class="btn btn-sm btn-primary">Permission</a>
                 <br>
                 <hr>
                 menu prodi:<br>

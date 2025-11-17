@@ -67,15 +67,14 @@ class UsersDataTable extends DataTable
                     ->setTableId('users-table')
                     ->columns($this->getColumns())
                     ->minifiedAjax()
-                    //->dom('Bfrtip')
+                    ->dom("<'row mb-2'<'col-auto'B><'col-auto'f><'col-auto'l>>" .
+                        "rt" .
+                        "<'row mt-2 float-end'<'col-auto'i><'col-auto'p>>")
                     ->orderBy(0, 'asc')
                     ->selectStyleSingle()
+                    ->setTableAttribute('class', 'table table-striped table-bordered table-hover')
                     ->buttons([
                         Button::make('add'),
-                        Button::make('excel'),
-                        Button::make('csv'),
-                        Button::make('pdf'),
-                        Button::make('print'),
                         Button::make('reset'),
                         Button::make('reload')
                     ]);

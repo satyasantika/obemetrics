@@ -7,7 +7,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
 
 class Role extends SpatieRole
 {
-    use HasFactory;
-    use HasUuids;
-    protected $primaryKey = 'uuid';
+    use HasFactory, HasUuids;
+
+
 }
