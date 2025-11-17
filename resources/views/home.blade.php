@@ -15,7 +15,7 @@
                     @endif
 
                     {{-- @includeWhen(auth()->user()->can('access dashboard dosen'),'dashboard.dosen') --}}
-                    @includeWhen(auth()->user()->hasRole('admin'),'dashboard.admin')
+                    @includeWhen(auth()->user()->can('access admin dashboard'),'dashboard.admin')
                 </div>
             </div>
         </div>

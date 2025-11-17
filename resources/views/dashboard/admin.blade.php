@@ -8,7 +8,7 @@
             <div class="card-header">Manajemen OBEmetrics</div>
             <div class="card-body">
                 menu user:<br>
-                {{-- <a href="{{ route('guideexaminers.index') }}" class="btn btn-sm btn-primary">Penjadwalan</a> --}}
+                <a href="{{ route('users.index') }}" class="btn btn-sm btn-primary">User</a>
                 <br>
                 <hr>
                 menu prodi:<br>
