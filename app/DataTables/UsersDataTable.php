@@ -24,9 +24,9 @@ class UsersDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
                 $action = '<div class="row">';
-                $action .= ' <div class="col-auto"><a href="'.route('users.edit',$row->id).'" class="btn btn-primary btn-sm action"><i class="bi bi-pencil-square"></i></a></div>';
-                // $action .= ' <div class="col-auto"><a href="'.route('userroles.edit',$row->id).'" class="btn btn-outline-primary btn-sm action">R</a>';
-                // $action .= ' <a href="'.route('userpermissions.edit',$row->id).'" class="btn btn-outline-primary btn-sm action">P</a>';
+                $action .= ' <div class="col-auto"><a href="'.route('users.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit User"><i class="bi bi-pencil-square"></i></a></div>';
+                $action .= ' <div class="col-auto"><a href="'.route('userroles.edit',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET Role"><i class="bi bi-person-gear"></i> R</a></div>';
+                $action .= ' <div class="col-auto"><a href="'.route('userpermissions.edit',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET Permission"><i class="bi bi-person-gear"></i> P</a></div>';
                 $action .= '</div>';
                 return $action;
             })
@@ -37,7 +37,7 @@ class UsersDataTable extends DataTable
                 $activationbutton = '<form id="activation-form'.$row->id.'" action='.route('users.activation',$row->id).' method="POST">
                     <input type="hidden" name="_token" value='.csrf_token().'>
                     <button type="submit" class="btn btn-'.(!$row->hasRole('active-user') ? 'outline-success' : 'outline-danger').' btn-sm"
-                    data-bs-toggle="tooltip" title data-bs-original-title="'.($row->hasRole('active-user') ? 'non-aktivkan' : 'aktivkan').'">
+                    data-bs-toggle="tooltip" title="'.($row->hasRole('active-user') ? 'non-aktivkan' : 'aktivkan').'">
                     <i class="bi bi-'.($row->hasRole('active-user') ? 'arrow-down':'arrow-up').'"></i>
                     </button>'.$username.'
                     </form>';
@@ -92,7 +92,7 @@ class UsersDataTable extends DataTable
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false)
-                  ->width(50)
+                  ->width(180)
                   ->addClass('text-center'),
         ];
     }
