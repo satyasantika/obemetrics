@@ -30,5 +30,6 @@ Route::middleware('auth')->group(function () {
         Route::resource('setting/users', App\Http\Controllers\Setting\UserController::class)->except(['show']);
         Route::resource('setting/roles', App\Http\Controllers\Setting\RoleController::class)->except(['show']);
         Route::resource('setting/permissions', App\Http\Controllers\Setting\PermissionController::class)->except(['show']);
+        Route::resource('setting/rolepermissions', App\Http\Controllers\Setting\RolePermissionController::class)->only('edit', 'update');
     });
 });

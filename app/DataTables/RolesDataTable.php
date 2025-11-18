@@ -24,10 +24,15 @@ class RolesDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
                 $action = ' ';
-                // $action .= ' <a href="'.route('rolepermissions.edit',$row->id).'" class="btn btn-outline-primary btn-sm action">P</a>';
                 $action .= ' <a href="'.route('roles.edit',$row->id).'" class="btn btn-primary btn-sm action"><i class="bi bi-pencil-square"></i></a>';
+                $action .= ' <a href="'.route('rolepermissions.edit',$row->id).'" class="btn btn-success btn-sm action">SET permission</a>';
                 return $action;
             })
+            // ->editColumn('name', function($row){
+            //     $setpermissionbutton = $row->name.' <a href="'.route('rolepermissions.edit',$row->id).'" class="btn btn-success btn-sm action">SET permission</a>';
+            //     return $setpermissionbutton;
+            // })
+            ->rawColumns(['action','name'])
             ->setRowId('id');
     }
 
@@ -70,7 +75,7 @@ class RolesDataTable extends DataTable
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false)
-                  ->width(60)
+                  ->width(200)
                   ->addClass('text-center'),
             Column::make('name'),
         ];
