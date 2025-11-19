@@ -38,14 +38,13 @@ class PasswordChangeController extends Controller
         return redirect()->back()->with("success","Password sudah diubah!");
     }
 
-    public function resetPasswordPost($id)
+    public function resetPasswordPost(User $user)
     {
-        //Change Password
-        $user = User::find($id);
+        //Reset Password
         $name = strtoupper($user->name);
         $user->password = bcrypt($user->username);
         $user->save();
 
-        return to_route('users.edit',$id)->with("success",'Password untuk '.$name.' telah direset');
+        return to_route('users.edit',$user)->with("success",'Password untuk '.$name.' telah direset');
     }
 }
