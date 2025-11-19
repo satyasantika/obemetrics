@@ -24,7 +24,7 @@ class PermissionsDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
                 $action = ' ';
-                $action .= ' <a href="'.route('permissions.edit',$row->id).'" class="btn btn-primary btn-sm action"><i class="bi bi-pencil-square"></i></a>';
+                $action .= ' <a href="'.route('permissions.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit Permission"><i class="bi bi-pencil-square"></i></a></div>';
                 return $action;
             })
             ->setRowId('id');
