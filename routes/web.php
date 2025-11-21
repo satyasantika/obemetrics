@@ -27,11 +27,14 @@ Route::middleware('auth')->group(function () {
     // Route::middleware('role:admin')->group(function () {
         Route::post('/users/{user}/resetpassword', [App\Http\Controllers\Auth\PasswordChangeController::class, 'resetPasswordPost'])->name('users.resetpassword');
         Route::post('/users/{user}/activation', [App\Http\Controllers\Setting\UserController::class, 'activation'])->name('users.activation');
-        Route::resource('setting/users', App\Http\Controllers\Setting\UserController::class)->except(['show']);
-        Route::resource('setting/roles', App\Http\Controllers\Setting\RoleController::class)->except(['show']);
-        Route::resource('setting/permissions', App\Http\Controllers\Setting\PermissionController::class)->except(['show']);
-        Route::resource('setting/rolepermissions', App\Http\Controllers\Setting\RolePermissionController::class)->only('edit', 'update');
-        Route::resource('setting/userroles', App\Http\Controllers\Setting\UserRoleController::class)->only('edit', 'update');
-        Route::resource('setting/userpermissions', App\Http\Controllers\Setting\UserPermissionController::class)->only('edit', 'update');
+        Route::resource('users', App\Http\Controllers\Setting\UserController::class)->except(['show']);
+        Route::resource('roles', App\Http\Controllers\Setting\RoleController::class)->except(['show']);
+        Route::resource('permissions', App\Http\Controllers\Setting\PermissionController::class)->except(['show']);
+        Route::resource('rolepermissions', App\Http\Controllers\Setting\RolePermissionController::class)->only('edit', 'update');
+        Route::resource('userroles', App\Http\Controllers\Setting\UserRoleController::class)->only('edit', 'update');
+        Route::resource('userpermissions', App\Http\Controllers\Setting\UserPermissionController::class)->only('edit', 'update');
+        Route::resource('prodis', App\Http\Controllers\Setting\ProdiController::class);
+        Route::resource('prodis.prodiusers', App\Http\Controllers\Setting\ProdiUserController::class)->only('index','create');
+        Route::resource('prodiusers', App\Http\Controllers\Setting\ProdiUserController::class)->except('index','create');
     // });
 });

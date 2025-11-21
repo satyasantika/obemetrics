@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('username')->unique()->after('id');
             $table->string('prefix')->after('name')->nullable();
             $table->string('suffix')->after('prefix')->nullable();
-            $table->string('gender')->after('suffix')->nullable(); //L,P
+            $table->enum('gender',['L','P'])->after('suffix')->nullable(); //L,P
             $table->string('phone')->after('gender')->nullable();
         });
     }

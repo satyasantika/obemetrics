@@ -8,7 +8,9 @@
         <div class="col">
             <div class="card">
                 <div class="card-header">
-                    {{ ucFirst(request()->segment(1)) }} > {{ ucFirst(request()->segment(2)) }}
+                    @isset($header)
+                        Manajemen {{ $header }}
+                    @endisset
                     <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end">kembali</a>
                 </div>
                 <div class="card-body">

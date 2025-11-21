@@ -7,16 +7,26 @@
         <div class="card">
             <div class="card-header">Manajemen OBEmetrics</div>
             <div class="card-body">
+                @can('read users')
                 Manajemen Akun:<br>
                 <a href="{{ route('users.index') }}" class="btn btn-sm btn-primary">User</a>
-                <a href="{{ route('roles.index') }}" class="btn btn-sm btn-primary">Role</a>
-                <a href="{{ route('permissions.index') }}" class="btn btn-sm btn-primary">Permission</a>
+                    @can('read roles')
+                    <a href="{{ route('roles.index') }}" class="btn btn-sm btn-primary">Role</a>
+                    @endcan
+                    @can('read permissions')
+                    <a href="{{ route('permissions.index') }}" class="btn btn-sm btn-primary">Permission</a>
+                    @endcan
                 <br>
                 <hr>
+                @endcan
+
+                @can('read prodis')
                 menu prodi:<br>
-                {{-- <a href="{{ route('examregistrations.index') }}" class="btn btn-sm btn-primary">Jadwal Ujian</a> --}}
+                <a href="{{ route('prodis.index') }}" class="btn btn-sm btn-primary">Prodi</a>
                 <br>
                 <hr>
+                @endcan
+
                 menu cpl:<br>
                 {{-- <a href="{{ route('get.examinerscoringyet') }}" class="btn btn-sm btn-primary">belum menilai</a> --}}
                 <br>

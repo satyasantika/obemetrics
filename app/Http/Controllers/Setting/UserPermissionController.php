@@ -18,7 +18,6 @@ class UserPermissionController extends Controller
     public function edit(User $userpermission)
     {
         $getPermissionViaRoles = $userpermission->getPermissionsViaRoles()->pluck('id')->all();
-        // dd($getPermissionViaRoles);
         $permissions = Permission::whereNotIn('id',$getPermissionViaRoles)->orderBy('name')->pluck('name','id');
         $userPermissions = $userpermission->permissions->pluck('id','id')->all();
 
