@@ -47,7 +47,6 @@
             <label for="password" class="col-md-4 col-form-label text-md-end">Password</label>
             <div class="col-md-8">
                 @if ($user->id)
-                    {{-- TODO - Reset Password --}}
                     <a class="btn btn-warning btn-sm" href="#" onclick="event.preventDefault(); if (confirm('yakin direset?')){ document.getElementById('formReset').submit(); }">
                         {{ __('Reset') }}
                     </a>
@@ -59,22 +58,6 @@
                 @endif
             </div>
         </div>
-        {{-- Role --}}
-        {{-- <div class="row mb-3">
-            <label for="role" class="col-md-4 col-form-label text-md-end">Tetapkan Role</label>
-            <div class="col-md-8">
-                <select id="role" class="form-control @error('role') is-invalid @enderror" name="role" required @disabled($user->id)>
-                    @if ($user->id)
-                    <option value="">{{ $user->getRoleNames()->implode(', ') }}</option>
-                    @else
-                    <option value="">-- Tanpa Role --</option>
-                    @foreach ($roles as $role)
-                    <option value="{{ $role }}">{{ $role }}</option>
-                    @endforeach
-                    @endif
-                </select>
-            </div>
-        </div> --}}
         {{-- Phone --}}
         <div class="row mb-3">
             <label for="phone" class="col-md-4 col-form-label text-md-end">no. WA aktif</label>

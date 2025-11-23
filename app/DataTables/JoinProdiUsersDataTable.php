@@ -3,7 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\User;
-use App\Models\ProdiUser;
+use App\Models\JoinProdiUser;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\EloquentDataTable;
@@ -13,7 +13,7 @@ use Yajra\DataTables\Services\DataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 
-class ProdiUsersDataTable extends DataTable
+class JoinProdiUsersDataTable extends DataTable
 {
     /**
      * Build the DataTable class.
@@ -25,7 +25,7 @@ class ProdiUsersDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
                 $action = '<div class="row">';
-                $action .= ' <div class="col-auto"><a href="'.route('prodiusers.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit data user prodi"><i class="bi bi-pencil-square"></i></a></div>';
+                $action .= ' <div class="col-auto"><a href="'.route('joinprodiusers.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit data user prodi"><i class="bi bi-pencil-square"></i></a></div>';
                 $action .= '</div>';
                 return $action;
             })
@@ -46,7 +46,7 @@ class ProdiUsersDataTable extends DataTable
     /**
      * Get the query source of dataTable.
      */
-    public function query(ProdiUser $model): QueryBuilder
+    public function query(JoinProdiUser $model): QueryBuilder
     {
         return $model->where('prodi_id',$this->prodi_id)->newQuery();
         // return $model->newQuery();
@@ -58,7 +58,7 @@ class ProdiUsersDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('prodiusers-table')
+                    ->setTableId('joinprodiusers-table')
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     ->dom("<'row mb-2'<'col-auto'B><'col-auto'f><'col-auto'l>>" .
@@ -88,7 +88,7 @@ class ProdiUsersDataTable extends DataTable
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
-                ->width(180)
+                ->width(80)
                 ->addClass('text-center'),
         ];
     }
@@ -98,6 +98,6 @@ class ProdiUsersDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Prodiusers_' . date('YmdHis');
+        return 'Joinprodiusers_' . date('YmdHis');
     }
 }

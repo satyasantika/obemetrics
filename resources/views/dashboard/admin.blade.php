@@ -8,7 +8,7 @@
             <div class="card-header">Manajemen OBEmetrics</div>
             <div class="card-body">
                 @can('read users')
-                Manajemen Akun:<br>
+                Manajemen data user:<br>
                 <a href="{{ route('users.index') }}" class="btn btn-sm btn-primary">User</a>
                     @can('read roles')
                     <a href="{{ route('roles.index') }}" class="btn btn-sm btn-primary">Role</a>
@@ -21,31 +21,18 @@
                 @endcan
 
                 @can('read prodis')
-                menu prodi:<br>
+                manajemen data prodi:<br>
                 <a href="{{ route('prodis.index') }}" class="btn btn-sm btn-primary">Prodi</a>
                 <br>
                 <hr>
                 @endcan
 
-                menu cpl:<br>
-                {{-- <a href="{{ route('get.examinerscoringyet') }}" class="btn btn-sm btn-primary">belum menilai</a> --}}
-                <br>
-                <hr>
-                menu cpmk:<br>
-                {{-- <a href="{{ route('get.setscoringtoexamineryet') }}" class="btn btn-sm btn-primary">set jadwal ke penguji</a> --}}
-                <br>
-                <hr>
-                menu sub-cpmk:<br>
-                {{-- <a href="{{ route('get.setscoringtoexamineryet') }}" class="btn btn-sm btn-primary">set jadwal ke penguji</a> --}}
-                <br>
-                <hr>
-                menu tagihan:<br>
-                {{-- <a href="{{ route('get.setscoringtoexamineryet') }}" class="btn btn-sm btn-primary">set jadwal ke penguji</a> --}}
-                <br>
-                <hr>
-                menu kontrak KRS:<br>
-                {{-- <a href="{{ route('get.setscoringtoexamineryet') }}" class="btn btn-sm btn-primary">set jadwal ke penguji</a> --}}
-                <br>
+                manajemen data obe:<br>
+                {{-- <a href="{{ route('profils.index') }}" class="btn btn-sm btn-primary">profil</a> --}}
+                {{-- <a href="{{ route('cpls.index') }}" class="btn btn-sm btn-primary">CPL</a>
+                <a href="{{ route('bks.index') }}" class="btn btn-sm btn-primary">bk</a>
+                <a href="{{ route('cpmks.index') }}" class="btn btn-sm btn-primary">cpmk</a>
+                <a href="{{ route('subcpmks.index') }}" class="btn btn-sm btn-primary">subcpmk</a> --}}
             </div>
         </div>
     </div>

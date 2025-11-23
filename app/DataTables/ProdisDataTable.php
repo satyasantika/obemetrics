@@ -25,7 +25,7 @@ class ProdisDataTable extends DataTable
             ->addColumn('action', function($row){
                 $action = '<div class="row">';
                 $action .= ' <div class="col-auto"><a href="'.route('prodis.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit data prodi"><i class="bi bi-pencil-square"></i></a></div>';
-                $action .= ' <div class="col-auto"><a href="'.route('prodis.prodiusers.index',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET User"><i class="bi bi-person-gear"></i> User</a></div>';
+                $action .= ' <div class="col-auto"><a href="'.route('prodis.joinprodiusers.index',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET User"><i class="bi bi-person-gear"></i> User</a></div>';
                 $action .= '</div>';
                 return $action;
             })
