@@ -36,5 +36,8 @@ Route::middleware('auth')->group(function () {
         Route::resource('prodis', App\Http\Controllers\Setting\ProdiController::class);
         Route::resource('prodis.prodiusers', App\Http\Controllers\Setting\ProdiUserController::class)->only('index','create');
         Route::resource('prodiusers', App\Http\Controllers\Setting\ProdiUserController::class)->except('index','create');
+        Route::resource('prodis', App\Http\Controllers\Setting\ProdiController::class);
+        Route::resource('prodis.joinprodiusers', App\Http\Controllers\Setting\JoinProdiUserController::class)->only('index','create');
+        Route::resource('joinprodiusers', App\Http\Controllers\Setting\JoinProdiUserController::class)->except('index','create');
     // });
 });
