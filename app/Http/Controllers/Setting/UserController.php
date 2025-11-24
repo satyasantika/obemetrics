@@ -20,17 +20,13 @@ class UserController extends Controller
 
     public function index(UsersDataTable $dataTable)
     {
-        $extramenu = '<a href="'.route('users.create').'" class="btn btn-success mb-3"><i class="bi bi-plus-lg"></i> User</a>';
-        return $dataTable->render('layouts.setting', compact('extramenu'));
+        return $dataTable->render('layouts.setting', $this->_dataSelection(''));
     }
 
     public function create()
     {
         $user = new User();
-        return view('setting.user-form',array_merge(
-            [ 'user' => $user ],
-            $this->_dataSelection(),
-        ));
+        return view('setting.user-form', $this->_dataSelection($user));
     }
 
     public function store(Request $request)
@@ -45,10 +41,7 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        return view('setting.user-form',array_merge(
-            [ 'user' => $user ],
-            $this->_dataSelection(),
-        ));
+        return view('setting.user-form', $this->_dataSelection($user));
     }
 
     public function update(Request $request, User $user)
@@ -74,10 +67,13 @@ class UserController extends Controller
         return redirect()->back();
     }
 
-    private function _dataSelection()
+    private function _dataSelection($user)
     {
         return [
             'roles' =>  Role::all()->pluck('name')->sort(),
+            'user' => $user,
+            'header' => 'Data User',
+            'title' => 'User',
         ];
     }
 }

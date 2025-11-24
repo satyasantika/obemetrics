@@ -21,22 +21,13 @@ class JoinProdiUserController extends Controller
 
     public function index(JoinProdiUsersDataTable $dataTable, Prodi $prodi)
     {
-        $header = 'Data Pengelola Program Studi '.$prodi->nama;
-        return $dataTable->with('prodi_id', $prodi->id)->render('layouts.setting', compact('header'));
+        return $dataTable->with('prodi_id', $prodi->id)->render('layouts.setting', $this->_dataSelection($prodi,''));
     }
 
     public function create(Prodi $prodi)
     {
-        $header = 'Data Pengelola Program Studi '.$prodi->nama;
         $joinprodiuser = new JoinProdiUser();
-        return view('setting.joinprodiuser-form', array_merge(
-            [
-                'header'=> $header,
-                'joinprodiuser'=> $joinprodiuser,
-                'prodi'=> $prodi,
-            ],
-            $this->_dataSelection(),
-        ));
+        return view('setting.joinprodiuser-form', $this->_dataSelection($prodi,$joinprodiuser));
     }
 
     public function store(Request $request)
@@ -55,15 +46,7 @@ class JoinProdiUserController extends Controller
     public function edit(JoinProdiUser $joinprodiuser)
     {
         $prodi = Prodi::find($joinprodiuser->prodi_id);
-        $header = 'Data Pengelola Program Studi '.$prodi->nama;
-        return view('setting.joinprodiuser-form', array_merge(
-            [
-                'header'=> $header,
-                'joinprodiuser'=> $joinprodiuser,
-                'prodi'=> $prodi,
-            ],
-            $this->_dataSelection(),
-        ));
+        return view('setting.joinprodiuser-form', $this->_dataSelection($prodi,$joinprodiuser));
     }
 
     public function update(Request $request, JoinProdiUser $joinprodiuser)
@@ -83,10 +66,13 @@ class JoinProdiUserController extends Controller
         return to_route('prodis.joinprodiusers.index',$joinprodiuser->prodi_id)->with('warning','User '.$username.' pada Prodi '.$prodiname.' telah dihapus');
     }
 
-    private function _dataSelection()
+    private function _dataSelection($prodi,$joinprodiuser)
     {
         return [
             'users' => User::role('dosen')->orderBy('name')->get(),
+            'header' => 'Data Pengelola Program Studi '.$prodi->nama,
+            'prodi' => $prodi,
+            'joinprodiuser'=> $joinprodiuser,
         ];
     }
 }

@@ -19,18 +19,13 @@ class ProdiController extends Controller
 
     public function index(ProdisDataTable $dataTable)
     {
-        $header = 'Data Program Studi';
-        return $dataTable->render('layouts.setting', compact('header'));
+        return $dataTable->render('layouts.setting', $this->_dataSelection(''));
     }
 
     public function create()
     {
         $prodi = new Prodi();
-        return view('setting.prodi-form', array_merge(
-            [
-                'prodi'=> $prodi,
-            ],
-        ));
+        return view('setting.prodi-form', $this->_dataSelection($prodi));
     }
 
     public function store(Request $request)
@@ -43,11 +38,7 @@ class ProdiController extends Controller
 
     public function edit(Prodi $prodi)
     {
-        return view('setting.prodi-form', array_merge(
-            [
-                'prodi'=> $prodi,
-            ],
-        ));
+        return view('setting.prodi-form', $this->_dataSelection($prodi));
     }
 
     public function update(Request $request, Prodi $prodi)
@@ -64,5 +55,14 @@ class ProdiController extends Controller
         $name = strtoupper($prodi->name);
         $prodi->delete();
         return to_route('prodis.index')->with('warning','Prodi '.$name.' telah dihapus');
+    }
+
+    private function _dataSelection($prodi)
+    {
+        return [
+            'prodi' => $prodi,
+            'header' => 'Data Program Studi',
+            'title' => 'Prodi',
+        ];
     }
 }

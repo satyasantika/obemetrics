@@ -20,12 +20,13 @@ class PermissionController extends Controller
 
     public function index(PermissionsDataTable $dataTable)
     {
-        return $dataTable->render('layouts.setting');
+        return $dataTable->render('layouts.setting', $this->_dataSelection(''));
     }
 
     public function create()
     {
-        return view('setting.permission-form',['permission'=>new Permission()]);
+        $permission = new Permission();
+        return view('setting.permission-form', $this->_dataSelection($permission));
     }
 
     public function store(Request $request)
@@ -37,7 +38,7 @@ class PermissionController extends Controller
 
     public function edit(Permission $permission)
     {
-        return view('setting.permission-form', compact('permission'));
+        return view('setting.permission-form', $this->_dataSelection($permission));
     }
 
     public function update(Request $request, Permission $permission)
@@ -54,5 +55,14 @@ class PermissionController extends Controller
         $name = strtoupper($permission->name);
         $permission->delete();
         return to_route('permissions.index')->with('warning','permission '.$name.' telah dihapus');
+    }
+
+    private function _dataSelection($permission)
+    {
+        return [
+            'header' => 'Data Permission',
+            'permission' => $permission,
+            'title' => 'Permission',
+        ];
     }
 }

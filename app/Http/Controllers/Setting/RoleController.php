@@ -19,12 +19,13 @@ class RoleController extends Controller
 
     public function index(RolesDataTable $dataTable)
     {
-        return $dataTable->render('layouts.setting');
+        return $dataTable->render('layouts.setting', $this->_dataSelection(''));
     }
 
     public function create()
     {
-        return view('setting.role-form',['role'=>new Role()]);
+        $role = new Role();
+        return view('setting.role-form', $this->_dataSelection($role));
     }
 
     public function store(Request $request)
@@ -36,7 +37,7 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
-        return view('setting.role-form', compact('role'));
+        return view('setting.role-form', $this->_dataSelection($role));
     }
 
     public function update(Request $request, Role $role)
@@ -54,4 +55,14 @@ class RoleController extends Controller
         $role->delete();
         return to_route('roles.index')->with('warning','role '.$name.' telah dihapus');
     }
+
+    private function _dataSelection($role)
+    {
+        return [
+            'header' => 'Data Role',
+            'role' => $role,
+            'title' => 'Role',
+        ];
+    }
+
 }
