@@ -24,9 +24,9 @@ class UsersDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
                 $action = '<div class="row">';
-                $action .= ' <div class="col-auto"><a href="'.route('users.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit User"><i class="bi bi-pencil-square"></i></a></div>';
-                $action .= ' <div class="col-auto"><a href="'.route('userroles.edit',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET Role"><i class="bi bi-person-gear"></i> R</a></div>';
-                $action .= ' <div class="col-auto"><a href="'.route('userpermissions.edit',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET Permission"><i class="bi bi-person-gear"></i> P</a></div>';
+                $action .= ' <div class="col-auto"><a href="'.route('users.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit User"><i class="bi bi-pencil-square"></i></a>';
+                $action .= ' <a href="'.route('userroles.edit',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET Role"><i class="bi bi-person-gear"></i> R</a>';
+                $action .= ' <a href="'.route('userpermissions.edit',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET Permission"><i class="bi bi-person-gear"></i> P</a></div>';
                 $action .= '</div>';
                 return $action;
             })
@@ -92,7 +92,7 @@ class UsersDataTable extends DataTable
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false)
-                  ->width(180)
+                  ->width(150)
                   ->addClass('text-center'),
         ];
     }
