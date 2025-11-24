@@ -9,8 +9,8 @@
             <div class="card-body">
 
                 @can('read prodis')
-                menu prodi:<br>
-                <a href="{{ route('prodis.show') }}" class="btn btn-sm btn-primary">Edit Identitas Prodi</a>
+                manajemen data kurikulum:<br>
+                <a href="{{ route('kurikulums.index',) }}" class="btn btn-sm btn-primary">Kurikulum</a>
                 <br>
                 <hr>
                 @endcan

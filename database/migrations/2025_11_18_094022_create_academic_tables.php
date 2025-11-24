@@ -45,15 +45,15 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // // jenis_kurikulum
-        // Schema::create('kurikulums', function (Blueprint $table) {
-        //     $table->uuid('id')->primary('id');
-        //     $table->string('nama')->nullable();
-        //     $table->string('kode')->nullable();
-        //     $table->text('deskripsi')->nullable();
-        //     $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->timestamps();
-        // });
+        // jenis_kurikulum
+        Schema::create('kurikulums', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->string('nama')->nullable();
+            $table->string('kode')->nullable();
+            $table->text('deskripsi')->nullable();
+            $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->timestamps();
+        });
 
         // // profil lulusan
         // Schema::create('profils', function (Blueprint $table) {
@@ -319,9 +319,9 @@ return new class extends Migration
         // });
         // Schema::dropIfExists('profils');
         // jenis_kurikulum
-        // Schema::table('kurikulums', function (Blueprint $table) {
-        //     $table->dropForeign('kurikulums_prodi_id_foreign');
-        // });
+        Schema::table('kurikulums', function (Blueprint $table) {
+            $table->dropForeign('kurikulums_prodi_id_foreign');
+        });
         Schema::dropIfExists('kurikulums');
         // prodi_users
         Schema::table('join_prodi_users', function (Blueprint $table) {
