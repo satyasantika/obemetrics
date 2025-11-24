@@ -1,16 +1,7 @@
 @extends('layouts.setting-form')
 
 @push('header')
-    {{ $user->id ? 'Edit' : 'Tambah' }} {{ ucFirst(request()->segment(2)) }}
-    @if ($user->id)
-        <form id="delete-form" action="{{ route('users.destroy',$user->id) }}" method="POST">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $user->name }}?');">
-                {{ __('delete') }}
-            </button>
-        </form>
-    @endif
+    {{ $user->id ? 'Edit' : 'Tambah' }} {{ $header }}
 @endpush
 
 @push('body')
@@ -68,8 +59,8 @@
         {{-- submit Button --}}
         <div class="row mb-0">
             <div class="col-md-8 offset-md-4">
-                <button type="submit" class="btn btn-primary btn-sm">Save</button>
-                <a href="{{ route('users.index') }}" class="btn btn-outline-secondary btn-sm">Close</a>
+                <button type="submit" for="formAction" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                <a href="{{ route('users.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-circle"></i> Close</a>
             </div>
         </div>
     </div>
@@ -80,4 +71,15 @@
     @csrf
 </form>
 @endif
+
+@if ($user->id)
+    <form id="delete-form" action="{{ route('users.destroy',$user->id) }}" method="POST">
+        @csrf
+        @method('DELETE')
+        <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $user->name }}?');">
+            <i class="bi bi-trash"></i>
+        </button>
+    </form>
+@endif
+
 @endpush

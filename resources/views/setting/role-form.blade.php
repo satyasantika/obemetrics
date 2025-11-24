@@ -1,16 +1,7 @@
 @extends('layouts.setting-form')
 
 @push('header')
-    {{ $role->id ? 'Edit' : 'Tambah' }} {{ ucFirst(request()->segment(2)) }}
-    @if ($role->id)
-        <form id="delete-form" action="{{ route('roles.destroy',$role->id) }}" method="POST">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $role->name }}?');">
-                {{ __('delete') }}
-            </button>
-        </form>
-    @endif
+    {{ $role->id ? 'Edit' : 'Tambah' }} {{ $header }}
 @endpush
 
 @push('body')
@@ -33,9 +24,19 @@
     </div>
     <div class="row mb-0">
         <div class="col-md-8 offset-md-4">
-            <button type="submit" class="btn btn-primary btn-sm">Save</button>
-            <a href="{{ route('roles.index') }}" class="btn btn-outline-secondary btn-sm">Close</a>
+            <button type="submit" for="formAction" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+            <a href="{{ route('roles.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-circle"></i> Close</a>
         </div>
     </div>
 </form>
+@if ($role->id)
+    <form id="delete-form" action="{{ route('roles.destroy',$role->id) }}" method="POST">
+        @csrf
+        @method('DELETE')
+        <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $role->name }}?');">
+            <i class="bi bi-trash"></i>
+        </button>
+    </form>
+@endif
+
 @endpush

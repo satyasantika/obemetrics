@@ -1,7 +1,7 @@
 @extends('layouts.setting-form')
 
 @push('header')
-    {{ $prodi->id ? 'Edit' : 'Tambah' }} {{ ucFirst(request()->segment(2)) }}
+    {{ $prodi->id ? 'Edit' : 'Tambah' }} {{ $header }}
     <a href="{{ route('prodis.index') }}" class="btn btn-primary btn-sm float-end">kembali</a>
 @endpush
 
@@ -157,8 +157,8 @@
         {{-- submit Button --}}
         <div class="row mb-0">
             <div class="col-md-8 offset-md-4">
-                <button type="submit" class="btn btn-primary btn-sm">Save</button>
-                <a href="{{ route('prodis.index') }}" class="btn btn-outline-secondary btn-sm">Close</a>
+            <button type="submit" for="formAction" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                <a href="{{ route('prodis.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-circle"></i> Close</a>
             </div>
         </div>
     </div>
@@ -175,8 +175,8 @@
         @csrf
         @method('DELETE')
         <hr>
-        <button type="submit" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $prodi->name }}?');">
-            {{ __('delete') }}
+        <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $prodi->name }}?');">
+            <i class="bi bi-trash"></i>
         </button>
     </form>
 </div>

@@ -1,24 +1,13 @@
 @extends('layouts.setting-form')
 
 @push('header')
-    {{ $permission->id ? 'Edit' : 'Tambah' }} {{ ucFirst(request()->segment(2)) }}
-    @if ($permission->id)
-        <form id="delete-form" action="{{ route('permissions.destroy',$permission->id) }}" method="POST">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $permission->name }}?');">
-                {{ __('delete') }}
-            </button>
-        </form>
-    @endif
+    {{ $permission->id ? 'Edit' : 'Tambah' }} {{ $header }}
 @endpush
 
 @push('body')
 <form id="formAction" action="{{ $permission->id ? route('permissions.update',$permission->id) : route('permissions.store') }}" method="post">
     @csrf
-    @if ($permission->id)
-        @method('PUT')
-    @endif
+    @if ($permission->id) @method('PUT') @endif
     <div class="row mb-3">
         <label for="permissionName" class="col-md-4 col-form-label text-md-end">Name</label>
         <div class="col-md-6">
@@ -33,9 +22,18 @@
     </div>
     <div class="row mb-0">
         <div class="col-md-8 offset-md-4">
-            <button type="submit" class="btn btn-primary btn-sm">Save</button>
-            <a href="{{ route('permissions.index') }}" class="btn btn-outline-secondary btn-sm">Close</a>
+            <button type="submit" for="formAction" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+            <a href="{{ route('permissions.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-circle"></i> Close</a>
         </div>
     </div>
 </form>
+@if ($permission->id)
+    <form id="delete-form" action="{{ route('permissions.destroy',$permission->id) }}" method="POST">
+        @csrf
+        @method('DELETE')
+        <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $permission->name }}?');">
+            <i class="bi bi-trash"></i>
+        </button>
+    </form>
+@endif
 @endpush
