@@ -13,7 +13,20 @@
         @if ($kurikulum->id)
             @method('PUT')
         @endif
-        <input type="hidden" name="prodi_id" value="{{ $prodi_id }}">
+        {{-- Pilihan Prodi --}}
+        <div class="row mb-3">
+            <label for="prodi_id" class="col-md-4 col-form-label text-md-end">Program Studi</label>
+            <div class="col-md-8">
+                <select id="prodi_id" class="form-control @error('prodi_id') is-invalid @enderror" name="prodi_id" required>
+                    @if (!$kurikulum->id)
+                    <option value="">-- Pilih Prodi --</option>
+                    @endif
+                    @foreach ($prodis as $prodi)
+                    <option value="{{ $prodi->id }}" @selected($prodi->id==$kurikulum->prodi_id)>{{ $prodi->nama }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
         {{-- nama --}}
         <div class="row mb-3 p-2">
             <label for="nama" class="col-md-4 col-form-label text-md-end">Nama Kurikulum</label>
@@ -44,6 +57,7 @@
         </div>
     </form>
 </div>
+
 @if ($kurikulum->id)
 <div class="col">
     <form id="delete-form" action="{{ route('kurikulums.destroy',$kurikulum->id) }}" method="POST">
@@ -56,6 +70,5 @@
     </form>
 </div>
 @endif
-
 
 @endpush

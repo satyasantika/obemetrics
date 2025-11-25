@@ -21,15 +21,13 @@ class KurikulumController extends Controller
 
     public function index(KurikulumsDataTable $dataTable)
     {
-        $header = 'Data Kurikulum Program Studi';
-        return $dataTable->render('layouts.setting', compact('header'));
+        return $dataTable->with($this->_dataSelection(''))->render('layouts.setting');
     }
 
     public function create()
     {
-        $prodi_id = JoinProdiUser::where('user_id', auth()->id())->first()->prodi_id;
         $kurikulum = new Kurikulum();
-        return view('setting.kurikulum-form', $this->_dataSelection($prodi_id,$kurikulum));
+        return view('setting.kurikulum-form', $this->_dataSelection($kurikulum));
     }
 
     public function store(Request $request)
@@ -42,7 +40,7 @@ class KurikulumController extends Controller
 
     public function edit(Kurikulum $kurikulum)
     {
-        return view('setting.kurikulum-form', $this->_dataSelection($kurikulum->prodi_id,$kurikulum));
+        return view('setting.kurikulum-form', $this->_dataSelection($kurikulum));
     }
 
     public function update(Request $request, Kurikulum $kurikulum)
@@ -61,12 +59,15 @@ class KurikulumController extends Controller
         return to_route('kurikulums.index')->with('warning','Kurikulum '.$name.' telah dihapus');
     }
 
-    private function _dataSelection($prodi_id,$kurikulum)
+    private function _dataSelection($kurikulum)
     {
+        $prodi_ids = JoinProdiUser::where('user_id', auth()->id())->pluck('prodi_id');
+        $prodis = Prodi::whereIn('id', $prodi_ids)->get();
         return [
-            'header' => 'Data Kurikulum Program Studi'.Prodi::find($prodi_id)->nama,
+            'header' => 'Data Kurikulum Program Studi',
             'kurikulum' => $kurikulum,
-            'prodi_id' => $prodi_id,
+            'prodi_ids' => $prodi_ids,
+            'prodis' => $prodis,
         ];
     }
 }

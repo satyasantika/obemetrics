@@ -8,19 +8,20 @@
             <div class="card-header">Manajemen OBE pada Prodi</div>
             <div class="card-body">
 
-                @can('read prodis')
+                @can('read kurikulums')
                 manajemen data kurikulum:<br>
-                <a href="{{ route('kurikulums.index',) }}" class="btn btn-sm btn-primary">Kurikulum</a>
+                <a href="{{ route('kurikulums.index',) }}" class="btn btn-sm btn-primary"><i class="bi bi-diagram-3"></i> Kurikulum</a>
                 <br>
                 <hr>
                 @endcan
 
-                menu cpl:<br>
-                {{-- <a href="{{ route('get.examinerscoringyet') }}" class="btn btn-sm btn-primary">belum menilai</a> --}}
+                @can('read profils')
+                manajemen data profil lulusan:<br>
+                <a href="{{ route('kurikulums.index',) }}" class="btn btn-sm btn-primary"><i class="bi bi-person-badge"></i> Kurikulum</a>
                 <br>
                 <hr>
-                menu cpmk:<br>
-                {{-- <a href="{{ route('get.setscoringtoexamineryet') }}" class="btn btn-sm btn-primary">set jadwal ke penguji</a> --}}
+                @endcan
+                
             </div>
         </div>
     </div>

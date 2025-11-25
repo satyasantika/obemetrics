@@ -28,6 +28,9 @@ class KurikulumsDataTable extends DataTable
                 $action .= '</div>';
                 return $action;
             })
+            ->addColumn('prodi', function($row){
+                return strtoupper($row->prodi->nama);
+            })
             ->editColumn('updated_at', function($row) {
                 return $row->updated_at->format('Y-m-d H:i:s');
             })
@@ -41,6 +44,7 @@ class KurikulumsDataTable extends DataTable
     public function query(Kurikulum $model): QueryBuilder
     {
         return $model->newQuery();
+        return $model->whereIn('prodi_id',$this->prodi_ids)->newQuery();
     }
 
     /**
@@ -71,14 +75,15 @@ class KurikulumsDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('nama'),
+            Column::make('prodi')->title('Program Studi'),
+            Column::make('nama')->title('Nama Kurikulum'),
             Column::make('kode'),
             Column::make('deskripsi'),
-            Column::make('updated_at'),
+            // Column::make('updated_at'),
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false)
-                  ->width(180)
+                  ->width(0)
                   ->addClass('text-center'),
         ];
     }
