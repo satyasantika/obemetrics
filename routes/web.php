@@ -18,6 +18,7 @@ Route::get('/', function () {
 });
 
 Auth::routes();
+Route::impersonate();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
@@ -25,6 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/mypassword/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'showChangePasswordGet'])->name('mypassword.change');
     Route::post('/mypassword/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'changePasswordPost'])->name('mypassword.change.post');
     // Route::middleware('role:admin')->group(function () {
+        // Route::post('/prodi/kurikulum', [App\Http\Controllers\Prodi\KurikulumController::class, 'getKurikulumByProdi'])->name('prodi.kurikulum.getbyprodi');
         Route::post('/users/{user}/resetpassword', [App\Http\Controllers\Auth\PasswordChangeController::class, 'resetPasswordPost'])->name('users.resetpassword');
         Route::post('/users/{user}/activation', [App\Http\Controllers\Setting\UserController::class, 'activation'])->name('users.activation');
         Route::resource('users', App\Http\Controllers\Setting\UserController::class)->except(['show']);
@@ -37,6 +39,13 @@ Route::middleware('auth')->group(function () {
         Route::resource('prodis.joinprodiusers', App\Http\Controllers\Setting\JoinProdiUserController::class)->only('index','create');
         Route::resource('joinprodiusers', App\Http\Controllers\Setting\JoinProdiUserController::class)->except('index','create');
 
-        Route::resource('kurikulums', App\Http\Controllers\Prodi\KurikulumController::class);
+        // Route::resource('kurikulums', App\Http\Controllers\Prodi\KurikulumController::class);
+        Route::resource('prodis.kurikulums', App\Http\Controllers\Prodi\KurikulumController::class)->only('index','create','edit');
+        Route::resource('kurikulums.profils', App\Http\Controllers\Prodi\ProfilController::class)->only('index','create','edit');
+        Route::resource('profils.profilindikators', App\Http\Controllers\Prodi\ProfilIndikatorController::class)->only('index','create','edit');
+
+        Route::get('/obe/kurikulum/{kurikulum}', function ($kurikulum){
+            return view('obe.kurikulum',compact('kurikulum'));
+        })->name('obe.kurikulum');
     // });
 });

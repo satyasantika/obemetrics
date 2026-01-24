@@ -24,9 +24,12 @@ class UsersDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
                 $action = '<div class="row">';
-                $action .= ' <div class="col-auto"><a href="'.route('users.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit User"><i class="bi bi-pencil-square"></i></a>';
-                $action .= ' <a href="'.route('userroles.edit',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET Role"><i class="bi bi-person-gear"></i> R</a>';
-                $action .= ' <a href="'.route('userpermissions.edit',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET Permission"><i class="bi bi-person-gear"></i> P</a></div>';
+                $action .= ' <div class="col-auto">';
+                $action .= '  <a href="'.route('users.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit User"><i class="bi bi-pencil-square"></i></a>';
+                $action .= '  <a href="'.route('userroles.edit',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET Role"><i class="bi bi-person-gear"></i> R</a>';
+                $action .= '  <a href="'.route('userpermissions.edit',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET Permission"><i class="bi bi-person-gear"></i> P</a>';
+                $action .= '  <a href="'.route('impersonate',$row->id).'" class="btn btn-warning btn-sm action" data-bs-toggle="tooltip" title="Impersonate"><i class="bi bi-person-badge"></i></a>';
+                $action .= ' </div>';
                 $action .= '</div>';
                 return $action;
             })
@@ -92,7 +95,7 @@ class UsersDataTable extends DataTable
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false)
-                  ->width(150)
+                  ->width(175)
                   ->addClass('text-center'),
         ];
     }
