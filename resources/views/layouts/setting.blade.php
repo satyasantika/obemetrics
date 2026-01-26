@@ -11,7 +11,7 @@
                     @isset($header)
                         Manajemen {{ $header }}
                     @endisset
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> kembali</a>
+                    <a href="{{ route((isset($back_route)? $back_route : 'home')) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> kembali</a>
                 </div>
                 <div class="card-body">
                     @if (session('success'))

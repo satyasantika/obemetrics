@@ -21,7 +21,8 @@ class JoinProdiUserController extends Controller
 
     public function index(JoinProdiUsersDataTable $dataTable, Prodi $prodi)
     {
-        return $dataTable->with('prodi_id', $prodi->id)->render('layouts.setting', $this->_dataSelection($prodi,''));
+        $back_route = 'prodis.index';
+        return $dataTable->with('prodi_id', $prodi->id)->render('layouts.setting', $this->_dataSelection($prodi,''),compact('back_route'));
     }
 
     public function create(Prodi $prodi)
