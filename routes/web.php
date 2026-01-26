@@ -38,11 +38,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('prodis.joinprodiusers', App\Http\Controllers\Setting\JoinProdiUserController::class)->only('index','create');
     Route::resource('joinprodiusers', App\Http\Controllers\Setting\JoinProdiUserController::class)->except('index','create');
     // Prodi
-    Route::resource('prodis.kurikulums', App\Http\Controllers\Prodi\KurikulumController::class);
-    Route::resource('kurikulums.profils', App\Http\Controllers\Prodi\ProfilController::class)->only('index','create','edit');
+    Route::resource('prodis.kurikulums', App\Http\Controllers\Prodi\KurikulumController::class)->except('index','show');
+    Route::resource('kurikulums.profils', App\Http\Controllers\Prodi\ProfilController::class)->except('show');
     Route::resource('profils.profilindikators', App\Http\Controllers\Prodi\ProfilIndikatorController::class)->only('index','create','edit');
 
-    Route::get('/obe/kurikulum/{kurikulum}', function ($kurikulum){
-        return view('obe.kurikulum',compact('kurikulum'));
-    })->name('obe.kurikulum');
 });

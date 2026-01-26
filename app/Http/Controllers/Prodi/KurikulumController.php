@@ -13,7 +13,7 @@ class KurikulumController extends Controller
 {
     function __construct()
     {
-        $this->middleware('permission:read kurikulums', ['only' => ['index','show']]);
+        // $this->middleware('permission:read kurikulums', ['only' => ['index','show']]);
         $this->middleware('permission:create kurikulums', ['only' => ['create','store']]);
         $this->middleware('permission:update kurikulums', ['only' => ['edit','update']]);
         $this->middleware('permission:delete kurikulums', ['only' => ['destroy']]);

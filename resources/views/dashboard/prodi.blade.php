@@ -34,7 +34,7 @@
                                         <a href="{{ route('prodis.kurikulums.edit',[$prodi->id,$kurikulum->id]) }}" class="btn btn-sm btn-primary">
                                             <i class="bi bi-pencil-square"></i> Edit
                                         </a>
-                                        <a href="{{ route('obe.kurikulum',$kurikulum->id) }}" class="btn btn-sm btn-success">
+                                        <a href="{{ route('kurikulums.profils.index',[$kurikulum->id]) }}" class="btn btn-sm btn-success">
                                             <i class="bi bi-eye"></i> Details
                                         </a>
                                     </div>
