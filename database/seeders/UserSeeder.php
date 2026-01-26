@@ -67,14 +67,14 @@ class UserSeeder extends Seeder
             'username'  => 'rektor1',
             'name'      => 'rektor 01',
             'email'     => 'rektor01@unsil.ac.id',
-            'password'  => bcrypt('1234'),
+            'password'  => bcrypt('asdf'),
             ])->syncRoles('pimpinan universitas','dosen');
 
         User::create([
             'username'  => 'operatoruniversitas1',
             'name'      => 'operatoruniversitas 01',
             'email'     => 'operatoruniversitas01@unsil.ac.id',
-            'password'  => bcrypt('1234'),
+            'password'  => bcrypt('asdf'),
             ])->assignRole('operator universitas');
         Permission::create(['name' => 'access universitas dashboard'])->syncRoles('pimpinan universitas', 'operator universitas');
 
@@ -83,14 +83,14 @@ class UserSeeder extends Seeder
             'username'  => 'dekan1',
             'name'      => 'dekan 01',
             'email'     => 'dekan01@unsil.ac.id',
-            'password'  => bcrypt('1234'),
+            'password'  => bcrypt('asdf'),
         ])->syncRoles('pimpinan fakultas','dosen');
 
         User::create([
             'username'  => 'operatorfakultas1',
             'name'      => 'operatorfakultas 01',
             'email'     => 'operatorfakultas01@unsil.ac.id',
-            'password'  => bcrypt('1234'),
+            'password'  => bcrypt('asdf'),
         ])->assignRole('operator fakultas');
         Permission::create(['name' => 'access fakultas dashboard'])->syncRoles('pimpinan fakultas', 'operator fakultas');
 
@@ -99,14 +99,14 @@ class UserSeeder extends Seeder
             'username'  => 'kaprodi1',
             'name'      => 'kaprodi 01',
             'email'     => 'kaprodi01@unsil.ac.id',
-            'password'  => bcrypt('1234'),
+            'password'  => bcrypt('asdf'),
         ])->syncRoles('pimpinan prodi','dosen');
 
         User::create([
             'username'  => 'operatorprodi1',
             'name'      => 'operatorprodi 01',
             'email'     => 'operatorprodi01@unsil.ac.id',
-            'password'  => bcrypt('1234'),
+            'password'  => bcrypt('asdf'),
         ])->assignRole('operator prodi');
         Permission::create(['name' => 'access prodi dashboard'])->syncRoles('pimpinan prodi', 'operator prodi');
 
@@ -115,7 +115,7 @@ class UserSeeder extends Seeder
             'username'  => 'dosen1',
             'name'      => 'Dosen 01',
             'email'     => 'dosen01@unsil.ac.id',
-            'password'  => bcrypt('1234'),
+            'password'  => bcrypt('asdf'),
             ])->assignRole('dosen');
         Permission::create(['name' => 'access dosen dashboard'])->syncRoles('dosen');
 
@@ -160,5 +160,65 @@ class UserSeeder extends Seeder
             'user_id' => $dosenuser->id,
             'status' => 'Dosen matematika',
         ]);
+
+        // data kurikulum
+        $kurikulum = $prodimat->kurikulums()->create([
+            'nama'=>'Kurikulum OBE 2025',
+            'kode'=>'mat-OBE-2025',
+            'deskripsi'=>'Kurikulum berbasis OBE untuk program studi Pendidikan Matematika Universitas Siliwangi Tahun 2025',
+            'status_aktif'=>true,
+        ]);
+        $kurikulum1 = $prodimat->kurikulums()->create([
+            'nama'=>'Kurikulum OBE 2023',
+            'kode'=>'mat-OBE-2023',
+            'deskripsi'=>'Kurikulum berbasis OBE untuk program studi Pendidikan Matematika Universitas Siliwangi Tahun 2025',
+            'status_aktif'=>false,
+        ]);
+
+        // data profil lulusan
+        // $profil1 = $kurikulum->profils()->create([
+        //     'nama'=>'Pendidik Matematika',
+        //     'deskripsi'=>'Orang yang melakukan proses pengubahan sikap dan perilaku seseorang atau kelompok orang dalam usaha mendewasakan manusia melalui upaya pengajaran, bimbingan dan latihan di bidang matematika dengan menguasai materi matematika (Content Knowledge), pedagogik (Pedagogical Knowledge) dan teknologi (Technological Knowledge)',
+        // ]);
+        // $profil2 = $kurikulum->profils()->create([
+        //     'nama'=>'Peneliti',
+        //     'deskripsi'=>'Orang yang menguasai konsep teoritis penelitian pendidikan matematika dan terampil dalam menyelesaikan masalah secara prosedural dalam kehidupan sehari-hari',
+        // ]);
+        // $profil3 = $kurikulum->profils()->create([
+        //     'nama'=>'Edupreneur',
+        //     'deskripsi'=>'Orang yang memiliki jiwa kewirausahaan untuk memecahkan permasalahan dan mampu beradaptasi, baik dalam pembelajaran maupun dalam kehidupan sehari-hari',
+        // ]);
+
+        // data indikator dari profil
+        // $profil1->profil_indikators()->create([
+        //     'nama'=>'Menguasai konsep teoritis tentang konsep-konsep dasar matematika'
+        // ]);
+        // $profil1->profil_indikators()->create([
+        //     'nama'=>'Menguasai dan mengaplikasikan strategi dan metode pembelajaran dasar yang efektif untuk menyampaikan materi matematika'
+        // ]);
+        // $profil1->profil_indikators()->create([
+        //     'nama'=>'Mampu memanfaatkan teknologi untuk mendukung proses dan evaluasi pembelajaran'
+        // ]);
+        // $profil1->profil_indikators()->create([
+        //     'nama'=>'Mampu mendesain pengelolaan kelas yang baik untuk terciptanya lingkungan belajar yang kondusif'
+        // ]);
+        // $profil2->profil_indikators()->create([
+        //     'nama'=>'Menguasai konsep pengumpulan, pengolahan, analisis, penyajian, dan interpretasi data yang dilakukan secara sistematis dan objektif'
+        // ]);
+        // $profil2->profil_indikators()->create([
+        //     'nama'=>'Memiliki keterampilan literasi informasi untuk mendukung topik penelitiannya'
+        // ]);
+        // $profil2->profil_indikators()->create([
+        //     'nama'=>'Mampu menyusun laporan penelitian dan artikel ilmiah yang mendukung penerapan teori-teori pendidikan matematika'
+        // ]);
+        // $profil3->profil_indikators()->create([
+        //     'nama'=>'Menguasai konsep teoritis tentang konsep-konsep dasar kewirausahaan untuk menghasilkan ide-ide kreatif dan inovatif dalam pembelajaran'
+        // ]);
+        // $profil3->profil_indikators()->create([
+        //     'nama'=>'Mampu merancang produk atau layanan pendidikan yang inovatif'
+        // ]);
+        // $profil3->profil_indikators()->create([
+        //     'nama'=>'Mampu mengomunikasikan hasil rancangan produk atau layanan pendidikan secara sistematis untuk perbaikan pembelajaran'
+        // ]);
     }
 }

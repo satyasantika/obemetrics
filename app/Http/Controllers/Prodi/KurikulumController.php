@@ -21,13 +21,13 @@ class KurikulumController extends Controller
 
     public function index(KurikulumsDataTable $dataTable)
     {
-        return $dataTable->with($this->_dataSelection(''))->render('layouts.setting');
+        return $dataTable->with($this->_dataSelection('',''))->render('layouts.setting');
     }
 
-    public function create()
+    public function create(Prodi $prodi)
     {
         $kurikulum = new Kurikulum();
-        return view('setting.kurikulum-form', $this->_dataSelection($kurikulum));
+        return view('setting.kurikulum-form', $this->_dataSelection($prodi, $kurikulum));
     }
 
     public function store(Request $request)
@@ -35,39 +35,40 @@ class KurikulumController extends Controller
         $name = strtoupper($request->name);
         Kurikulum::create($request->all());
 
-        return to_route('kurikulums.index')->with('success','kurikulum '.$name.' telah ditambahkan');
+        return to_route('home')->with('success','kurikulum '.$name.' telah ditambahkan');
     }
 
-    public function edit(Kurikulum $kurikulum)
+    public function edit(Prodi $prodi, Kurikulum $kurikulum)
     {
-        return view('setting.kurikulum-form', $this->_dataSelection($kurikulum));
+        return view('setting.kurikulum-form', $this->_dataSelection($prodi, $kurikulum));
     }
 
-    public function update(Request $request, Kurikulum $kurikulum)
+    public function update(Request $request, Prodi $prodi, Kurikulum $kurikulum)
     {
         $name = strtoupper($kurikulum->prodi->nama);
         $data = $request->all();
         $kurikulum->fill($data)->save();
 
-        return to_route('kurikulums.index')->with('success','Kurikulum '.$name.' telah diperbarui');
+        return to_route('home')->with('success','Kurikulum '.$name.' telah diperbarui');
     }
 
-    public function destroy(Kurikulum $kurikulum)
+    public function destroy(Prodi $prodi, Kurikulum $kurikulum)
     {
         $name = strtoupper($kurikulum->name);
         $kurikulum->delete();
-        return to_route('kurikulums.index')->with('warning','Kurikulum '.$name.' telah dihapus');
+        return to_route('home')->with('warning','Kurikulum '.$name.' telah dihapus');
     }
 
-    private function _dataSelection($kurikulum)
+    private function _dataSelection($prodi, $kurikulum)
     {
         $prodi_ids = JoinProdiUser::where('user_id', auth()->id())->pluck('prodi_id');
         $prodis = Prodi::whereIn('id', $prodi_ids)->get();
         return [
-            'header' => 'Data Kurikulum Program Studi',
+            'header' => 'Data Kurikulum Program Studi '.Prodi::find($prodi->id)->nama,
             'kurikulum' => $kurikulum,
             'prodi_ids' => $prodi_ids,
             'prodis' => $prodis,
+            'prodi' => $prodi,
         ];
     }
 }

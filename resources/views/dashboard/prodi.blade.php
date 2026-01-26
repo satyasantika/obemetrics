@@ -5,23 +5,53 @@
 <div class="row">
     <div class="col-auto">
         <div class="card">
-            <div class="card-header">Manajemen OBE pada Prodi</div>
+            <div class="card-header">Manajemen OBE pada oleh UPPS</div>
             <div class="card-body">
 
-                @can('read kurikulums')
-                manajemen data kurikulum:<br>
-                <a href="{{ route('kurikulums.index',) }}" class="btn btn-sm btn-primary"><i class="bi bi-diagram-3"></i> Kurikulum</a>
-                <br>
-                <hr>
-                @endcan
+                @php
+                    $user_id = auth()->id();
+                    $prodi_ids = \App\Models\JoinProdiUser::where('user_id',$user_id)->pluck('prodi_id');
+                    $prodis = \App\Models\Prodi::whereIn('id',$prodi_ids)->get();
+                    $kurikulums = \App\Models\Kurikulum::whereIn('prodi_id',$prodi_ids)->get();
+                @endphp
 
-                @can('read profils')
-                manajemen data profil lulusan:<br>
-                <a href="{{ route('kurikulums.index',) }}" class="btn btn-sm btn-primary"><i class="bi bi-person-badge"></i> Kurikulum</a>
-                <br>
-                <hr>
-                @endcan
-                
+                @forelse ($prodis as $prodi)
+                    <h4>Program Studi {{ $prodi->nama }}</h4>
+                    <hr>
+
+                    {{-- Kurikulum --}}
+                    Kurikulum pada program studi ini:
+                    <ol>
+                        @forelse ($kurikulums as $kurikulum)
+                            @if ($kurikulum->prodi_id == $prodi->id)
+                            <div class="row mb-1">
+                                <div class="col">
+                                    <li>
+                                        {{ $kurikulum->nama }}
+                                    </li>
+                                    </div>
+                                    <div class="col">
+                                        <a href="{{ route('prodis.kurikulums.edit',[$prodi->id,$kurikulum->id]) }}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pencil-square"></i> Edit
+                                        </a>
+                                        <a href="{{ route('obe.kurikulum',$kurikulum->id) }}" class="btn btn-sm btn-success">
+                                            <i class="bi bi-eye"></i> Details
+                                        </a>
+                                    </div>
+                            </div>
+                            @endif
+                        @empty
+                            Tidak ada kurikulum pada program studi ini.
+                        @endforelse
+                    </ol>
+                    <hr>
+                    <a href="{{ route('prodis.kurikulums.create',$prodi->id) }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i> Tambah Kurikulum
+                    </a>
+
+                @empty
+                    Anda belum terdaftar pada program studi manapun.
+                @endforelse
             </div>
         </div>
     </div>

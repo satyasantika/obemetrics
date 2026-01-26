@@ -2,31 +2,19 @@
 
 @push('header')
     {{ $kurikulum->id ? 'Edit' : 'Tambah' }} {{ $header }}
-    <a href="{{ route('kurikulums.index') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
+    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
 @endpush
 
 @push('body')
 
 <div class="card-body">
-    <form id="formAction" action="{{ $kurikulum->id ? route('kurikulums.update',$kurikulum->id) : route('kurikulums.store') }}" method="post">
+    <form id="formAction" action="{{ $kurikulum->id ? route('prodis.kurikulums.update',[$prodi->id,$kurikulum->id]) : route('prodis.kurikulums.store', $prodi) }}" method="post">
         @csrf
         @if ($kurikulum->id)
             @method('PUT')
         @endif
-        {{-- Pilihan Prodi --}}
-        <div class="row mb-3">
-            <label for="prodi_id" class="col-md-4 col-form-label text-md-end">Program Studi</label>
-            <div class="col-md-8">
-                <select id="prodi_id" class="form-control @error('prodi_id') is-invalid @enderror" name="prodi_id" required>
-                    @if (!$kurikulum->id)
-                    <option value="">-- Pilih Prodi --</option>
-                    @endif
-                    @foreach ($prodis as $prodi)
-                    <option value="{{ $prodi->id }}" @selected($prodi->id==$kurikulum->prodi_id)>{{ $prodi->nama }}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
+        <input type="hidden" name="prodi_id" value="{{ $prodi->id }}">
+
         {{-- nama --}}
         <div class="row mb-3 p-2">
             <label for="nama" class="col-md-4 col-form-label text-md-end">Nama Kurikulum</label>
@@ -52,7 +40,7 @@
         <div class="row mb-0">
             <div class="col-md-8 offset-md-4">
                 <button type="submit" for="formAction" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
-                <a href="{{ route('kurikulums.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-circle"></i> Close</a>
+                <a href="{{ route('home') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-circle"></i> Close</a>
             </div>
         </div>
     </form>
@@ -60,7 +48,7 @@
 
 @if ($kurikulum->id)
 <div class="col">
-    <form id="delete-form" action="{{ route('kurikulums.destroy',$kurikulum->id) }}" method="POST">
+    <form id="delete-form" action="{{ route('prodis.kurikulums.destroy',[$prodi->id,$kurikulum->id]) }}" method="POST">
         @csrf
         @method('DELETE')
         <hr>
