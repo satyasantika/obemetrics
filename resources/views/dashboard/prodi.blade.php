@@ -3,7 +3,7 @@
 @endpush
 <h3>Selamat datang, {{ auth()->user()->name }}</h3>
 <div class="row">
-    <div class="col-auto">
+    <div class="col">
         <div class="card">
             <div class="card-header">Manajemen OBE pada oleh UPPS</div>
             <div class="card-body">
@@ -35,7 +35,7 @@
                                             <i class="bi bi-pencil-square"></i> Edit
                                         </a>
                                         <a href="{{ route('kurikulums.profils.index',[$kurikulum->id]) }}" class="btn btn-sm btn-success">
-                                            <i class="bi bi-eye"></i> Details
+                                            <i class="bi bi-mortarboard"></i> Profil Lulusan
                                         </a>
                                     </div>
                             </div>

@@ -17,14 +17,14 @@
 
         {{-- nama --}}
         <div class="row mb-3 p-2">
-            <label for="nama" class="col-md-4 col-form-label text-md-end">Nama Kurikulum</label>
+            <label for="nama" class="col-md-4 col-form-label text-md-end">Nama Kurikulum <span class="text-danger">(*)</span></label>
             <div class="col-md-8">
                 <input type="text" placeholder="" value="{{ $kurikulum->nama }}" name="nama" class="form-control" id="nama" required autofocus>
             </div>
         </div>
         {{-- kode kurikulum --}}
         <div class="row mb-3 p-2">
-            <label for="kode" class="col-md-4 col-form-label text-md-end">Kode Kurikulum</label>
+            <label for="kode" class="col-md-4 col-form-label text-md-end">Kode Kurikulum <span class="text-danger">(*)</span></label>
             <div class="col-md-8">
                 <input type="text" placeholder="" value="{{ $kurikulum->kode }}" name="kode" class="form-control" id="kode" required autofocus>
             </div>
@@ -33,7 +33,7 @@
         <div class="row mb-3 p-2">
             <label for="deskripsi" class="col-md-4 col-form-label text-md-end">Deskripsi</label>
             <div class="col-md-8">
-                <textarea name="deskripsi" rows="3" class="form-control" id="deskripsi" required>{{ $kurikulum->deskripsi }}</textarea>
+                <textarea name="deskripsi" rows="3" class="form-control" id="deskripsi">{{ $kurikulum->deskripsi }}</textarea>
             </div>
         </div>
         {{-- submit Button --}}
@@ -47,16 +47,14 @@
 </div>
 
 @if ($kurikulum->id)
-<div class="col">
-    <form id="delete-form" action="{{ route('prodis.kurikulums.destroy',[$prodi->id,$kurikulum->id]) }}" method="POST">
-        @csrf
-        @method('DELETE')
-        <hr>
-        <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $kurikulum->name }}?');">
-            <i class="bi bi-trash"></i>
-        </button>
-    </form>
-</div>
+<form id="delete-form" action="{{ route('prodis.kurikulums.destroy',[$prodi->id,$kurikulum->id]) }}" method="POST">
+    @csrf
+    @method('DELETE')
+    <hr>
+    <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $kurikulum->name }}?');">
+        <i class="bi bi-trash"></i>
+    </button>
+</form>
 @endif
-
+<span class="text-danger">(*) Wajib diisi.</span></label>
 @endpush

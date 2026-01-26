@@ -40,6 +40,6 @@ Route::middleware('auth')->group(function () {
     // Prodi
     Route::resource('prodis.kurikulums', App\Http\Controllers\Prodi\KurikulumController::class)->except('index','show');
     Route::resource('kurikulums.profils', App\Http\Controllers\Prodi\ProfilController::class)->except('show');
-    Route::resource('profils.profilindikators', App\Http\Controllers\Prodi\ProfilIndikatorController::class)->only('index','create','edit');
+    Route::resource('profils.profilindikators', App\Http\Controllers\Prodi\ProfilIndikatorController::class)->except('index','show');
 
 });

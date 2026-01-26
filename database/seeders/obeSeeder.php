@@ -34,10 +34,10 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'update profils'])->assignRole('pimpinan prodi');
         Permission::create(['name' => 'delete profils'])->assignRole('pimpinan prodi');
 
-        // Permission::create(['name' => 'create profil indikators'])->assignRole('pimpinan prodi');
-        // Permission::create(['name' => 'read profil indikators'])->assignRole('pimpinan prodi');
-        // Permission::create(['name' => 'update profil indikators'])->assignRole('pimpinan prodi');
-        // Permission::create(['name' => 'delete profil indikators'])->assignRole('pimpinan prodi');
+        Permission::create(['name' => 'create profil indikators'])->assignRole('pimpinan prodi');
+        Permission::create(['name' => 'read profil indikators'])->assignRole('pimpinan prodi');
+        Permission::create(['name' => 'update profil indikators'])->assignRole('pimpinan prodi');
+        Permission::create(['name' => 'delete profil indikators'])->assignRole('pimpinan prodi');
 
     }
 }

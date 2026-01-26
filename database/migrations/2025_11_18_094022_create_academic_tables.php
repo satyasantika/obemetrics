@@ -66,13 +66,13 @@ return new class extends Migration
         });
 
         // indikator profil lulusan
-        // Schema::create('profil_indikators', function (Blueprint $table) {
-        //     $table->uuid('id')->primary('id');
-        //     $table->text('nama')->nullable();
-        //     $table->text('deskripsi')->nullable();
-        //     $table->foreignUuid('profil_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->timestamps();
-        // });
+        Schema::create('profil_indikators', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->text('nama')->nullable();
+            $table->text('deskripsi')->nullable();
+            $table->foreignUuid('profil_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->timestamps();
+        });
 
         // // capaian pembelajaran lulusan
         // Schema::create('cpls', function (Blueprint $table) {
@@ -312,10 +312,10 @@ return new class extends Migration
         // // capaian pembelajaran lulusan
         // Schema::dropIfExists('cpls');
         // indikator profil lulusan
-        // Schema::table('profil_indikators', function (Blueprint $table) {
-        //     $table->dropForeign('profil_indikators_profil_id_foreign');
-        // });
-        // Schema::dropIfExists('profil_indikators');
+        Schema::table('profil_indikators', function (Blueprint $table) {
+            $table->dropForeign('profil_indikators_profil_id_foreign');
+        });
+        Schema::dropIfExists('profil_indikators');
         // profil lulusan
         Schema::table('profils', function (Blueprint $table) {
             $table->dropForeign('profils_kurikulum_id_foreign');

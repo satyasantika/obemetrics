@@ -20,7 +20,7 @@ class ProfilController extends Controller
     public function index(Kurikulum $kurikulum)
     {
         $profils = Profil::where('kurikulum_id',$kurikulum->id)->get();
-        return view('obe.kurikulum', compact('kurikulum','profils'));
+        return view('obe.profil', compact('kurikulum','profils'));
     }
 
     public function create(Kurikulum $kurikulum)

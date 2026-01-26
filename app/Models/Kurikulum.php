@@ -21,9 +21,9 @@ class Kurikulum extends Model
         return $this->belongsTo(Prodi::class);
     }
 
-    // public function profils(): HasMany
-    // {
-    //     return $this->hasMany(Profil::class);
-    // }
+    public function profils(): HasMany
+    {
+        return $this->hasMany(Profil::class);
+    }
 
 }

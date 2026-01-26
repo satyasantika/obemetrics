@@ -47,22 +47,35 @@
                                     <p class="card-text">
                                         {{ $profil->deskripsi }}
                                     </p>
-                                    <h6>Indikator:</h6>
-                                    <ul>
+                                    <hr>
+                                    <h6>
+                                        <strong>Indikator:</strong>
+                                    </h6>
+                                    <ol>
                                         @php
-                                            $indikators = \App\Models\ProfilIndikator::where('profil_id',$profil->id)->get();
+                                            $profilindikators = \App\Models\ProfilIndikator::where('profil_id',$profil->id)->get();
                                         @endphp
-                                        @forelse ($indikators as $indikator)
-                                        <li>{{ $indikator->nama }}</li>
+                                        @forelse ($profilindikators as $profilindikator)
+                                        <li>
+                                            {{ $profilindikator->nama }}
+                                            <a href="{{ route('profils.profilindikators.edit',[$profil->id,$profilindikator->id]) }}" class="btn btn-sm btn-white text-primary">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                        </li>
                                         @empty
                                         <span class="bg-danger text-white">Belum ada indikator untuk profil ini.</span>
                                         @endforelse
-                                    </ul>
+                                    </ol>
+                                    <a href="{{ route('profils.profilindikators.create',$profil) }}" class="btn btn-sm btn-success">
+                                        <i class="bi bi-plus-circle"></i> Tambah Indikator
+                                    </a>
                                 </div>
                             </div>
                         </div>
                         @empty
-
+                        <div class="col">
+                            <span class="bg-warning text-dark p-2">Belum ada data profil lulusan untuk kurikulum ini.</span>
+                        </div>
                         @endforelse
 
                     </div>
