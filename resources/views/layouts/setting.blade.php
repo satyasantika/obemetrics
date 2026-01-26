@@ -8,6 +8,7 @@
         <div class="col">
             <div class="card">
                 <div class="card-header">
+                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
                     @isset($header)
                         Manajemen {{ $header }}
                     @endisset

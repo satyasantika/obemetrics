@@ -6,6 +6,7 @@
         <div class="col-6">
             <div class="card">
                 <div class="card-header">
+                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
                     @stack('header')
                 </div>
                 <div class="card-body">
