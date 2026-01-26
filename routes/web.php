@@ -41,5 +41,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('prodis.kurikulums', App\Http\Controllers\Prodi\KurikulumController::class)->except('index','show');
     Route::resource('kurikulums.profils', App\Http\Controllers\Prodi\ProfilController::class)->except('show');
     Route::resource('profils.profilindikators', App\Http\Controllers\Prodi\ProfilIndikatorController::class)->except('index','show');
+    Route::resource('kurikulums.cpls', App\Http\Controllers\Prodi\CplController::class)->except('show');
 
 });

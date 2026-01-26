@@ -28,15 +28,19 @@
                                 <div class="col">
                                     <li>
                                         {{ $kurikulum->nama }}
-                                    </li>
-                                    </div>
-                                    <div class="col">
+                                        <br>
                                         <a href="{{ route('prodis.kurikulums.edit',[$prodi->id,$kurikulum->id]) }}" class="btn btn-sm btn-primary">
-                                            <i class="bi bi-pencil-square"></i> Edit
+                                            <i class="bi bi-pencil-square"></i> Edit Kurikulum
                                         </a>
                                         <a href="{{ route('kurikulums.profils.index',[$kurikulum->id]) }}" class="btn btn-sm btn-success">
                                             <i class="bi bi-mortarboard"></i> Profil Lulusan
                                         </a>
+                                        <a href="{{ route('kurikulums.cpls.index',[$kurikulum->id]) }}" class="btn btn-sm btn-success">
+                                            <i class="bi bi-bullseye"></i> CPL
+                                        </a>
+                                    </li>
+                                    </div>
+                                    <div class="col">
                                     </div>
                             </div>
                             @endif

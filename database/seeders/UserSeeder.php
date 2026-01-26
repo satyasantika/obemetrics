@@ -220,5 +220,53 @@ class UserSeeder extends Seeder
         $profil3->profil_indikators()->create([
             'nama'=>'Mampu mengomunikasikan hasil rancangan produk atau layanan pendidikan secara sistematis untuk perbaikan pembelajaran'
         ]);
+
+        // data cpl prodi
+        $cpl01 = $kurikulum->cpls()->create([
+            'kode'=>'CPL01',
+            'nama'=>"Menunjukkan sikap bertakwa kepada Tuhan Yang Maha Esa, menjunjung tinggi dan menginternalisasi nilai, norma dan etika akademik, menjadi warga negara yang baik, bertanggungjawab atas pekerjaan di bidang keahliannya secara mandiri serta unggul dalam aspek softskill, semangat kemandirian, kejuangan, dan kewirausahaan pada perannya di kehidupan bermasyarakat berbangsa dan bernegara.",
+            'cakupan'=>'Universitas',
+        ]);
+        $cpl02 = $kurikulum->cpls()->create([
+            'kode'=>'CPL02',
+            'nama'=>'Mampu menerapkan pemikiran logis, kritis, sistematis, dan inovatif dalam konteks pengembangan atau implementasi ilmu pengetahuan dan teknologi yang memperhatikan dan menerapkan nilai humaniora yang sesuai dengan bidang keahliannya berdasarkan kaidah, tata cara dan etika ilmiah dalam rangka menghasilkan solusi, gagasan, desain atau kritik seni, menyusun deskripsi saintifik hasil kajiannya dalam bentuk skripsi atau laporan tugas akhir dan mengunggahnya dalam laman perguruan tinggi.',
+            'cakupan'=>'Universitas',
+        ]);
+        $cpl03 = $kurikulum->cpls()->create([
+            'kode'=>'CPL03',
+            'nama'=>'Mampu mengambil keputusan secara tepat dalam konteks penyelesaian masalah di bidang keahliannya, berdasarkan hasil analisis informasi dan data secara mandiri, bermutu, dan terukur.',
+            'cakupan'=>'Universitas',
+        ]);
+        $cpl04 = $kurikulum->cpls()->create([
+            'kode'=>'CPL04',
+            'nama'=>'Menunjukkan pemahaman mendalam tentang teori dan praktik merancang, melaksanakan, dan mengevaluasi pembelajaran berbasis Technological Pedagogical And Content Knowledge (TPACK) untuk mengembangkan keterampilan abad 21.',
+            'cakupan'=>'Fakultas',
+        ]);
+        $cpl05 = $kurikulum->cpls()->create([
+            'kode'=>'CPL05',
+            'nama'=>'Menguasai dan mengaplikasikan konsep teoritis dengan memanfaatkan IPTEKS tentang keilmuan matematika yang diperlukan dalam meningkatkan kemampuan intelektual untuk berpikir secara mandiri dan kritis yang berkontribusi dalam peningkatan mutu kehidupan bermasyarakat, berbangsa, bernegara, dan kemajuan peradaban berdasarkan Pancasila.',
+            'cakupan'=>'Program Studi',
+        ]);
+        $cpl06 = $kurikulum->cpls()->create([
+            'kode'=>'CPL06',
+            'nama'=>'Menguasai dan mengaplikasikan konsep teoritis serta mampu mendesain pembelajaran matematika yang diperlukan untuk merencanakan, melaksanakan, dan mengevaluasi pembelajaran yang inovatif dengan menginternalisasi nilai, norma, dan etika akademik.',
+            'cakupan'=>'Program Studi',
+        ]);
+        $cpl07 = $kurikulum->cpls()->create([
+            'kode'=>'CPL07',
+            'nama'=>'Menguasai dan mengaplikasikan konsep teoritis untuk penguatan kompetensi lanjutan yang diperlukan untuk melanjutkan studi atau keahlian tambahan dalam peningkatan mutu kehidupan bermasyarakat.',
+            'cakupan'=>'Program Studi',
+        ]);
+        $cpl08 = $kurikulum->cpls()->create([
+            'kode'=>'CPL08',
+            'nama'=>'Menguasai, mengkaji, dan mengaplikasikan konsep teoritis serta mendesain penelitian dan publikasi yang diperlukan untuk menyelesaikan masalah baik dalam pembelajaran maupun kehidupan sehari-hari dalam menginternalisasi nilai, norma, dan etika akademik.',
+            'cakupan'=>'Program Studi',
+        ]);
+        $cpl09 = $kurikulum->cpls()->create([
+            'kode'=>'CPL09',
+            'nama'=>'Menguasai dan mengaplikasikan konsep teoritis tentang pengembangan jiwa kewirausahaan untuk menyelesaikan masalah baik dalam pembelajaran maupun kehidupan sehari-hari dengan bertanggungjawab dan menginternalisasi semangat kemandirian, kejuangan, serta kewirausahaan.',
+            'cakupan'=>'Program Studi',
+        ]);
+
     }
 }

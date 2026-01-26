@@ -26,4 +26,9 @@ class Kurikulum extends Model
         return $this->hasMany(Profil::class);
     }
 
+    public function cpls(): HasMany
+    {
+        return $this->hasMany(Cpl::class);
+    }
+
 }
