@@ -16,7 +16,7 @@
                 @endphp
 
                 @forelse ($prodis as $prodi)
-                    <h4>Program Studi {{ $prodi->nama }}</h4>
+                    <h4>Program Studi {{ $prodi->jenjang }} {{ $prodi->nama }}</h4>
                     <hr>
 
                     {{-- Kurikulum --}}
@@ -38,11 +38,13 @@
                                         <a href="{{ route('kurikulums.cpls.index',[$kurikulum->id]) }}" class="btn btn-sm btn-success">
                                             <i class="bi bi-bullseye"></i> CPL
                                         </a>
+                                        <a href="{{ route('kurikulums.bks.index',[$kurikulum->id]) }}" class="btn btn-sm btn-success">
+                                            <i class="bi bi-book"></i> BK
+                                        </a>
                                     </li>
-                                    </div>
-                                    <div class="col">
-                                    </div>
+                                </div>
                             </div>
+                            <hr>
                             @endif
                         @empty
                             Tidak ada kurikulum pada program studi ini.

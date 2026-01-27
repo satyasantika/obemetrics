@@ -39,7 +39,7 @@
         <div class="row mb-3">
             <div class="col">
                 <label for="kode" class="form-label">Kode Kurikulum <span class="text-danger">(*)</span></label>
-                <input type="text" placeholder="" value="{{ $kurikulum->kode }}" name="kode" class="form-control" id="kode" required autofocus>
+                <input type="text" placeholder="" value="{{ $kurikulum->kode }}" name="kode" class="form-control" id="kode">
             </div>
         </div>
         {{-- deksripsi --}}

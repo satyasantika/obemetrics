@@ -44,5 +44,10 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'update cpls'])->assignRole('pimpinan prodi');
         Permission::create(['name' => 'delete cpls'])->assignRole('pimpinan prodi');
 
+        Permission::create(['name' => 'create bks'])->assignRole('pimpinan prodi');
+        Permission::create(['name' => 'read bks'])->assignRole('pimpinan prodi');
+        Permission::create(['name' => 'update bks'])->assignRole('pimpinan prodi');
+        Permission::create(['name' => 'delete bks'])->assignRole('pimpinan prodi');
+
     }
 }

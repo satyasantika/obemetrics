@@ -90,14 +90,15 @@ return new class extends Migration
         //     $table->foreignUuid('cpl_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
         //     $table->timestamps();
         // });
-        // // bahan kajian
-        // Schema::create('bks', function (Blueprint $table) {
-        //     $table->uuid('id')->primary('id');
-        //     $table->string('kode')->nullable();
-        //     $table->text('nama')->nullable();
-        //     $table->text('deskripsi')->nullable();
-        //     $table->timestamps();
-        // });
+        // bahan kajian
+        Schema::create('bks', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->string('kode')->nullable();
+            $table->text('nama')->nullable();
+            $table->text('deskripsi')->nullable();
+            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->timestamps();
+        });
         // // interaksi cpl-bk
         // Schema::create('join_cpl_bks', function (Blueprint $table) {
         //     $table->uuid('id')->primary('id');
@@ -302,8 +303,11 @@ return new class extends Migration
         //     $table->dropForeign('join_cpl_bks_bk_id_foreign');
         // });
         // Schema::dropIfExists('join_cpl_bks');
-        // // bahan kajian
-        // Schema::dropIfExists('bks');
+        // bahan kajian
+        Schema::table('bks', function (Blueprint $table) {
+            $table->dropForeign('bks_kurikulum_id_foreign');
+        });
+        Schema::dropIfExists('bks');
         // // interaksi profil-cpl
         // Schema::table('join_profil_cpls', function (Blueprint $table) {
         //     $table->dropForeign('join_profil_cpls_profil_id_foreign');

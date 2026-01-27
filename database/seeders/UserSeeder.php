@@ -268,5 +268,52 @@ class UserSeeder extends Seeder
             'cakupan'=>'Program Studi',
         ]);
 
+        // data bk prodi
+        $bk01 = $kurikulum->bks()->create([
+            'kode'=>'BK01',
+            'nama'=>"Sikap, nilai, pengetahuan, dan keterampilan kognitif",
+            'deskripsi'=>"Menginternalisasi ajaran agama dalam setiap aspek kehidupan, baik dalam sikap, perilaku, maupun keputusan akademik, dengan menjadikan nilai-nilai spiritual sebagai landasan moral, serta menjunjung tinggi integritas akademik dan menghormati aturan serta norma yang berlaku. Sikap ini mencerminkan etika akademik yang baik dan tanggung jawab sebagai warga negara yang aktif berkontribusi bagi masyarakat. Tanggung jawab mandiri dan profesional dalam menjalankan profesi sesuai bidang keahlian menjadi keharusan, diiringi dengan penguasaan soft skill seperti komunikasi, kerja sama tim, kepemimpinan, dan manajemen waktu. Semua ini didukung oleh semangat kemandirian, kejuangan, dan kewirausahaan dalam menghadapi tantangan kehidupan bermasyarakat. Menerapkan pemikiran logis, kritis, sistematis, dan inovatif penting untuk mengembangkan kemampuan berpikir terstruktur dalam menganalisis, menyelesaikan masalah, serta menghasilkan solusi atau inovasi sesuai bidang keahlian. Pengintegrasian nilai-nilai humaniora dalam pengembangan ilmu pengetahuan dan teknologi memastikan setiap keputusan ilmiah mempertimbangkan aspek etika, sosial, dan budaya. Penguasaan metode ilmiah, termasuk penerapan kaidah, tata cara, dan etika ilmiah dalam penelitian, sangat esensial untuk menghasilkan deskripsi ilmiah terstruktur dalam bentuk skripsi atau laporan tugas akhir. Publikasi hasil penelitian di laman perguruan tinggi menjadi langkah penting sebagai komitmen terhadap penyebaran ilmu pengetahuan yang bermanfaat bagi publik.",
+        ]);
+        $bk02 = $kurikulum->bks()->create([
+            'kode'=>'BK02',
+            'nama'=>"Teori dan Praktik Pendidikan Inovatif Berbasis Teknologi",
+            'deskripsi'=>"Materi tentang aljabar linear dan aplikasinya.",
+        ]);
+        $bk03 = $kurikulum->bks()->create([
+            'kode'=>'BK03',
+            'nama'=>"Perancangan, Pelaksanaan, dan Evaluasi Pembelajaran Digital",
+            'deskripsi'=>"Desain Pembelajaran Digital dan Interaktif memadukan elemen multimedia dan alat interaktif dengan strategi komunikasi serta evaluasi berbasis teknologi untuk menciptakan pembelajaran yang dinamis dan partisipatif.",
+        ]);
+        $bk04 = $kurikulum->bks()->create([
+            'kode'=>'BK04',
+            'nama'=>"Pengembangan Keterampilan Abad 21",
+            'deskripsi'=>"Penerapan keterampilan berpikir kritis dan kreatif untuk menganalisis dan memecahkan masalah faktual melalui serangkaian metode ilmiah guna menarik kesimpulan dan menemukan solusi inovatif",
+        ]);
+        $bk05 = $kurikulum->bks()->create([
+            'kode'=>'BK05',
+            'nama'=>"Keilmuan Matematika",
+            'deskripsi'=>"Keilmuan Matematika mencakup konsep, teori, dan metode yang menjadi dasar dalam memahami, menganalisis, serta menyelesaikan berbagai permasalahan di bidang sains, teknik, ekonomi, dan bidang lainnya. Keilmuan ini berfokus pada struktur, pola, hubungan, dan perubahan yang dapat dimodelkan secara kuantitatif dan logis.",
+        ]);
+        $bk06 = $kurikulum->bks()->create([
+            'kode'=>'BK06',
+            'nama'=>"Pembelajaran Matematika",
+            'deskripsi'=>"Pembelajaran Matematika mempelajari bagaimana konsep, teori, dan keterampilan matematika diajarkan dan dipelajari secara efektif, mencakup teori pendidikan, strategi pengajaran, serta pendekatan pedagogis yang bertujuan untuk meningkatkan pemahaman dan penerapan matematika dalam berbagai konteks pendidikan.",
+        ]);
+        $bk07 = $kurikulum->bks()->create([
+            'kode'=>'BK07',
+            'nama'=>"Penguatan Kompetensi Lanjutan",
+            'deskripsi'=>"Penguatan Kompetensi Lanjutan memperdalam pemahaman teori matematika dan struktur matematika yang lebih kompleks serta mengembangkan strategi pembelajaran yang inovatif, berbasis riset, dan selaras dengan perkembangan teknologi.",
+        ]);
+        $bk08 = $kurikulum->bks()->create([
+            'kode'=>'BK08',
+            'nama'=>"Penelitian dan Publikasi",
+            'deskripsi'=>"Berfokus pada pengembangan keterampilan dalam merancang, melaksanakan, dan mendiseminasikan hasil penelitian melalui publikasi ilmiah. Kajian ini bertujuan untuk membekali mahasiswa dengan pemahaman mendalam tentang metode penelitian, analisis data, serta strategi penulisan ilmiah yang berkualitas untuk dipublikasikan dalam jurnal atau konferensi ilmiah.",
+        ]);
+        $bk09 = $kurikulum->bks()->create([
+            'kode'=>'BK09',
+            'nama'=>"Pengembangan Jiwa Kewirausahaan",
+            'deskripsi'=>"Membekali individu dengan keterampilan, mindset, dan strategi dalam membangun serta mengelola usaha secara inovatif dan berkelanjutan. Kajian ini mencakup aspek teoritis dan praktis kewirausahaan, termasuk identifikasi peluang bisnis, manajemen usaha, inovasi, serta penerapan teknologi dalam dunia usaha.",
+        ]);
+
     }
 }

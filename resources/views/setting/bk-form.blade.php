@@ -1,0 +1,71 @@
+@extends('layouts.setting-form')
+
+@push('header')
+    {{ $kurikulum->id ? 'Edit' : 'Tambah' }} Data Bahan Kajian
+    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
+@endpush
+
+@push('body')
+
+<div class="card-body">
+    {{-- identitas kurikulum --}}
+    <div class="row">
+        <div class="col-md-3">Kurikulum</div>
+        <div class="col"><strong>{{ $kurikulum->nama }}</strong></div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">Program Studi</div>
+        <div class="col"><strong>{{ $kurikulum->prodi->jenjang }} {{ $kurikulum->prodi->nama }}</strong></div>
+    </div>
+    <hr>
+    {{-- form BK --}}
+    <form id="formAction" action="{{ $bk->id ? route('kurikulums.bks.update',[$kurikulum->id,$bk->id]) : route('kurikulums.bks.store', $kurikulum) }}" method="post">
+        @csrf
+        @if ($bk->id)
+            @method('PUT')
+        @endif
+        <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
+
+        {{-- nama --}}
+        <div class="row mb-3">
+            <div class="col">
+                <label for="nama" class="form-label">Nama Bahan Kajian <span class="text-danger">(*)</span></label>
+                <input type="text" placeholder="" value="{{ $bk->nama }}" name="nama" class="form-control" id="nama" required autofocus>
+            </div>
+        </div>
+        {{-- kode kurikulum --}}
+        <div class="row mb-3">
+            <div class="col">
+                <label for="kode" class="form-label">Kode Bahan Kajian <span class="text-danger">(*)</span></label>
+                <input type="text" placeholder="" value="{{ $bk->kode }}" name="kode" class="form-control" id="kode">
+            </div>
+        </div>
+        {{-- deksripsi --}}
+        <div class="row mb-3">
+            <div class="col">
+                <label for="deskripsi" class="form-label">Deskripsi</label>
+                <textarea name="deskripsi" rows="8" class="form-control" id="deskripsi">{{ $bk->deskripsi }}</textarea>
+            </div>
+        </div>
+        {{-- submit Button --}}
+        <div class="row mb-0">
+            <div class="col">
+                <button type="submit" for="formAction" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                <a href="{{ route('kurikulums.bks.index', $kurikulum) }}" class="btn btn-outline-secondary btn-sm float-end"><i class="bi bi-x-circle"></i> Close</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@if ($bk->id)
+<form id="delete-form" action="{{ route('kurikulums.bks.destroy',[$kurikulum->id,$bk->id]) }}" method="POST">
+    @csrf
+    @method('DELETE')
+    <hr>
+    <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $kurikulum->name }}?');">
+        <i class="bi bi-trash"></i>
+    </button>
+</form>
+@endif
+<span class="text-danger">(*) Wajib diisi.</span></label>
+@endpush
