@@ -25,7 +25,7 @@
 
                     {{-- identitas kurikulum --}}
                     <div class="row">
-                        <div class="col-md-3">Kurikulum</div>
+                        <div class="col-md-3">Nama Kurikulum</div>
                         <div class="col"><strong>{{ $kurikulum->nama }}</strong></div>
                     </div>
                     <div class="row">

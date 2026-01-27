@@ -8,7 +8,7 @@
                 <div class="card-header">
                     {{-- header --}}
                     <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Data Profil Lulusan Program Studi {{ $kurikulum->prodi->nama }} untuk <strong>{{ $kurikulum->nama }}</strong>
+                    Data Profil Lulusan</strong>
                     <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                 </div>
                 <div class="card-body">
@@ -22,6 +22,17 @@
                             {{ session('warning') }}
                         </div>
                     @endif
+
+                    {{-- identitas kurikulum --}}
+                    <div class="row">
+                        <div class="col-md-3">Nama Kurikulum</div>
+                        <div class="col"><strong>{{ $kurikulum->nama }}</strong></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">Program Studi</div>
+                        <div class="col"><strong>{{ $kurikulum->prodi->jenjang }} {{ $kurikulum->prodi->nama }}</strong></div>
+                    </div>
+                    <hr>
 
                     <div class="row">
                         <div class="col">

@@ -1,13 +1,28 @@
 @extends('layouts.setting-form')
 
 @push('header')
-    {{ $profilindikator->id ? 'Edit' : 'Tambah' }} Data Indikator Profil Lulusan untuk <strong>{{ $profil->nama }}</strong>
+    {{ $profilindikator->id ? 'Edit' : 'Tambah' }} Data Indikator Profil Lulusan
     <a href="{{ route('kurikulums.profils.index', $profil->kurikulum) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
 @endpush
 
 @push('body')
 
 <div class="card-body">
+    {{-- identitas kurikulum --}}
+    <div class="row">
+        <div class="col-md-3">Profil</div>
+        <div class="col"><strong>{{ $profil->nama }}</strong></div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">Kurikulum</div>
+        <div class="col"><strong>{{ $profil->kurikulum->nama }}</strong></div>
+    </div>
+    <div class="row">
+        <div class="col-md-3">Program Studi</div>
+        <div class="col"><strong>{{ $profil->kurikulum->prodi->jenjang }} {{ $profil->kurikulum->prodi->nama }}</strong></div>
+    </div>
+    <hr>
+    {{-- form PROFIL INDIKATOR --}}
     <form id="formAction" action="{{ $profilindikator->id ? route('profils.profilindikators.update',[$profil->id,$profilindikator->id]) : route('profils.profilindikators.store', $profil) }}" method="post">
         @csrf
         @if ($profilindikator->id)
@@ -16,24 +31,24 @@
         <input type="hidden" name="profil_id" value="{{ $profil->id }}">
 
         {{-- nama --}}
-        <div class="row mb-3 p-2">
-            <label for="nama" class="col-md-4 col-form-label text-md-end">Nama Indikator <span class="text-danger">(*)</span></label>
-            <div class="col-md-8">
+        <div class="row mb-3">
+            <div class="col">
+                <label for="nama" class="form-label">Nama Indikator <span class="text-danger">(*)</span></label>
                 <input type="text" placeholder="" value="{{ $profilindikator->nama }}" name="nama" class="form-control" id="nama" required autofocus>
             </div>
         </div>
         {{-- deksripsi --}}
-        <div class="row mb-3 p-2">
-            <label for="deskripsi" class="col-md-4 col-form-label text-md-end">Deskripsi</label>
-            <div class="col-md-8">
-                <textarea name="deskripsi" rows="3" class="form-control" id="deskripsi">{{ $profilindikator->deskripsi }}</textarea>
+        <div class="row mb-3">
+            <div class="col">
+                <label for="deskripsi" class="form-label">Deskripsi</label>
+                <textarea name="deskripsi" rows="12" class="form-control" id="deskripsi">{{ $profilindikator->deskripsi }}</textarea>
             </div>
         </div>
         {{-- submit Button --}}
         <div class="row mb-0">
-            <div class="col-md-8 offset-md-4">
+            <div class="col">
                 <button type="submit" for="formAction" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
-                <a href="{{ route('kurikulums.profils.index', $profil->kurikulum) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-circle"></i> Close</a>
+                <a href="{{ route('kurikulums.profils.index', $profil->kurikulum) }}" class="btn btn-outline-secondary btn-sm float-end"><i class="bi bi-x-circle"></i> Close</a>
             </div>
         </div>
     </form>

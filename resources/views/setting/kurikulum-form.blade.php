@@ -8,6 +8,19 @@
 @push('body')
 
 <div class="card-body">
+    {{-- identitas kurikulum --}}
+    @if ($kurikulum->id)
+        <div class="row">
+            <div class="col-md-3">Kurikulum</div>
+            <div class="col"><strong>{{ $kurikulum->nama }}</strong></div>
+        </div>
+    @endif
+    <div class="row">
+        <div class="col-md-3">Program Studi</div>
+        <div class="col"><strong>{{ $prodi->jenjang }} {{ $prodi->nama }}</strong></div>
+    </div>
+    <hr>
+    {{-- form KURIKULUM --}}
     <form id="formAction" action="{{ $kurikulum->id ? route('prodis.kurikulums.update',[$prodi->id,$kurikulum->id]) : route('prodis.kurikulums.store', $prodi) }}" method="post">
         @csrf
         @if ($kurikulum->id)
@@ -16,31 +29,31 @@
         <input type="hidden" name="prodi_id" value="{{ $prodi->id }}">
 
         {{-- nama --}}
-        <div class="row mb-3 p-2">
-            <label for="nama" class="col-md-4 col-form-label text-md-end">Nama Kurikulum <span class="text-danger">(*)</span></label>
-            <div class="col-md-8">
+        <div class="row mb-3">
+            <div class="col">
+                <label for="nama" class="form-label">Nama Kurikulum <span class="text-danger">(*)</span></label>
                 <input type="text" placeholder="" value="{{ $kurikulum->nama }}" name="nama" class="form-control" id="nama" required autofocus>
             </div>
         </div>
         {{-- kode kurikulum --}}
-        <div class="row mb-3 p-2">
-            <label for="kode" class="col-md-4 col-form-label text-md-end">Kode Kurikulum <span class="text-danger">(*)</span></label>
-            <div class="col-md-8">
+        <div class="row mb-3">
+            <div class="col">
+                <label for="kode" class="form-label">Kode Kurikulum <span class="text-danger">(*)</span></label>
                 <input type="text" placeholder="" value="{{ $kurikulum->kode }}" name="kode" class="form-control" id="kode" required autofocus>
             </div>
         </div>
         {{-- deksripsi --}}
-        <div class="row mb-3 p-2">
-            <label for="deskripsi" class="col-md-4 col-form-label text-md-end">Deskripsi</label>
-            <div class="col-md-8">
-                <textarea name="deskripsi" rows="3" class="form-control" id="deskripsi">{{ $kurikulum->deskripsi }}</textarea>
+        <div class="row mb-3">
+            <div class="col">
+                <label for="deskripsi" class="form-label">Deskripsi</label>
+                <textarea name="deskripsi" rows="8" class="form-control" id="deskripsi">{{ $kurikulum->deskripsi }}</textarea>
             </div>
         </div>
         {{-- submit Button --}}
         <div class="row mb-0">
-            <div class="col-md-8 offset-md-4">
+            <div class="col">
                 <button type="submit" for="formAction" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
-                <a href="{{ route('home') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-circle"></i> Close</a>
+                <a href="{{ route('home') }}" class="btn btn-outline-secondary btn-sm float-end"><i class="bi bi-x-circle"></i> Close</a>
             </div>
         </div>
     </form>

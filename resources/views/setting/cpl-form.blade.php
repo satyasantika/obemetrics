@@ -27,24 +27,30 @@
         <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
 
         {{-- kode --}}
-        <div class="row mb-3 p-2">
-            <label for="kode" class="form-label">Kode CPL <span class="text-danger">(*)</span></label>
-            <input type="text" placeholder="" value="{{ $cpl->kode }}" name="kode" class="form-control" id="kode" required autofocus>
+        <div class="row mb-3">
+            <div class="col">
+                <label for="kode" class="form-label">Kode CPL <span class="text-danger">(*)</span></label>
+                <input type="text" placeholder="" value="{{ $cpl->kode }}" name="kode" class="form-control" id="kode" required autofocus>
+            </div>
         </div>
         {{-- nama --}}
-        <div class="row mb-3 p-2">
-            <label for="nama" class="form-label">Nama CPL <span class="text-danger">(*)</span></label>
-            <textarea name="nama" rows="12" class="form-control" id="nama">{{ $cpl->nama }}</textarea>
+        <div class="row mb-3">
+            <div class="col">
+                <label for="nama" class="form-label">Nama CPL <span class="text-danger">(*)</span></label>
+                <textarea name="nama" rows="8" class="form-control" id="nama">{{ $cpl->nama }}</textarea>
+            </div>
         </div>
         {{-- cakupan --}}
-        <div class="row mb-3 p-2">
-            <label for="cakupan" class="form-label">Cakupan CPL <span class="text-danger">(*)</span></label>
-            <select name="cakupan" class="form-select" id="cakupan">
-                <option value="">- Pilih Cakupan -</option>
-                <option value="Universitas" @selected($cpl->cakupan == 'Universitas')>Universitas</option>
-                <option value="Fakultas" @selected($cpl->cakupan == 'Fakultas')>Fakultas</option>
-                <option value="Program Studi" @selected($cpl->cakupan == 'Program Studi')>Program Studi</option>
-            </select>
+        <div class="row mb-3">
+            <label for="cakupan" class="form-label col-md-4">Cakupan CPL <span class="text-danger">(*)</span></label>
+            <div class="col">
+                <select name="cakupan" class="form-select col" id="cakupan">
+                    <option value="">- Pilih Cakupan -</option>
+                    <option value="Universitas" @selected($cpl->cakupan == 'Universitas')>Universitas</option>
+                    <option value="Fakultas" @selected($cpl->cakupan == 'Fakultas')>Fakultas</option>
+                    <option value="Program Studi" @selected($cpl->cakupan == 'Program Studi')>Program Studi</option>
+                </select>
+            </div>
         </div>
         {{-- submit Button --}}
         <div class="row mb-0">
