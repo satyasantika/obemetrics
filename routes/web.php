@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('profils.profilindikators', App\Http\Controllers\Prodi\ProfilIndikatorController::class)->except('index','show');
     Route::resource('kurikulums.cpls', App\Http\Controllers\Prodi\CplController::class)->except('show');
     Route::resource('kurikulums.bks', App\Http\Controllers\Prodi\BkController::class)->except('show');
-    Route::resource('joinprofilcpls', App\Http\Controllers\Prodi\JoinProfilCplController::class)->except('show');
+    Route::get('kurikulums/{kurikulum}/joinprofilcpls', [App\Http\Controllers\Prodi\JoinProfilCplController::class,'index'])->name('kurikulums.joinprofilcpls.index');
+    Route::put('joinprofilcpls/{profil}/{cpl}', [App\Http\Controllers\Prodi\JoinProfilCplController::class, 'update'])->name('joinprofilcpls.update');
 
 });

@@ -315,5 +315,73 @@ class UserSeeder extends Seeder
             'deskripsi'=>"Membekali individu dengan keterampilan, mindset, dan strategi dalam membangun serta mengelola usaha secara inovatif dan berkelanjutan. Kajian ini mencakup aspek teoritis dan praktis kewirausahaan, termasuk identifikasi peluang bisnis, manajemen usaha, inovasi, serta penerapan teknologi dalam dunia usaha.",
         ]);
 
+        // Join Profil CPL (pendidik)
+        $join_profil_cpl101 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil1->id,
+            'cpl_id' => $cpl01->id,
+        ]);
+        $join_profil_cpl102 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil1->id,
+            'cpl_id' => $cpl02->id,
+        ]);
+        $join_profil_cpl103 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil1->id,
+            'cpl_id' => $cpl03->id,
+        ]);
+        $join_profil_cpl104 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil1->id,
+            'cpl_id' => $cpl04->id,
+        ]);
+        $join_profil_cpl105 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil1->id,
+            'cpl_id' => $cpl05->id,
+        ]);
+        $join_profil_cpl106 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil1->id,
+            'cpl_id' => $cpl06->id,
+        ]);
+        $join_profil_cpl107 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil1->id,
+            'cpl_id' => $cpl07->id,
+        ]);
+        // peneliti
+        $join_profil_cpl201 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil2->id,
+            'cpl_id' => $cpl01->id,
+        ]);
+        $join_profil_cpl202 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil2->id,
+            'cpl_id' => $cpl02->id,
+        ]);
+        $join_profil_cpl203 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil2->id,
+            'cpl_id' => $cpl03->id,
+        ]);
+        $join_profil_cpl204 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil2->id,
+            'cpl_id' => $cpl04->id,
+        ]);
+        $join_profil_cpl208 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil2->id,
+            'cpl_id' => $cpl08->id,
+        ]);
+        // edupreneur
+        $join_profil_cpl301 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil3->id,
+            'cpl_id' => $cpl01->id,
+        ]);
+        $join_profil_cpl302 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil3->id,
+            'cpl_id' => $cpl02->id,
+        ]);
+        $join_profil_cpl303 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil3->id,
+            'cpl_id' => $cpl03->id,
+        ]);
+        $join_profil_cpl309 = $kurikulum->joinProfilCpls()->create([
+            'profil_id' => $profil3->id,
+            'cpl_id' => $cpl09->id,
+        ]);
+
     }
 }

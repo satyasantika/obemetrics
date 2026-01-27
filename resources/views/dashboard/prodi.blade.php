@@ -42,6 +42,9 @@
                                         <a href="{{ route('kurikulums.bks.index',[$kurikulum->id]) }}" class="btn btn-sm btn-success mt-2">
                                             <i class="bi bi-book"></i> BK
                                         </a>
+                                        <a href="{{ route('kurikulums.joinprofilcpls.index',[$kurikulum->id]) }}" class="btn btn-sm btn-secondary mt-2">
+                                            <i class="bi bi-gear"></i> Interaksi Profil >< CPL
+                                        </a>
                                     </li>
                                 </div>
                             </div>
