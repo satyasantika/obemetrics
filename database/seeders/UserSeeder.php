@@ -316,71 +316,117 @@ class UserSeeder extends Seeder
         ]);
 
         // Join Profil CPL (pendidik)
-        $join_profil_cpl101 = $kurikulum->joinProfilCpls()->create([
+        $join_profil1_cpl01 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil1->id,
             'cpl_id' => $cpl01->id,
         ]);
-        $join_profil_cpl102 = $kurikulum->joinProfilCpls()->create([
+        $join_profil1_cpl02 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil1->id,
             'cpl_id' => $cpl02->id,
         ]);
-        $join_profil_cpl103 = $kurikulum->joinProfilCpls()->create([
+        $join_profil1_cpl03 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil1->id,
             'cpl_id' => $cpl03->id,
         ]);
-        $join_profil_cpl104 = $kurikulum->joinProfilCpls()->create([
+        $join_profil1_cpl04 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil1->id,
             'cpl_id' => $cpl04->id,
         ]);
-        $join_profil_cpl105 = $kurikulum->joinProfilCpls()->create([
+        $join_profil1_cpl05 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil1->id,
             'cpl_id' => $cpl05->id,
         ]);
-        $join_profil_cpl106 = $kurikulum->joinProfilCpls()->create([
+        $join_profil1_cpl06 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil1->id,
             'cpl_id' => $cpl06->id,
         ]);
-        $join_profil_cpl107 = $kurikulum->joinProfilCpls()->create([
+        $join_profil1_cpl07 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil1->id,
             'cpl_id' => $cpl07->id,
         ]);
         // peneliti
-        $join_profil_cpl201 = $kurikulum->joinProfilCpls()->create([
+        $join_profil2_cpl01 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil2->id,
             'cpl_id' => $cpl01->id,
         ]);
-        $join_profil_cpl202 = $kurikulum->joinProfilCpls()->create([
+        $join_profil2_cpl02 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil2->id,
             'cpl_id' => $cpl02->id,
         ]);
-        $join_profil_cpl203 = $kurikulum->joinProfilCpls()->create([
+        $join_profil2_cpl03 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil2->id,
             'cpl_id' => $cpl03->id,
         ]);
-        $join_profil_cpl204 = $kurikulum->joinProfilCpls()->create([
+        $join_profil2_cpl04 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil2->id,
             'cpl_id' => $cpl04->id,
         ]);
-        $join_profil_cpl208 = $kurikulum->joinProfilCpls()->create([
+        $join_profil2_cpl08 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil2->id,
             'cpl_id' => $cpl08->id,
         ]);
         // edupreneur
-        $join_profil_cpl301 = $kurikulum->joinProfilCpls()->create([
+        $join_profil3_cpl01 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil3->id,
             'cpl_id' => $cpl01->id,
         ]);
-        $join_profil_cpl302 = $kurikulum->joinProfilCpls()->create([
+        $join_profil3_cpl02 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil3->id,
             'cpl_id' => $cpl02->id,
         ]);
-        $join_profil_cpl303 = $kurikulum->joinProfilCpls()->create([
+        $join_profil3_cpl03 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil3->id,
             'cpl_id' => $cpl03->id,
         ]);
-        $join_profil_cpl309 = $kurikulum->joinProfilCpls()->create([
+        $join_profil3_cpl09 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil3->id,
             'cpl_id' => $cpl09->id,
+        ]);
+
+        // Join CPL BK
+        $join_cpl01_bk01 = $kurikulum->joinCplBks()->create([
+            'cpl_id' => $cpl01->id,
+            'bk_id' => $bk01->id,
+        ]);
+        $join_cpl02_bk01 = $kurikulum->joinCplBks()->create([
+            'cpl_id' => $cpl02->id,
+            'bk_id' => $bk01->id,
+        ]);
+        $join_cpl03_bk01 = $kurikulum->joinCplBks()->create([
+            'cpl_id' => $cpl03->id,
+            'bk_id' => $bk01->id,
+        ]);
+        $join_cpl04_bk02 = $kurikulum->joinCplBks()->create([
+            'cpl_id' => $cpl04->id,
+            'bk_id' => $bk02->id,
+        ]);
+        $join_cpl04_bk03 = $kurikulum->joinCplBks()->create([
+            'cpl_id' => $cpl04->id,
+            'bk_id' => $bk03->id,
+        ]);
+        $join_cpl04_bk04 = $kurikulum->joinCplBks()->create([
+            'cpl_id' => $cpl04->id,
+            'bk_id' => $bk04->id,
+        ]);
+        $join_cpl05_bk05 = $kurikulum->joinCplBks()->create([
+            'cpl_id' => $cpl05->id,
+            'bk_id' => $bk05->id,
+        ]);
+        $join_cpl06_bk06 = $kurikulum->joinCplBks()->create([
+            'cpl_id' => $cpl06->id,
+            'bk_id' => $bk06->id,
+        ]);
+        $join_cpl07_bk07 = $kurikulum->joinCplBks()->create([
+            'cpl_id' => $cpl07->id,
+            'bk_id' => $bk07->id,
+        ]);
+        $join_cpl08_bk08 = $kurikulum->joinCplBks()->create([
+            'cpl_id' => $cpl08->id,
+            'bk_id' => $bk08->id,
+        ]);
+        $join_cpl09_bk09 = $kurikulum->joinCplBks()->create([
+            'cpl_id' => $cpl09->id,
+            'bk_id' => $bk09->id,
         ]);
 
     }

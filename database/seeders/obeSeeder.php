@@ -52,5 +52,8 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'read join profil cpls'])->assignRole('pimpinan prodi');
         Permission::create(['name' => 'update join profil cpls'])->assignRole('pimpinan prodi');
 
+        Permission::create(['name' => 'read join cpl bks'])->assignRole('pimpinan prodi');
+        Permission::create(['name' => 'update join cpl bks'])->assignRole('pimpinan prodi');
+
     }
 }

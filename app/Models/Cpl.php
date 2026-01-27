@@ -18,4 +18,14 @@ class Cpl extends Model
         return $this->belongsTo(Kurikulum::class);
     }
 
+    public function joinProfilCpls(): HasMany
+    {
+        return $this->hasMany(JoinProfilCpl::class);
+    }
+
+    public function joinCplBks(): HasMany
+    {
+        return $this->hasMany(JoinCplBk::class);
+    }
+
 }

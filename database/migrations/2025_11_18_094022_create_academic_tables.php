@@ -100,13 +100,14 @@ return new class extends Migration
             $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->timestamps();
         });
-        // // interaksi cpl-bk
-        // Schema::create('join_cpl_bks', function (Blueprint $table) {
-        //     $table->uuid('id')->primary('id');
-        //     $table->foreignUuid('cpl_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->foreignUuid('bk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->timestamps();
-        // });
+        // interaksi cpl-bk
+        Schema::create('join_cpl_bks', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->foreignUuid('cpl_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('bk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->timestamps();
+        });
         // // mata kuliah
         // Schema::create('mks', function (Blueprint $table) {
         //     $table->uuid('id')->primary('id');
@@ -298,12 +299,13 @@ return new class extends Migration
         //     $table->dropForeign('mks_bk_id_foreign');
         // });
         // Schema::dropIfExists('mks');
-        // // interaksi cpl-bk
-        // Schema::table('join_cpl_bks', function (Blueprint $table) {
-        //     $table->dropForeign('join_cpl_bks_cpl_id_foreign');
-        //     $table->dropForeign('join_cpl_bks_bk_id_foreign');
-        // });
-        // Schema::dropIfExists('join_cpl_bks');
+        // interaksi cpl-bk
+        Schema::table('join_cpl_bks', function (Blueprint $table) {
+            $table->dropForeign('join_cpl_bks_cpl_id_foreign');
+            $table->dropForeign('join_cpl_bks_bk_id_foreign');
+            $table->dropForeign('join_cpl_bks_kurikulum_id_foreign');
+        });
+        Schema::dropIfExists('join_cpl_bks');
         // bahan kajian
         Schema::table('bks', function (Blueprint $table) {
             $table->dropForeign('bks_kurikulum_id_foreign');
