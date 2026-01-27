@@ -1,12 +1,12 @@
 @extends('layouts.setting-form')
 
 @push('header')
-    {{ $joinprodiuser->id ? 'Edit' : 'Tambah' }} {{ $header }}
+    {{ $joinprodiuser->id ? 'Edit' : 'Tambah' }} Data Pengelola Program Studi {{ $prodi->jenjang.' '.$prodi->nama }},
     <a href="{{ route('prodis.joinprodiusers.index',$prodi->id) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
 @endpush
 
 @push('body')
-<form id="formAction" action="{{ $joinprodiuser->id ? route('joinprodiusers.update',$joinprodiuser->id) : route('joinprodiusers.store') }}" method="post">
+<form id="formAction" action="{{ $joinprodiuser->id ? route('prodis.joinprodiusers.update',[$prodi->id,$joinprodiuser->id]) : route('prodis.joinprodiusers.store',$prodi->id) }}" method="post">
     @csrf
     @if ($joinprodiuser->id)
         @method('PUT')
@@ -33,6 +33,7 @@
             <textarea name="status" rows="3" class="form-control" id="status">{{ $joinprodiuser->status }}</textarea>
         </div>
     </div>
+    {{-- submit Button --}}
     <div class="row mb-0">
         <div class="col-md-8 offset-md-4">
             <button type="submit" for="formAction" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
@@ -41,7 +42,7 @@
     </div>
 </form>
 @if ($joinprodiuser->id)
-    <form id="delete-form" action="{{ route('joinprodiusers.destroy',$joinprodiuser->id) }}" method="POST">
+    <form id="delete-form" action="{{ route('prodis.joinprodiusers.destroy',[$prodi->id,$joinprodiuser->id]) }}" method="POST">
         @csrf
         @method('DELETE')
         <button type="submit" for="delete-form" onclick="return confirm('Yakin akan menghapus {{ $joinprodiuser->name }}?');" class="btn btn-outline-danger btn-sm float-end">

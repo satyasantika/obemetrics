@@ -25,7 +25,7 @@ class JoinProdiUsersDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
                 $action = '<div class="row">';
-                $action .= ' <div class="col-auto"><a href="'.route('joinprodiusers.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit data user prodi"><i class="bi bi-pencil-square"></i></a></div>';
+                $action .= ' <div class="col-auto"><a href="'.route('prodis.joinprodiusers.edit',[$row->prodi_id,$row->id]).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit data user prodi"><i class="bi bi-pencil-square"></i></a></div>';
                 $action .= '</div>';
                 return $action;
             })

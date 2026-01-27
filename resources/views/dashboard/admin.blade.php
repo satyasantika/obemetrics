@@ -7,6 +7,7 @@
         <div class="card">
             <div class="card-header">Manajemen OBEmetrics</div>
             <div class="card-body">
+                @include('layouts.alert')
                 @can('read users')
                 Manajemen data user:<br>
                 <a href="{{ route('users.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-person"></i> User</a>

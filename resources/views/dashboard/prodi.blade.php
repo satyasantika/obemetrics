@@ -7,7 +7,8 @@
         <div class="card">
             <div class="card-header">Manajemen OBE pada oleh UPPS</div>
             <div class="card-body">
-
+                @include('layouts.alert')
+                {{-- Program Studi --}}
                 @php
                     $user_id = auth()->id();
                     $prodi_ids = \App\Models\JoinProdiUser::where('user_id',$user_id)->pluck('prodi_id');
@@ -29,16 +30,16 @@
                                     <li>
                                         {{ $kurikulum->nama }}
                                         <br>
-                                        <a href="{{ route('prodis.kurikulums.edit',[$prodi->id,$kurikulum->id]) }}" class="btn btn-sm btn-primary">
+                                        <a href="{{ route('prodis.kurikulums.edit',[$prodi->id,$kurikulum->id]) }}" class="btn btn-sm btn-primary mt-2">
                                             <i class="bi bi-pencil-square"></i> Edit Kurikulum
                                         </a>
-                                        <a href="{{ route('kurikulums.profils.index',[$kurikulum->id]) }}" class="btn btn-sm btn-success">
+                                        <a href="{{ route('kurikulums.profils.index',[$kurikulum->id]) }}" class="btn btn-sm btn-success mt-2">
                                             <i class="bi bi-mortarboard"></i> Profil Lulusan
                                         </a>
-                                        <a href="{{ route('kurikulums.cpls.index',[$kurikulum->id]) }}" class="btn btn-sm btn-success">
+                                        <a href="{{ route('kurikulums.cpls.index',[$kurikulum->id]) }}" class="btn btn-sm btn-success mt-2">
                                             <i class="bi bi-bullseye"></i> CPL
                                         </a>
-                                        <a href="{{ route('kurikulums.bks.index',[$kurikulum->id]) }}" class="btn btn-sm btn-success">
+                                        <a href="{{ route('kurikulums.bks.index',[$kurikulum->id]) }}" class="btn btn-sm btn-success mt-2">
                                             <i class="bi bi-book"></i> BK
                                         </a>
                                     </li>

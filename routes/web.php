@@ -35,13 +35,14 @@ Route::middleware('auth')->group(function () {
     Route::resource('userroles', App\Http\Controllers\Setting\UserRoleController::class)->only('edit', 'update');
     Route::resource('userpermissions', App\Http\Controllers\Setting\UserPermissionController::class)->only('edit', 'update');
     Route::resource('prodis', App\Http\Controllers\Setting\ProdiController::class);
-    Route::resource('prodis.joinprodiusers', App\Http\Controllers\Setting\JoinProdiUserController::class)->only('index','create');
-    Route::resource('joinprodiusers', App\Http\Controllers\Setting\JoinProdiUserController::class)->except('index','create');
+    Route::resource('prodis.joinprodiusers', App\Http\Controllers\Setting\JoinProdiUserController::class);
+
     // Prodi
     Route::resource('prodis.kurikulums', App\Http\Controllers\Prodi\KurikulumController::class)->except('index','show');
     Route::resource('kurikulums.profils', App\Http\Controllers\Prodi\ProfilController::class)->except('show');
     Route::resource('profils.profilindikators', App\Http\Controllers\Prodi\ProfilIndikatorController::class)->except('index','show');
     Route::resource('kurikulums.cpls', App\Http\Controllers\Prodi\CplController::class)->except('show');
     Route::resource('kurikulums.bks', App\Http\Controllers\Prodi\BkController::class)->except('show');
+    Route::resource('joinprofilcpls', App\Http\Controllers\Prodi\JoinProfilCplController::class)->except('show');
 
 });

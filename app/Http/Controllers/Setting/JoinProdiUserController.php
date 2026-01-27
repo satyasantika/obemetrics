@@ -21,6 +21,7 @@ class JoinProdiUserController extends Controller
 
     public function index(JoinProdiUsersDataTable $dataTable, Prodi $prodi)
     {
+        // rute tombol kembali
         $back_route = 'prodis.index';
         return $dataTable->with('prodi_id', $prodi->id)->render('layouts.setting', $this->_dataSelection($prodi,''),compact('back_route'));
     }
@@ -31,47 +32,42 @@ class JoinProdiUserController extends Controller
         return view('setting.joinprodiuser-form', $this->_dataSelection($prodi,$joinprodiuser));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, Prodi $prodi)
     {
-        $prodi = Prodi::find($request->prodi_id);
         JoinProdiUser::create($request->all());
         $username = User::find($request->user_id)->name;
         $prodiname = strtoupper($prodi->nama);
-
-
-        return to_route('prodis.joinprodiusers.index',$request->prodi_id)
+        return to_route('prodis.joinprodiusers.index',$prodi)
                 ->with('success', 'User ' . $username . ' pada Prodi ' . $prodiname . ' telah ditambahkan');
-
     }
 
-    public function edit(JoinProdiUser $joinprodiuser)
+    public function edit(Prodi $prodi, JoinProdiUser $joinprodiuser)
     {
-        $prodi = Prodi::find($joinprodiuser->prodi_id);
         return view('setting.joinprodiuser-form', $this->_dataSelection($prodi,$joinprodiuser));
     }
 
-    public function update(Request $request, JoinProdiUser $joinprodiuser)
+    public function update(Request $request, Prodi $prodi, JoinProdiUser $joinprodiuser)
     {
         $name = strtoupper($joinprodiuser->prodi->nama);
         $data = $request->all();
         $joinprodiuser->fill($data)->save();
 
-        return to_route('prodis.joinprodiusers.index',$joinprodiuser->prodi_id)->with('success','Prodi '.$name.' telah diperbarui');
+        return to_route('prodis.joinprodiusers.index',$prodi)->with('success','Prodi '.$name.' telah diperbarui');
     }
 
-    public function destroy(JoinProdiUser $joinprodiuser)
+    public function destroy(Prodi $prodi, JoinProdiUser $joinprodiuser)
     {
         $username = strtoupper($joinprodiuser->user->name);
         $prodiname = strtoupper($joinprodiuser->prodi->nama);
         $joinprodiuser->delete();
-        return to_route('prodis.joinprodiusers.index',$joinprodiuser->prodi_id)->with('warning','User '.$username.' pada Prodi '.$prodiname.' telah dihapus');
+        return to_route('prodis.joinprodiusers.index',$prodi)->with('warning','User '.$username.' pada Prodi '.$prodiname.' telah dihapus');
     }
 
     private function _dataSelection($prodi,$joinprodiuser)
     {
         return [
             'users' => User::role('dosen')->orderBy('name')->get(),
-            'header' => 'Data Pengelola Program Studi '.$prodi->nama,
+            'header' => 'Data Pengelola Program Studi '.$prodi->jenjang.' '.$prodi->nama,
             'prodi' => $prodi,
             'joinprodiuser'=> $joinprodiuser,
         ];

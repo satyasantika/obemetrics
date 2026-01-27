@@ -12,16 +12,7 @@
                     <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                 </div>
                 <div class="card-body">
-                    @if (session('success'))
-                        <div class="alert alert-success">
-                            {{ session('success') }}
-                        </div>
-                    @endif
-                    @if (session('warning'))
-                        <div class="alert alert-warning">
-                            {{ session('warning') }}
-                        </div>
-                    @endif
+                    @include('layouts.alert')
 
                     {{-- identitas kurikulum --}}
                     <div class="row">
@@ -36,7 +27,9 @@
 
                     <div class="row">
                         <div class="col">
-                            <a href="{{ route('kurikulums.profils.create',$kurikulum) }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Tambah Profil</a>
+                            <a href="{{ route('kurikulums.profils.create',$kurikulum) }}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus-circle"></i> Tambah Profil
+                            </a>
                         </div>
                     </div>
                     <hr>
