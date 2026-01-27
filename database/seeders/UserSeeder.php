@@ -315,6 +315,410 @@ class UserSeeder extends Seeder
             'deskripsi'=>"Membekali individu dengan keterampilan, mindset, dan strategi dalam membangun serta mengelola usaha secara inovatif dan berkelanjutan. Kajian ini mencakup aspek teoritis dan praktis kewirausahaan, termasuk identifikasi peluang bisnis, manajemen usaha, inovasi, serta penerapan teknologi dalam dunia usaha.",
         ]);
 
+        // Mata Kuliah
+        $mk_KU21511001 = $kurikulum->mks()->create([
+            'semester'=>'1',
+            'kodemk'=>'KU21511001',
+            'nama'=>'Agama',
+            'sks'=>'2',
+        ]);
+        $mk_KU21511002 = $kurikulum->mks()->create([
+            'semester'=>'1',
+            'kodemk'=>'KU21511002',
+            'nama'=>'Kewarganegaraan',
+            'sks'=>'2',
+        ]);
+        $mk_KU21511003 = $kurikulum->mks()->create([
+            'semester'=>'1',
+            'kodemk'=>'KU21511003',
+            'nama'=>'Bahasa Indonesia',
+            'sks'=>'2',
+        ]);
+        $mk_KI21511001 = $kurikulum->mks()->create([
+            'semester'=>'1',
+            'kodemk'=>'KI21511001',
+            'nama'=>'Literasi Teknologi Informasi',
+            'sks'=>'2',
+        ]);
+        $mk_KP21511001 = $kurikulum->mks()->create([
+            'semester'=>'1',
+            'kodemk'=>'KP21511001',
+            'nama'=>'Trigonometri',
+            'sks'=>'3',
+        ]);
+        $mk_KP21511002 = $kurikulum->mks()->create([
+            'semester'=>'1',
+            'kodemk'=>'KP21511002',
+            'nama'=>'Dasar-Dasar Matematika',
+            'sks'=>'2',
+        ]);
+        $mk_KP21511003 = $kurikulum->mks()->create([
+            'semester'=>'1',
+            'kodemk'=>'KP21511003',
+            'nama'=>'Teori Bilangan',
+            'sks'=>'2',
+        ]);
+        $mk_KP21511004 = $kurikulum->mks()->create([
+            'semester'=>'1',
+            'kodemk'=>'KP21511004',
+            'nama'=>'Himpunan dan Logika',
+            'sks'=>'2',
+        ]);
+        $mk_KP21511005 = $kurikulum->mks()->create([
+            'semester'=>'1',
+            'kodemk'=>'KP21511005',
+            'nama'=>'Filsafat dan Sejarah Matematika',
+            'sks'=>'2',
+        ]);
+        $mk_KU21512001 = $kurikulum->mks()->create([
+            'semester'=>'2',
+            'kodemk'=>'KU21512001',
+            'nama'=>'Pancasila',
+            'sks'=>'2',
+        ]);
+        $mk_KI21512001 = $kurikulum->mks()->create([
+            'semester'=>'2',
+            'kodemk'=>'KI21512001',
+            'nama'=>'Kewirausahaan',
+            'sks'=>'2',
+        ]);
+        $mk_KF21512001 = $kurikulum->mks()->create([
+            'semester'=>'2',
+            'kodemk'=>'KF21512001',
+            'nama'=>'Psikologi Pendidikan',
+            'sks'=>'2',
+        ]);
+        $mk_KP21512001 = $kurikulum->mks()->create([
+            'semester'=>'2',
+            'kodemk'=>'KP21512001',
+            'nama'=>'Kalkulus Diferensial',
+            'sks'=>'3',
+        ]);
+        $mk_KP21512002 = $kurikulum->mks()->create([
+            'semester'=>'2',
+            'kodemk'=>'KP21512002',
+            'nama'=>'Statistika Dasar',
+            'sks'=>'3',
+        ]);
+        $mk_KP21512003 = $kurikulum->mks()->create([
+            'semester'=>'2',
+            'kodemk'=>'KP21512003',
+            'nama'=>'Telaah Kurikulum Matematika',
+            'sks'=>'3',
+        ]);
+        $mk_KP21512004 = $kurikulum->mks()->create([
+            'semester'=>'2',
+            'kodemk'=>'KP21512004',
+            'nama'=>'Kapita Selekta Matematika Pendidikan Dasar',
+            'sks'=>'3',
+        ]);
+        $mk_KP21512005 = $kurikulum->mks()->create([
+            'semester'=>'2',
+            'kodemk'=>'KP21512005',
+            'nama'=>'Proses Berpikir Matematik',
+            'sks'=>'2',
+        ]);
+        $mk_KF21513001 = $kurikulum->mks()->create([
+            'semester'=>'3',
+            'kodemk'=>'KF21513001',
+            'nama'=>'Model-model Pembelajaran Inovatif',
+            'sks'=>'2',
+        ]);
+        $mk_KP21513001 = $kurikulum->mks()->create([
+            'semester'=>'3',
+            'kodemk'=>'KP21513001',
+            'nama'=>'Aljabar Matriks',
+            'sks'=>'2',
+        ]);
+        $mk_KP21513002 = $kurikulum->mks()->create([
+            'semester'=>'3',
+            'kodemk'=>'KP21513002',
+            'nama'=>'Kalkulus Integral',
+            'sks'=>'3',
+        ]);
+        $mk_KP21513003 = $kurikulum->mks()->create([
+            'semester'=>'3',
+            'kodemk'=>'KP21513003',
+            'nama'=>'Matematika Diskrit',
+            'sks'=>'3',
+        ]);
+        $mk_KP21513004 = $kurikulum->mks()->create([
+            'semester'=>'3',
+            'kodemk'=>'KP21513004',
+            'nama'=>'Geometri Analitik Bidang',
+            'sks'=>'2',
+        ]);
+        $mk_KP21513005 = $kurikulum->mks()->create([
+            'semester'=>'3',
+            'kodemk'=>'KP21513005',
+            'nama'=>'Teori Peluang',
+            'sks'=>'3',
+        ]);
+        $mk_KP21513006 = $kurikulum->mks()->create([
+            'semester'=>'3',
+            'kodemk'=>'KP21513006',
+            'nama'=>'Kapita Selekta Matematika Sekolah Menengah',
+            'sks'=>'3',
+        ]);
+        $mk_KP21513007 = $kurikulum->mks()->create([
+            'semester'=>'3',
+            'kodemk'=>'KP21513007',
+            'nama'=>'Pengembangan dan Produksi Media Pembelajaran Matematika',
+            'sks'=>'2',
+        ]);
+        $mk_KF21514001 = $kurikulum->mks()->create([
+            'semester'=>'4',
+            'kodemk'=>'KF21514001',
+            'nama'=>'Bahasa Inggris',
+            'sks'=>'2',
+        ]);
+        $mk_KP21514001 = $kurikulum->mks()->create([
+            'semester'=>'4',
+            'kodemk'=>'KP21514001',
+            'nama'=>'Kalkulus Peubah Banyak',
+            'sks'=>'3',
+        ]);
+        $mk_KP21514002 = $kurikulum->mks()->create([
+            'semester'=>'4',
+            'kodemk'=>'KP21514002',
+            'nama'=>'Geometri Transformasi',
+            'sks'=>'3',
+        ]);
+        $mk_KP21514003 = $kurikulum->mks()->create([
+            'semester'=>'4',
+            'kodemk'=>'KP21514003',
+            'nama'=>'Implementasi Model-Model Pembelajaran Matematika Inovatif',
+            'sks'=>'2',
+        ]);
+        $mk_KP21514004 = $kurikulum->mks()->create([
+            'semester'=>'4',
+            'kodemk'=>'KP21514004',
+            'nama'=>'Aplikasi Komputer Matematika',
+            'sks'=>'3',
+        ]);
+        $mk_KP21514005 = $kurikulum->mks()->create([
+            'semester'=>'4',
+            'kodemk'=>'KP21514005',
+            'nama'=>'Perencanaan Pembelajaran Matematika',
+            'sks'=>'3',
+        ]);
+        $mk_KP21514006 = $kurikulum->mks()->create([
+            'semester'=>'4',
+            'kodemk'=>'KP21514006',
+            'nama'=>'Asesmen Pembelajaran Matematika',
+            'sks'=>'2',
+        ]);
+        $mk_KP21514007 = $kurikulum->mks()->create([
+            'semester'=>'4',
+            'kodemk'=>'KP21514007',
+            'nama'=>'Kepramukaan',
+            'sks'=>'2',
+        ]);
+        $mk_KI21515001 = $kurikulum->mks()->create([
+            'semester'=>'5',
+            'kodemk'=>'KI21515001',
+            'nama'=>'Kuliah Kerja Nyata',
+            'sks'=>'2',
+        ]);
+        $mk_KF21515001 = $kurikulum->mks()->create([
+            'semester'=>'5',
+            'kodemk'=>'KF21515001',
+            'nama'=>'Micro Teaching',
+            'sks'=>'2',
+        ]);
+        $mk_KP21515001 = $kurikulum->mks()->create([
+            'semester'=>'5',
+            'kodemk'=>'KP21515001',
+            'nama'=>'Teori Grup',
+            'sks'=>'3',
+        ]);
+        $mk_KP21515002 = $kurikulum->mks()->create([
+            'semester'=>'5',
+            'kodemk'=>'KP21515002',
+            'nama'=>'Analisis Vektor',
+            'sks'=>'2',
+        ]);
+        $mk_KP21515003 = $kurikulum->mks()->create([
+            'semester'=>'5',
+            'kodemk'=>'KP21515003',
+            'nama'=>'Program Linier',
+            'sks'=>'3',
+        ]);
+        $mk_KP21515004 = $kurikulum->mks()->create([
+            'semester'=>'5',
+            'kodemk'=>'KP21515004',
+            'nama'=>'Aljabar Linier',
+            'sks'=>'3',
+        ]);
+        $mk_KP21515005 = $kurikulum->mks()->create([
+            'semester'=>'5',
+            'kodemk'=>'KP21515005',
+            'nama'=>'Metodologi Penelitian Pendidikan Matematika',
+            'sks'=>'3',
+        ]);
+        $mk_KP21515006 = $kurikulum->mks()->create([
+            'semester'=>'5',
+            'kodemk'=>'KP21515006',
+            'nama'=>'Kajian Masalah Pendidikan Matematika',
+            'sks'=>'2',
+        ]);
+        $mk_KF21516001 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KF21516001',
+            'nama'=>'Manajemen Kelas Digital',
+            'sks'=>'2',
+        ]);
+        $mk_KF21516002 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KF21516002',
+            'nama'=>'Evaluasi Pembelajaran Berbasis Digital',
+            'sks'=>'2',
+        ]);
+        $mk_KF21516003 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KF21516003',
+            'nama'=>'Pengembangan Bahan Ajar Digital',
+            'sks'=>'2',
+        ]);
+        $mk_KF21516004 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KF21516004',
+            'nama'=>'PLP',
+            'sks'=>'4',
+        ]);
+        $mk_KP21516001 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KP21516001',
+            'nama'=>'Pendidikan Matematika Realistik',
+            'sks'=>'2',
+        ]);
+        $mk_KP21516002 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KP21516002',
+            'nama'=>'Literasi Matematika',
+            'sks'=>'2',
+        ]);
+        $mk_KP21516003 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KP21516003',
+            'nama'=>'Matematika Kombinatorika',
+            'sks'=>'2',
+        ]);
+        $mk_KP21516004 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KP21516004',
+            'nama'=>'Persamaan Diferensial',
+            'sks'=>'2',
+        ]);
+        $mk_KP21516005 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KP21516005',
+            'nama'=>'Teori Ring',
+            'sks'=>'2',
+        ]);
+        $mk_KP21516006 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KP21516006',
+            'nama'=>'Etnomatematika',
+            'sks'=>'2',
+        ]);
+        $mk_KP21516007 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KP21516007',
+            'nama'=>'Metodologi Penelitian Kualitatif',
+            'sks'=>'2',
+        ]);
+        $mk_KP21516008 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KP21516008',
+            'nama'=>'Metodologi Penelitian Pengembangan',
+            'sks'=>'2',
+        ]);
+        $mk_KP21516009 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KP21516009',
+            'nama'=>'Kajian Jurnal Internasional',
+            'sks'=>'2',
+        ]);
+        $mk_KP21516010 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KP21516010',
+            'nama'=>'Algoritma dan pemrograman',
+            'sks'=>'2',
+        ]);
+        $mk_KP21516011 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KP21516011',
+            'nama'=>'Technopreneurship',
+            'sks'=>'2',
+        ]);
+        $mk_KP21516012 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KP21516012',
+            'nama'=>'Perancangan Multimedia Pembelajaran',
+            'sks'=>'2',
+        ]);
+        $mk_KP21516013 = $kurikulum->mks()->create([
+            'semester'=>'6',
+            'kodemk'=>'KP21516013',
+            'nama'=>'Perancangan Web Pembelajaran',
+            'sks'=>'2',
+        ]);
+        $mk_KU21517001 = $kurikulum->mks()->create([
+            'semester'=>'7',
+            'kodemk'=>'KU21517001',
+            'nama'=>'Pendidikan Anti Korupsi',
+            'sks'=>'1',
+        ]);
+        $mk_KP21517001 = $kurikulum->mks()->create([
+            'semester'=>'7',
+            'kodemk'=>'KP21517001',
+            'nama'=>'Metode Numerik',
+            'sks'=>'3',
+        ]);
+        $mk_KP21517002 = $kurikulum->mks()->create([
+            'semester'=>'7',
+            'kodemk'=>'KP21517002',
+            'nama'=>'Pemodelan Matematika',
+            'sks'=>'2',
+        ]);
+        $mk_KP21517003 = $kurikulum->mks()->create([
+            'semester'=>'7',
+            'kodemk'=>'KP21517003',
+            'nama'=>'Analisis Kompleks',
+            'sks'=>'2',
+        ]);
+        $mk_KP21517004 = $kurikulum->mks()->create([
+            'semester'=>'7',
+            'kodemk'=>'KP21517004',
+            'nama'=>'Analisis Real',
+            'sks'=>'2',
+        ]);
+        $mk_KP21517005 = $kurikulum->mks()->create([
+            'semester'=>'7',
+            'kodemk'=>'KP21517005',
+            'nama'=>'Statistika Inferensial',
+            'sks'=>'3',
+        ]);
+        $mk_KP21517006 = $kurikulum->mks()->create([
+            'semester'=>'7',
+            'kodemk'=>'KP21517006',
+            'nama'=>'Seminar Pendidikan Matematika',
+            'sks'=>'3',
+        ]);
+        $mk_KP21517007 = $kurikulum->mks()->create([
+            'semester'=>'7',
+            'kodemk'=>'KP21517007',
+            'nama'=>'Matematika Ekonomi',
+            'sks'=>'3',
+        ]);
+        $mk_KF21518001 = $kurikulum->mks()->create([
+            'semester'=>'8',
+            'kodemk'=>'KF21518001',
+            'nama'=>'Skripsi',
+            'sks'=>'6',
+        ]);
+
         // Join Profil CPL (pendidik)
         $join_profil1_cpl01 = $kurikulum->joinProfilCpls()->create([
             'profil_id' => $profil1->id,
