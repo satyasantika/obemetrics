@@ -56,6 +56,10 @@
                                                     <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
                                                     @php
                                                     $linkedProfilCpl = \App\Models\JoinProfilCpl::where('kurikulum_id',$kurikulum->id)->get();
+                                                    $cek = $linkedProfilCpl->contains(
+                                                        function($item) use ($profil, $cpl) {
+                                                        return $item->profil_id === $profil->id && $item->cpl_id === $cpl->id;
+                                                        });
                                                     @endphp
                                                     <div class="form-check form-switch">
                                                         <input
@@ -64,13 +68,10 @@
                                                             name="is_linked"
                                                             id="is_linked_{{ $profil->id }}_{{ $cpl->id }}"
                                                             onchange="this.form.submit()"
-                                                            {{ $linkedProfilCpl->contains(
-                                                                function($item) use ($profil, $cpl) {
-                                                                return $item->profil_id === $profil->id && $item->cpl_id === $cpl->id;
-                                                                }) ? 'checked' : '' }}
+                                                            @checked($cek)
                                                         >
                                                         <label class="form-check-label" for="is_linked_{{ $profil->id }}_{{ $cpl->id }}">
-                                                            <span class="badge text-success" style="display: {{ $linkedProfilCpl->contains(function($item) use ($profil, $cpl) { return $item->profil_id === $profil->id && $item->cpl_id === $cpl->id; }) ? 'inline' : 'none' }};"><i class="bi bi-check-circle-fill"></i></span>
+                                                            <span class="badge text-success" style="display: {{ $cek ? 'inline' : 'none' }};"><i class="bi bi-check-circle-fill"></i></span>
                                                         </label>
                                                     </div>
                                                 </form>

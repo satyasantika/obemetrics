@@ -12,11 +12,6 @@ class JoinCplBk extends Model
     use HasFactory, HasUuids;
     protected $guarded = ['id'];
 
-    public function profil(): BelongsTo
-    {
-        return $this->belongsTo(Profil::class);
-    }
-
     public function cpl(): BelongsTo
     {
         return $this->belongsTo(Cpl::class);

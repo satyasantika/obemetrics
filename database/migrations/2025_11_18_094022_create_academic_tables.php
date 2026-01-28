@@ -122,6 +122,14 @@ return new class extends Migration
             $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->timestamps();
         });
+        // interaksi bk-mk
+        Schema::create('join_bk_mks', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->foreignUuid('bk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->timestamps();
+        });
         // // interaksi mk-dosen
         // Schema::create('join_mk_dosens', function (Blueprint $table) {
         //     $table->uuid('id')->primary('id');

@@ -833,5 +833,275 @@ class UserSeeder extends Seeder
             'bk_id' => $bk09->id,
         ]);
 
+        // Join BK MK
+        $join_bk01_KU21511001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk01->id,
+            'mk_id' => $mk_KU21511001->id,
+        ]);
+        $join_bk01_KU21511002 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk01->id,
+            'mk_id' => $mk_KU21511002->id,
+        ]);
+        $join_bk01_KU21511003 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk01->id,
+            'mk_id' => $mk_KU21511003->id,
+        ]);
+        $join_bk01_KU21512001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk01->id,
+            'mk_id' => $mk_KU21512001->id,
+        ]);
+        $join_bk01_KI21511001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk01->id,
+            'mk_id' => $mk_KI21511001->id,
+        ]);
+        $join_bk01_KI21512001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk01->id,
+            'mk_id' => $mk_KI21512001->id,
+        ]);
+        $join_bk01_KI21515001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk01->id,
+            'mk_id' => $mk_KI21515001->id,
+        ]);
+        $join_bk01_KU21517001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk01->id,
+            'mk_id' => $mk_KU21517001->id,
+        ]);
+        $join_bk02_KF21512001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk02->id,
+            'mk_id' => $mk_KF21512001->id,
+        ]);
+        $join_bk02_KF21514001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk02->id,
+            'mk_id' => $mk_KF21514001->id,
+        ]);
+        $join_bk02_KF21515001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk02->id,
+            'mk_id' => $mk_KF21515001->id,
+        ]);
+        $join_bk03_KF21513001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk03->id,
+            'mk_id' => $mk_KF21513001->id,
+        ]);
+        $join_bk03_KF21516001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk03->id,
+            'mk_id' => $mk_KF21516001->id,
+        ]);
+        $join_bk03_KF21516002 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk03->id,
+            'mk_id' => $mk_KF21516002->id,
+        ]);
+        $join_bk03_KF21516003 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk03->id,
+            'mk_id' => $mk_KF21516003->id,
+        ]);
+        $join_bk03_KF21516004 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk03->id,
+            'mk_id' => $mk_KF21516004->id,
+        ]);
+        $join_bk04_KF21518001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk04->id,
+            'mk_id' => $mk_KF21518001->id,
+        ]);
+        $join_bk05_KP21511001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21511001->id,
+        ]);
+        $join_bk05_KP21511002 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21511002->id,
+        ]);
+        $join_bk05_KP21511003 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21511003->id,
+        ]);
+        $join_bk05_KP21511004 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21511004->id,
+        ]);
+        $join_bk05_KP21512001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21512001->id,
+        ]);
+        $join_bk05_KP21512002 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21512002->id,
+        ]);
+        $join_bk05_KP21513001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21513001->id,
+        ]);
+        $join_bk05_KP21513002 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21513002->id,
+        ]);
+        $join_bk05_KP21513003 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21513003->id,
+        ]);
+        $join_bk05_KP21513004 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21513004->id,
+        ]);
+        $join_bk05_KP21513005 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21513005->id,
+        ]);
+        $join_bk05_KP21514001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21514001->id,
+        ]);
+        $join_bk05_KP21514002 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21514002->id,
+        ]);
+        $join_bk05_KP21515001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21515001->id,
+        ]);
+        $join_bk05_KP21515002 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21515002->id,
+        ]);
+        $join_bk05_KP21515003 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21515003->id,
+        ]);
+        $join_bk05_KP21515004 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21515004->id,
+        ]);
+        $join_bk05_KP21517001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk05->id,
+            'mk_id' => $mk_KP21517001->id,
+        ]);
+        $join_bk06_KP21511005 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk06->id,
+            'mk_id' => $mk_KP21511005->id,
+        ]);
+        $join_bk06_KP21512003 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk06->id,
+            'mk_id' => $mk_KP21512003->id,
+        ]);
+        $join_bk06_KP21512004 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk06->id,
+            'mk_id' => $mk_KP21512004->id,
+        ]);
+        $join_bk06_KP21513006 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk06->id,
+            'mk_id' => $mk_KP21513006->id,
+        ]);
+        $join_bk06_KP21514003 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk06->id,
+            'mk_id' => $mk_KP21514003->id,
+        ]);
+        $join_bk06_KP21514004 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk06->id,
+            'mk_id' => $mk_KP21514004->id,
+        ]);
+        $join_bk06_KP21514005 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk06->id,
+            'mk_id' => $mk_KP21514005->id,
+        ]);
+        $join_bk06_KP21514006 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk06->id,
+            'mk_id' => $mk_KP21514006->id,
+        ]);
+        $join_bk06_KP21516001 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk06->id,
+            'mk_id' => $mk_KP21516001->id,
+        ]);
+        $join_bk06_KP21516002 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk06->id,
+            'mk_id' => $mk_KP21516002->id,
+        ]);
+        $join_bk07_KP21516003 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk07->id,
+            'mk_id' => $mk_KP21516003->id,
+        ]);
+        $join_bk07_KP21516004 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk07->id,
+            'mk_id' => $mk_KP21516004->id,
+        ]);
+        $join_bk07_KP21516005 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk07->id,
+            'mk_id' => $mk_KP21516005->id,
+        ]);
+        $join_bk07_KP21517002 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk07->id,
+            'mk_id' => $mk_KP21517002->id,
+        ]);
+        $join_bk07_KP21517003 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk07->id,
+            'mk_id' => $mk_KP21517003->id,
+        ]);
+        $join_bk07_KP21517004 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk07->id,
+            'mk_id' => $mk_KP21517004->id,
+        ]);
+        $join_bk08_KP21512005 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk08->id,
+            'mk_id' => $mk_KP21512005->id,
+        ]);
+        $join_bk08_KP21515005 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk08->id,
+            'mk_id' => $mk_KP21515005->id,
+        ]);
+        $join_bk08_KP21515006 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk08->id,
+            'mk_id' => $mk_KP21515006->id,
+        ]);
+        $join_bk08_KP21516006 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk08->id,
+            'mk_id' => $mk_KP21516006->id,
+        ]);
+        $join_bk08_KP21516007 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk08->id,
+            'mk_id' => $mk_KP21516007->id,
+        ]);
+        $join_bk08_KP21516008 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk08->id,
+            'mk_id' => $mk_KP21516008->id,
+        ]);
+        $join_bk08_KP21516009 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk08->id,
+            'mk_id' => $mk_KP21516009->id,
+        ]);
+        $join_bk08_KP21517005 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk08->id,
+            'mk_id' => $mk_KP21517005->id,
+        ]);
+        $join_bk08_KP21517006 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk08->id,
+            'mk_id' => $mk_KP21517006->id,
+        ]);
+        $join_bk09_KP21513007 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk09->id,
+            'mk_id' => $mk_KP21513007->id,
+        ]);
+        $join_bk09_KP21514007 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk09->id,
+            'mk_id' => $mk_KP21514007->id,
+        ]);
+        $join_bk09_KP21516010 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk09->id,
+            'mk_id' => $mk_KP21516010->id,
+        ]);
+        $join_bk09_KP21516011 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk09->id,
+            'mk_id' => $mk_KP21516011->id,
+        ]);
+        $join_bk09_KP21516012 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk09->id,
+            'mk_id' => $mk_KP21516012->id,
+        ]);
+        $join_bk09_KP21516013 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk09->id,
+            'mk_id' => $mk_KP21516013->id,
+        ]);
+        $join_bk09_KP21517007 = $kurikulum->joinBkMks()->create([
+            'bk_id' => $bk09->id,
+            'mk_id' => $mk_KP21517007->id,
+        ]);
+
     }
 }

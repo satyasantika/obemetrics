@@ -8,7 +8,7 @@
                 <div class="card-header">
                     {{-- header --}}
                     <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Interaksi CPL dan Bahan Kajian</strong>
+                    Interaksi Bahan Kajian dan Mata Kuliah</strong>
                     <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                 </div>
                 <div class="card-body">
@@ -43,26 +43,26 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @forelse ($cpls as $cpl)
+                                @forelse ($mks as $mk)
                                     <tr style="vertical-align: text-top;">
                                         <th>
-                                            <span data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $cpl->nama }}">
-                                                {{ $cpl->kode }}
+                                            <span data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $mk->nama }}">
+                                                {{ $mk->nama }}
                                             </span>
                                         </th>
                                         @forelse ($bks as $bk)
                                             <td>
-                                                <form action="{{ route('joincplbks.update',[$cpl->id,$bk->id]) }}" method="POST">
+                                                <form action="{{ route('joinbkmks.update',[$bk->id,$mk->id]) }}" method="POST">
                                                     @csrf
                                                     @method('PUT')
-                                                    <input type="hidden" name="cpl_id" value="{{ $cpl->id }}">
                                                     <input type="hidden" name="bk_id" value="{{ $bk->id }}">
+                                                    <input type="hidden" name="mk_id" value="{{ $mk->id }}">
                                                     <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
                                                     @php
-                                                    $linkedCplBk = \App\Models\JoinCplBk::where('kurikulum_id',$kurikulum->id)->get();
-                                                    $cek = $linkedCplBk->contains(
-                                                        function($item) use ($cpl, $bk) {
-                                                        return $item->cpl_id === $cpl->id && $item->bk_id === $bk->id;
+                                                    $linkedBkMk = \App\Models\JoinBkMk::where('kurikulum_id',$kurikulum->id)->get();
+                                                    $cek = $linkedBkMk->contains(
+                                                        function($item) use ($bk, $mk) {
+                                                        return $item->bk_id === $bk->id && $item->mk_id === $mk->id;
                                                         });
                                                     @endphp
                                                     <div class="form-check form-switch">
@@ -70,7 +70,7 @@
                                                             class="form-check-input"
                                                             type="checkbox"
                                                             name="is_linked"
-                                                            id="is_linked_{{ $cpl->id }}_{{ $bk->id }}"
+                                                            id="is_linked_{{ $bk->id }}_{{ $mk->id }}"
                                                             onchange="this.form.submit()"
                                                             @checked($cek)
                                                         >
@@ -85,7 +85,7 @@
                                     @empty
                                     <tr>
                                         <td colspan="2"><span class="bg-warning text-dark p-2">
-                                            Belum ada data CPL untuk kurikulum ini.</span>
+                                            Belum ada data Bahan Kajian untuk kurikulum ini.</span>
                                         </td>
                                     </tr>
                                 @endforelse

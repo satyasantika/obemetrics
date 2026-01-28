@@ -50,5 +50,8 @@ Route::middleware('auth')->group(function () {
     // CPL >< BK
     Route::get('kurikulums/{kurikulum}/joincplbks', [App\Http\Controllers\Prodi\JoinCplBkController::class,'index'])->name('kurikulums.joincplbks.index');
     Route::put('joincplbks/{cpl}/{bk}', [App\Http\Controllers\Prodi\JoinCplBkController::class, 'update'])->name('joincplbks.update');
+    // BK >< MK
+    Route::get('kurikulums/{kurikulum}/joinbkmks', [App\Http\Controllers\Prodi\JoinBkMkController::class,'index'])->name('kurikulums.joinbkmks.index');
+    Route::put('joinbkmks/{bk}/{mk}', [App\Http\Controllers\Prodi\JoinBkMkController::class, 'update'])->name('joinbkmks.update');
 
 });
