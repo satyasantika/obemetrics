@@ -63,5 +63,8 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'read join bk mks'])->assignRole('pimpinan prodi');
         Permission::create(['name' => 'update join bk mks'])->assignRole('pimpinan prodi');
 
+        Permission::create(['name' => 'read join mk users'])->assignRole('pimpinan prodi');
+        Permission::create(['name' => 'update join mk users'])->assignRole('pimpinan prodi');
+
     }
 }

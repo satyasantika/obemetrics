@@ -53,5 +53,9 @@ Route::middleware('auth')->group(function () {
     // BK >< MK
     Route::get('kurikulums/{kurikulum}/joinbkmks', [App\Http\Controllers\Prodi\JoinBkMkController::class,'index'])->name('kurikulums.joinbkmks.index');
     Route::put('joinbkmks/{bk}/{mk}', [App\Http\Controllers\Prodi\JoinBkMkController::class, 'update'])->name('joinbkmks.update');
+    // Dosen >< MK
+    Route::resource('mks.users', App\Http\Controllers\Prodi\JoinMkUserController::class)->only('index','update');
+    // Route::get('mk/{mk}/users', [App\Http\Controllers\Prodi\JoinMkUserController::class,'index'])->name('mk.users.index');
+    // Route::put('mk/{mk}/users/{user}', [App\Http\Controllers\Prodi\JoinMkUserController::class, 'update'])->name('joinmkusers.update');
 
 });

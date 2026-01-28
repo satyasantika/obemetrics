@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Prodi;
 
 use App\Models\Mk;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use App\Models\Kurikulum;
+use App\Models\JoinMkUser;
+use Illuminate\Http\Request;
+use App\Models\JoinProdiUser;
+use App\Http\Controllers\Controller;
 
 class MkController extends Controller
 {
@@ -26,7 +28,8 @@ class MkController extends Controller
     public function create(Kurikulum $kurikulum)
     {
         $mk = new Mk();
-        return view('setting.mk-form', compact('kurikulum','mk'));
+        $users = JoinProdiUser::where('prodi_id', $kurikulum->prodi_id)->pluck('user_id')->toArray();
+        return view('setting.mk-form', compact('kurikulum','mk','users'));
     }
 
     public function store(Request $request, Kurikulum $kurikulum, Mk $mk)
@@ -41,7 +44,10 @@ class MkController extends Controller
 
     public function edit(Kurikulum $kurikulum, Mk $mk)
     {
-        return view('setting.mk-form', compact('kurikulum','mk'));
+        $join_mk_users = $mk->joinMkUsers()->pluck('user_id')->toArray();
+        $koordinator_user = JoinMkUser::where('koordinator',1)->pluck('user_id');
+        $join_prodi_users = JoinProdiUser::where('prodi_id', $kurikulum->prodi_id)->get();
+        return view('setting.mk-form', compact('kurikulum','mk','join_prodi_users','join_mk_users','koordinator_user'));
     }
 
     public function update(Request $request, Kurikulum $kurikulum, Mk $mk)

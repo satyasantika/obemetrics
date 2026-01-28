@@ -130,14 +130,15 @@ return new class extends Migration
             $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->timestamps();
         });
-        // // interaksi mk-dosen
-        // Schema::create('join_mk_dosens', function (Blueprint $table) {
-        //     $table->uuid('id')->primary('id');
-        //     $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->foreignUuid('user_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->boolean('koordinator')->default(0);
-        //     $table->timestamps();
-        // });
+        // interaksi mk-dosen
+        Schema::create('join_mk_users', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('user_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->boolean('koordinator')->default(0);
+            $table->timestamps();
+        });
         // // cpmk
         // Schema::create('cpmks', function (Blueprint $table) {
         //     $table->uuid('id')->primary('id');
@@ -296,12 +297,20 @@ return new class extends Migration
         //     $table->dropForeign('cpmks_mk_id_foreign');
         // });
         // Schema::dropIfExists('cpmks');
-        // // interaksi mk-dosen
-        // Schema::table('join_mk_dosens', function (Blueprint $table) {
-        //     $table->dropForeign('join_mk_dosens_user_id_foreign');
-        //     $table->dropForeign('join_mk_dosens_mk_id_foreign');
-        // });
-        // Schema::dropIfExists('join_mk_dosens');
+        // interaksi mk-user
+        Schema::table('join_mk_users', function (Blueprint $table) {
+            $table->dropForeign('join_mk_users_user_id_foreign');
+            $table->dropForeign('join_mk_users_mk_id_foreign');
+            $table->dropForeign('join_mk_users_kurikulum_id_foreign');
+        });
+        Schema::dropIfExists('join_mk_dosens');
+        // interaksi bk-mk
+        Schema::table('join_bk_mks', function (Blueprint $table) {
+            $table->dropForeign('join_bk_mks_bk_id_foreign');
+            $table->dropForeign('join_bk_mks_mk_id_foreign');
+            $table->dropForeign('join_bk_mks_kurikulum_id_foreign');
+        });
+        Schema::dropIfExists('join_bk_mks');
         // mata kuliah
         Schema::table('mks', function (Blueprint $table) {
             $table->dropForeign('mks_kurikulum_id_foreign');

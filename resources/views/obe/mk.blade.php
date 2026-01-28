@@ -31,31 +31,44 @@
                                 <thead></thead>
                                     <tr>
                                         <th class="text-center">Semester</th>
-                                        <th>Kode MK</th>
-                                        <th>Nama MK</th>
-                                        <th class="text-center">SKS</th>
-                                        <th class="text-center">SKS (teori-praktik-lapangan)</th>
+                                        <th>Kode & Nama MK (SKS)</th>
+                                        <th class="text-center">Dosen</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                 @forelse ($mks as $mk)
                                     <tr style="vertical-align: text-top;">
-                                        <td class="text-center">{{ $mk->semester }}</td>
                                         <td>
-                                            {{ $mk->kodemk }}
-                                        </td>
-                                        <td style="text-align: justify">
-                                            {{ $mk->nama }}
+                                            <span class="badge bg-{{ $mk->semester % 2 == 0 ? 'primary' : 'secondary' }}">semester {{ $mk->semester }}</span>
+                                            <br>
                                             {{-- Edit MK --}}
                                             <a href="{{ route('kurikulums.mks.edit',[$kurikulum->id,$mk->id]) }}" class="btn btn-sm btn-white text-primary">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
                                         </td>
-                                        <td class="text-center">
-                                            {{ $mk->sks }}
+                                        <td style="text-align: justify">
+                                            {{ $mk->kodemk }} - {{ $mk->nama }}
+                                            <br>
+                                            <strong>{{ $mk->sks }} SKS</strong>
+                                            (T: {{ $mk->sks_teori }}, P: {{ $mk->sks_praktik }}, L: {{ $mk->sks_lapangan }})
                                         </td>
-                                        <td class="text-center">
-                                            ({{ $mk->sks_teori }}-{{ $mk->sks_praktik }}-{{ $mk->sks_lapangan }})
+                                        <td>
+                                            @php
+                                                $assignedUsers = \App\Models\JoinMkUser::where('kurikulum_id',$kurikulum->id)
+                                                    ->where('mk_id',$mk->id)
+                                                    ->with('user')
+                                                    ->get()
+                                                    ->map(function($item) {
+                                                        return $item->user;
+                                                    });
+                                            @endphp
+                                            @forelse ($assignedUsers as $user)
+                                                <span class="badge bg-secondary">{{ $user->name }}</span>
+                                            @empty
+                                                <span class="badge bg-warning text-dark">Belum ada</span>
+                                            @endforelse
+                                            <a href="{{ route('mks.users.index',$mk->id) }}" class="btn btn-white text-success btn-sm">
+                                                <i class="bi bi-plus-circle"></i> Dosen
                                         </td>
                                     </tr>
                                     @empty

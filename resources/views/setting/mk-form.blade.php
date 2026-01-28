@@ -74,6 +74,7 @@
                 <textarea name="deskripsi" rows="8" class="form-control" id="deskripsi">{{ $mk->deskripsi }}</textarea>
             </div>
         </div>
+        <hr>
         {{-- submit Button --}}
         <div class="row mb-0">
             <div class="col">

@@ -1103,5 +1103,11 @@ class UserSeeder extends Seeder
             'mk_id' => $mk_KP21517007->id,
         ]);
 
+        // Join MK User
+        $join_mk_user = $kurikulum->joinMkUsers()->create([
+            'mk_id' => $mk_KU21511001->id,
+            'user_id' => $dosenuser->id,
+        ]);
+
     }
 }

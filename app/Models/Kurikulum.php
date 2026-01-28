@@ -56,4 +56,9 @@ class Kurikulum extends Model
         return $this->hasMany(JoinBkMk::class);
     }
 
+    public function joinMkUsers(): HasMany
+    {
+        return $this->hasMany(JoinMkUser::class);
+    }
+
 }

@@ -56,4 +56,15 @@ class User extends Authenticatable
     {
         return $this->hasRole('admin');
     }
+
+    public function joinProdiUsers(): HasMany
+    {
+        return $this->hasMany(JoinProdiUser::class);
+    }
+
+    public function joinMkUsers(): HasMany
+    {
+        return $this->hasMany(JoinMkUser::class);
+    }
+
 }
