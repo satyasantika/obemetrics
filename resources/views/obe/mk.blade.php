@@ -56,14 +56,11 @@
                                             @php
                                                 $assignedUsers = \App\Models\JoinMkUser::where('kurikulum_id',$kurikulum->id)
                                                     ->where('mk_id',$mk->id)
-                                                    ->with('user')
-                                                    ->get()
-                                                    ->map(function($item) {
-                                                        return $item->user;
-                                                    });
+                                                    ->get();
+
                                             @endphp
                                             @forelse ($assignedUsers as $user)
-                                                <span class="badge bg-secondary">{{ $user->name }}</span>
+                                                <span class="badge bg-{{ $user->koordinator == true ? 'primary':'secondary' }}">{{ $user->user->name }}</span>
                                             @empty
                                                 <span class="badge bg-warning text-dark">Belum ada</span>
                                             @endforelse
