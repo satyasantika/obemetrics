@@ -45,9 +45,6 @@
                                         <a href="{{ route('kurikulums.mks.index',[$kurikulum->id]) }}" class="btn btn-sm btn-primary mt-1">
                                             <i class="bi bi-journal-bookmark"></i> MK
                                         </a>
-                                        <a href="{{ route('kurikulums.joinmkusers.index',[$kurikulum->id]) }}" class="btn btn-sm btn-secondary mt-1">
-                                            <i class="bi bi-gear"></i> set Dosen MK
-                                        </a>
                                         <br>
                                         <a href="{{ route('kurikulums.joinprofilcpls.index',[$kurikulum->id]) }}" class="btn btn-sm btn-secondary mt-1">
                                             <i class="bi bi-gear"></i> Interaksi Profil >< CPL
