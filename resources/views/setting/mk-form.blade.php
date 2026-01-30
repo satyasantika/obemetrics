@@ -1,7 +1,7 @@
 @extends('layouts.setting-form')
 
 @push('header')
-    {{ $kurikulum->id ? 'Edit' : 'Tambah' }} Data Bahan Kajian
+    {{ $kurikulum->id ? 'Edit' : 'Tambah' }} Data Mata Kuliah
     <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
 @endpush
 

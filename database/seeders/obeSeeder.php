@@ -66,5 +66,10 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'read join mk users'])->assignRole('pimpinan prodi');
         Permission::create(['name' => 'update join mk users'])->assignRole('pimpinan prodi');
 
+        Permission::create(['name' => 'create cpmks'])->syncRoles('koordinator mk','dosen');
+        Permission::create(['name' => 'read cpmks'])->syncRoles('koordinator mk','dosen');
+        Permission::create(['name' => 'update cpmks'])->syncRoles('koordinator mk','dosen');
+        Permission::create(['name' => 'delete cpmks'])->syncRoles('koordinator mk','dosen');
+
     }
 }

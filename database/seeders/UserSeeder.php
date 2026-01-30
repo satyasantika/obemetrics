@@ -17,43 +17,6 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Import Data Dosen
-        // $csvData = fopen(base_path('/database/seeders/csvs/lectures.csv'), 'r');
-        // $transRow = true;
-        // while (($data = fgetcsv($csvData, 555, ',')) !== false) {
-        //     if (!$transRow) {
-        //         User::create([
-        //             'username'  => $data[0],
-        //             'name'      => $data[1],
-        //             'phone'     => $data[2],
-        //             'email'     => $data[3],
-        //             'password' => bcrypt($data[4]),
-        //             'initial'  => $data[5],
-        //         ])->assignRole('dosen')->givePermissionTo('active');
-        //     }
-        //     $transRow = false;
-        // }
-        // fclose($csvData);
-
-        // Import Data Mahasiswa
-        // $csvData = fopen(base_path('/database/seeders/csvs/students.csv'), 'r');
-        // $transRow = true;
-        // while (($data = fgetcsv($csvData, 555, ',')) !== false) {
-        //     if (!$transRow) {
-        //         User::create([
-        //             'username'  => $data[0],
-        //             'name'      => $data[1],
-        //             'phone'     => $data[2],
-        //             'address'   => $data[3],
-        //             'email'     => $data[4],
-        //             'password' => bcrypt($data[5]),
-
-        //         ])->assignRole('mahasiswa')->givePermissionTo('active');
-        //     }
-        //     $transRow = false;
-        // }
-        // fclose($csvData);
-
         // akun Universitas
         Role::create(['name' => 'pimpinan universitas']);
         Role::create(['name' => 'operator universitas']);
@@ -61,6 +24,7 @@ class UserSeeder extends Seeder
         Role::create(['name' => 'operator fakultas']);
         Role::create(['name' => 'pimpinan prodi']);
         Role::create(['name' => 'operator prodi']);
+        Role::create(['name' => 'koordinator mk']);
         Role::create(['name' => 'dosen']);
 
         User::create([
@@ -1105,9 +1069,28 @@ class UserSeeder extends Seeder
 
         // Join MK User
         $join_mk_user = $kurikulum->joinMkUsers()->create([
-            'mk_id' => $mk_KU21511001->id,
+            'mk_id' => $mk_KP21514004->id,
             'user_id' => $dosenuser->id,
         ]);
+
+        // CPMK
+        $cpmk1 = $mk_KP21514004->cpmks()->create([
+            'kode' => 'CPMK-1',
+            'nama' => 'mampu memahami konsep dan jenis software/aplikasi pembelajaran matematika digital',
+        ]);
+        $cpmk2 = $mk_KP21514004->cpmks()->create([
+            'kode' => 'CPMK-2',
+            'nama' => 'mampu menggunakan software matematika untuk mengonstruksi dan memvisualisasikan konsep matematika',
+        ]);
+        $cpmk3 = $mk_KP21514004->cpmks()->create([
+            'kode' => 'CPMK-3',
+            'nama' => 'mampu mengimplementasikan software matematika dalam pemecahan masalah dan pemodelan matematika',
+        ]);
+        $cpmk4 = $mk_KP21514004->cpmks()->create([
+            'kode' => 'CPMK-4',
+            'nama' => 'mampu menganalisis data dan hasil pembelajaran matematika menggunakan software statistik',
+        ]);
+
 
     }
 }
