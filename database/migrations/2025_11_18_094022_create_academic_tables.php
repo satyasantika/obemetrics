@@ -148,13 +148,14 @@ return new class extends Migration
             $table->text('deskripsi')->nullable();
             $table->timestamps();
         });
-        // // interaksi cpl-cpmk
-        // Schema::create('join_cpl_cpmks', function (Blueprint $table) {
-        //     $table->uuid('id')->primary('id');
-        //     $table->foreignUuid('cpl_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->foreignUuid('cpmk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->timestamps();
-        // });
+        // interaksi cpl-cpmk (diambil dari tabel join_cpl_bks dan join_bk_mks)
+        Schema::create('join_cpl_cpmks', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->foreignUuid('join_cpl_bk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('cpmk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->timestamps();
+        });
         // // interaksi mk-cpmk
         // Schema::create('join_mk_cpmks', function (Blueprint $table) {
         //     $table->uuid('id')->primary('id');
@@ -286,12 +287,13 @@ return new class extends Migration
         //     $table->dropForeign('join_mk_cpmks_cpmk_id_foreign');
         // });
         // Schema::dropIfExists('join_mk_cpmks');
-        // // interaksi cpl-cpmk
-        // Schema::table('join_cpl_cpmks', function (Blueprint $table) {
-        //     $table->dropForeign('join_cpl_cpmks_cpl_id_foreign');
-        //     $table->dropForeign('join_cpl_cpmks_cpmk_id_foreign');
-        // });
-        // Schema::dropIfExists('join_cpl_cpmks');
+        // interaksi cpl-cpmk
+        Schema::table('join_cpl_cpmks', function (Blueprint $table) {
+            $table->dropForeign('join_cpl_cpmks_join_cpl_bk_id_foreign');
+            $table->dropForeign('join_cpl_cpmks_cpmk_id_foreign');
+            $table->dropForeign('join_cpl_cpmks_mk_id_foreign');
+        });
+        Schema::dropIfExists('join_cpl_cpmks');
         // cpmk
         Schema::table('cpmks', function (Blueprint $table) {
             $table->dropForeign('cpmks_mk_id_foreign');

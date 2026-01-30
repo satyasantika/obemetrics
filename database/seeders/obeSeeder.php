@@ -71,5 +71,8 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'update cpmks'])->syncRoles('koordinator mk','dosen');
         Permission::create(['name' => 'delete cpmks'])->syncRoles('koordinator mk','dosen');
 
+        Permission::create(['name' => 'read join cpl cpmks'])->syncRoles('koordinator mk','dosen');
+        Permission::create(['name' => 'update join cpl cpmks'])->syncRoles('koordinator mk','dosen');
+
     }
 }

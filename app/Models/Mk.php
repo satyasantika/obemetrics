@@ -28,7 +28,7 @@ class Mk extends Model
         return $this->hasMany(JoinMkUser::class);
     }
 
-    public function Cpmks(): HasMany
+    public function cpmks(): HasMany
     {
         return $this->hasMany(Cpmk::class);
     }

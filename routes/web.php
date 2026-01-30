@@ -58,5 +58,8 @@ Route::middleware('auth')->group(function () {
 
     // Dosen
     Route::resource('mks.cpmks', App\Http\Controllers\Dosen\CpmkController::class)->except('show');
+    // CPL >< BK
+    Route::get('mks/{mk}/joincplcpmks', [App\Http\Controllers\Dosen\JoinCplCpmkController::class,'index'])->name('mks.joincplcpmks.index');
+    Route::put('joincplcpmks/{joincplbk}/{cpmk}', [App\Http\Controllers\Dosen\JoinCplCpmkController::class, 'update'])->name('joincplcpmks.update');
 
 });

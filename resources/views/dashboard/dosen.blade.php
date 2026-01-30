@@ -47,6 +47,9 @@
                                         <a href="{{ route('mks.cpmks.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
                                             <i class="bi bi-sliders"></i> CPMK
                                         </a>
+                                        <a href="{{ route('mks.joincplcpmks.index',[$mk->id]) }}" class="btn btn-sm btn-secondary mt-1">
+                                            <i class="bi bi-gear"></i> Set CPL >< CPMK
+                                        </a>
                                     </li>
                                 @endforeach
                             </ol>
