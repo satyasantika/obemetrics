@@ -19,8 +19,7 @@ class JoinProfilCplController extends Controller
 
     public function index(Kurikulum $kurikulum)
     {
-        $back_route = 'home.prodis';
-        return view('obe.profil-cpl', compact('back_route'))
+        return view('obe.profil-cpl')
                 ->with('kurikulum', $kurikulum)
                 ->with('profils', $kurikulum->profils)
                 ->with('cpls', $kurikulum->cpls);

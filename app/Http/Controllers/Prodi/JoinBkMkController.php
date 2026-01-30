@@ -19,8 +19,7 @@ class JoinBkMkController extends Controller
 
     public function index(Kurikulum $kurikulum)
     {
-        $back_route = 'home.prodis';
-        return view('obe.bk-mk', compact('back_route'))
+        return view('obe.bk-mk')
                 ->with('kurikulum', $kurikulum)
                 ->with('bks', $kurikulum->bks)
                 ->with('mks', $kurikulum->mks);

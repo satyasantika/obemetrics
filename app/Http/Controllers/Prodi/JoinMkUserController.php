@@ -20,9 +20,8 @@ class JoinMkUserController extends Controller
     public function index(MK $mk)
     {
         $kurikulum = Kurikulum::findOrFail($mk->kurikulum_id);
-        $back_route = route('kurikulums.mks.index',$kurikulum->id);
         $join_prodi_users = JoinProdiUser::where('prodi_id', $mk->kurikulum->prodi_id)->get();
-        return view('obe.mk-user', compact('back_route'))
+        return view('obe.mk-user')
                 ->with('mk', $mk)
                 ->with('kurikulum', $kurikulum)
                 ->with('mks', $kurikulum->mks)

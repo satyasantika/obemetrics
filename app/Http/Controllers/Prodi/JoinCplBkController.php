@@ -19,8 +19,7 @@ class JoinCplBkController extends Controller
 
     public function index(Kurikulum $kurikulum)
     {
-        $back_route = 'home.prodis';
-        return view('obe.cpl-bk', compact('back_route'))
+        return view('obe.cpl-bk')
                 ->with('kurikulum', $kurikulum)
                 ->with('cpls', $kurikulum->cpls)
                 ->with('bks', $kurikulum->bks);
