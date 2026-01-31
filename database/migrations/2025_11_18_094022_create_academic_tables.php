@@ -164,6 +164,10 @@ return new class extends Migration
             $table->string('kompetensi_a')->nullable();
             $table->string('kompetensi_p')->nullable();
             $table->text('nama')->nullable();
+            $table->text('indikator')->nullable();
+            $table->text('evaluasi')->nullable();
+            $table->double('bobot')->nullable();
+            $table->integer('waktu_penagihan')->nullable();
             $table->foreignUuid('join_cpl_cpmk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->timestamps();
         });

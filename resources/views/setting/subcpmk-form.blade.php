@@ -152,11 +152,47 @@
                 </div>
             </div>
         </div>
-        {{-- deskripsi --}}
+        {{-- indikator --}}
         <div class="row mb-3">
             <div class="col">
-                <label for="deskripsi" class="form-label">Deskripsi</label>
-                <textarea name="deskripsi" rows="8" class="form-control" id="deskripsi">{{ $subcpmk->deskripsi }}</textarea>
+                <label for="indikator" class="form-label">Indikator <span class="text-danger">(*)</span></label>
+                <textarea name="indikator" rows="3" class="form-control" id="indikator" required>{{ $subcpmk->indikator }}</textarea>
+            </div>
+        </div>
+        {{-- evaluasi --}}
+        <div class="row mb-3">
+            <div class="col">
+                <label for="evaluasi" class="form-label">Evaluasi <span class="text-danger">(*)</span></label>
+                <textarea name="evaluasi" rows="3" class="form-control" id="evaluasi" required>{{ $subcpmk->evaluasi }}</textarea>
+            </div>
+        </div>
+        <div class="row mb-3">
+            {{-- bobot --}}
+            <div class="col">
+                <label for="bobot" class="form-label">Bobot (%) <span class="text-danger">(*)</span></label>
+                <input type="text" placeholder="" value="{{ $subcpmk->bobot }}" name="bobot" class="form-control" id="bobot" required>
+            </div>
+            {{-- waktu_penagihan --}}
+            <div class="col">
+                <label for="waktu_penagihan" class="form-label">Waktu Penagihan</label>
+                <select name="waktu_penagihan" id="waktu_penagihan" class="form-control">
+                    <option value="">Pilih Waktu Penagihan</option>
+                    <option value="1" @selected($subcpmk->waktu_penagihan == '1')>Pertemuan ke-1</option>
+                    <option value="2" @selected($subcpmk->waktu_penagihan == '2')>Pertemuan ke-2</option>
+                    <option value="3" @selected($subcpmk->waktu_penagihan == '3')>Pertemuan ke-3</option>
+                    <option value="4" @selected($subcpmk->waktu_penagihan == '4')>Pertemuan ke-4</option>
+                    <option value="5" @selected($subcpmk->waktu_penagihan == '5')>Pertemuan ke-5</option>
+                    <option value="6" @selected($subcpmk->waktu_penagihan == '6')>Pertemuan ke-6</option>
+                    <option value="7" @selected($subcpmk->waktu_penagihan == '7')>Pertemuan ke-7</option>
+                    <option value="8" @selected($subcpmk->waktu_penagihan == '8')>Pertemuan ke-8</option>
+                    <option value="9" @selected($subcpmk->waktu_penagihan == '9')>Pertemuan ke-9</option>
+                    <option value="10" @selected($subcpmk->waktu_penagihan == '10')>Pertemuan ke-10</option>
+                    <option value="11" @selected($subcpmk->waktu_penagihan == '11')>Pertemuan ke-11</option>
+                    <option value="12" @selected($subcpmk->waktu_penagihan == '12')>Pertemuan ke-12</option>
+                    <option value="13" @selected($subcpmk->waktu_penagihan == '13')>Pertemuan ke-13</option>
+                    <option value="14" @selected($subcpmk->waktu_penagihan == '14')>Pertemuan ke-14</option>
+                    <option value="15" @selected($subcpmk->waktu_penagihan == '15')>Pertemuan ke-15</option>
+                </select>
             </div>
         </div>
         <hr>

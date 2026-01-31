@@ -1116,6 +1116,9 @@ class UserSeeder extends Seeder
             'kompetensi_a' => 'A1',
             'kompetensi_p' => 'P1',
             'nama' => 'mampu menjelaskan jenis dan karakteristik software pembelajaran matematika',
+            'indikator' => 'ketepatan dalam menjelaskan jenis dan karakteristik software pembelajaran matematika',
+            'evaluasi' => 'Kuis konseptual dan ringkasan tertulis terstruktur',
+            'bobot' => 5,
             'join_cpl_cpmk_id' => $join_cpl_cpmk1->id,
         ]);
         $subcpmk1_2 = $join_cpl_cpmk1->subcpmks()->create([
@@ -1124,6 +1127,9 @@ class UserSeeder extends Seeder
             'kompetensi_a' => 'A2',
             'kompetensi_p' => 'P1',
             'nama' => 'mampu mengidentifikasi software matematika sesuai materi pembelajaran',
+            'indikator' => 'ketepatan dalam mengidentifikasi software matematika sesuai materi pembelajaran',
+            'evaluasi' => 'Tugas klasifikasi software berbasis studi kasus',
+            'bobot' => 5,
             'join_cpl_cpmk_id' => $join_cpl_cpmk1->id,
         ]);
         $subcpmk2_1 = $join_cpl_cpmk2->subcpmks()->create([
@@ -1132,6 +1138,9 @@ class UserSeeder extends Seeder
             'kompetensi_a' => 'A2',
             'kompetensi_p' => 'P2',
             'nama' => 'mampu mengonstruksi objek matematika menggunakan GSP, Cabri 3D, dan GeoGebra',
+            'indikator' => 'ketepatan dalam mengonstruksi objek matematika menggunakan GSP, Cabri 3D, dan GeoGebra',
+            'evaluasi' => 'Lembar kerja praktikum (file proyek & observasi proses)',
+            'bobot' => 15,
             'join_cpl_cpmk_id' => $join_cpl_cpmk2->id,
         ]);
         $subcpmk2_2 = $join_cpl_cpmk2->subcpmks()->create([
@@ -1140,6 +1149,9 @@ class UserSeeder extends Seeder
             'kompetensi_a' => 'A2',
             'kompetensi_p' => 'P2',
             'nama' => 'mampu melakukan perhitungan matematis menggunakan software matematika',
+            'indikator' => 'ketepatan dalam melakukan perhitungan dan visualisasi matematis menggunakan software',
+            'evaluasi' => 'Tugas pemecahan soal berbantuan software (output & langkah)',
+            'bobot' => 20,
             'join_cpl_cpmk_id' => $join_cpl_cpmk2->id,
         ]);
         $subcpmk3_1 = $join_cpl_cpmk3->subcpmks()->create([
@@ -1148,6 +1160,9 @@ class UserSeeder extends Seeder
             'kompetensi_a' => 'A3',
             'kompetensi_p' => 'P3',
             'nama' => 'mampu menerapkan software matematika untuk menyelesaikan masalah geometri dan transformasi',
+            'indikator' => 'ketepatan dalam menerapkan software matematika untuk menyelesaikan masalah geometri dan transformasi',
+            'evaluasi' => 'Proyek mini dan presentasi hasil pemodelan',
+            'bobot' => 20,
             'join_cpl_cpmk_id' => $join_cpl_cpmk3->id,
         ]);
         $subcpmk3_2 = $join_cpl_cpmk3->subcpmks()->create([
@@ -1156,6 +1171,9 @@ class UserSeeder extends Seeder
             'kompetensi_a' => 'A4',
             'kompetensi_p' => 'P3',
             'nama' => 'mampu memanfaatkan software matematika dalam pemodelan matematika',
+            'indikator' => 'ketepatan dalam memanfaatkan software untuk pemodelan dan penyelesaian masalah matematika lanjut',
+            'evaluasi' => 'Proyek terstruktur menggunakan Maple (laporan & file)',
+            'bobot' => 15,
             'join_cpl_cpmk_id' => $join_cpl_cpmk3->id,
         ]);
         $subcpmk4_1 = $join_cpl_cpmk4->subcpmks()->create([
@@ -1164,6 +1182,9 @@ class UserSeeder extends Seeder
             'kompetensi_a' => 'A3',
             'kompetensi_p' => 'P4',
             'nama' => 'mampu mengolah dan menganalisis data menggunakan SPSS',
+            'indikator' => 'ketepatan dalam mengolah dan menganalisis data menggunakan SPSS',
+            'evaluasi' => 'Praktik analisis data (output SPSS & interpretasi tertulis)',
+            'bobot' => 10,
             'join_cpl_cpmk_id' => $join_cpl_cpmk4->id,
         ]);
         $subcpmk4_2 = $join_cpl_cpmk4->subcpmks()->create([
@@ -1172,6 +1193,9 @@ class UserSeeder extends Seeder
             'kompetensi_a' => 'A5',
             'kompetensi_p' => 'P4',
             'nama' => 'mampu menginterpretasikan hasil uji statistik untuk keperluan pembelajaran',
+            'indikator' => 'ketepatan dalam menginterpretasikan hasil uji statistik untuk konteks pembelajaran',
+            'evaluasi' => 'UAS berbasis studi kasus dan interpretasi hasil statistik',
+            'bobot' => 10,
             'join_cpl_cpmk_id' => $join_cpl_cpmk4->id,
         ]);
 
