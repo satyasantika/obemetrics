@@ -30,77 +30,86 @@
                     <hr>
                     <div class="row">
                         <div class="col">
+                            <span class="h4 float-end">Total Pertemuan: {{ $pertemuans->count() }}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
                             <table class="table">
-                                <thead></thead>
-                                <tr>
-                                    <th>Pertemuan</th>
-                                    <th>Sub CPMK</th>
-                                    <th>Indikator</th>
-                                    <th>Metode</th>
-                                    <th>Evaluasi</th>
-                                    <th>Bobot</th>
-                                    <th>Materi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                    @forelse ($pertemuans as $pertemuan)
+                                <tbody>
+                                    @foreach ($subcpmks as $subcpmk)
                                     <tr>
-                                        <td>
-                                            <span class="h1 text-primary">
-                                                {{ $pertemuan->ke }}
-                                            </span>
-                                            {{-- tombol Edit --}}
-                                            <a href="{{ route('mks.pertemuans.edit', [$mk, $pertemuan]) }}" class="btn btn-sm btn-white text-primary"><i class="bi bi-pencil-square"></i></a>
-                                            {{-- tanggal dan waktu --}}
-                                            <br>
-                                            @if ($pertemuan->tanggal)
-                                                <i class="bi bi-calendar-event"></i>
-                                                {{ \Carbon\Carbon::parse($pertemuan->tanggal)->locale('id')->translatedFormat('l, d F Y') }}
-                                            @else
-                                                <span class="badge bg-danger">
-                                                    <i class="bi bi-calendar-event"></i>
-                                                    Tanggal belum diatur
-                                                </span>
-                                            @endif
-                                            <br>
-                                            @if ($pertemuan->jam_mulai && $pertemuan->jam_selesai)
-                                                <span class="badge bg-secondary">
-                                                    <i class="bi bi-clock"></i>
-                                                    {{ \Carbon\Carbon::parse($pertemuan->jam_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($pertemuan->jam_selesai)->format('H:i') }} WIB
-                                                </span>
-                                            @else
-                                                <span class="badge bg-danger">
-                                                    <i class="bi bi-clock"></i>
-                                                    Waktu belum diatur
-                                                </span>
-                                            @endif
-                                        </td>
                                         @php
                                             $kompetensi = [];
-                                            if ($pertemuan->subcpmk && $pertemuan->subcpmk->kompetensi_c) $kompetensi[] = $pertemuan->subcpmk->kompetensi_c;
-                                            if ($pertemuan->subcpmk && $pertemuan->subcpmk->kompetensi_a) $kompetensi[] = $pertemuan->subcpmk->kompetensi_a;
-                                            if ($pertemuan->subcpmk && $pertemuan->subcpmk->kompetensi_p) $kompetensi[] = $pertemuan->subcpmk->kompetensi_p;
+                                            if ($subcpmk->kompetensi_c) $kompetensi[] = $subcpmk->kompetensi_c;
+                                            if ($subcpmk->kompetensi_a) $kompetensi[] = $subcpmk->kompetensi_a;
+                                            if ($subcpmk->kompetensi_p) $kompetensi[] = $subcpmk->kompetensi_p;
                                         @endphp
                                         <td>
-                                            {{ $pertemuan->subcpmk->kode }}
+                                            {{ $subcpmk->kode }}
                                             <br>
                                             <span class="badge bg-info text-dark mb-3">
                                                 [{{ implode(', ', $kompetensi) }}]
                                             </span>
+                                            <br><strong>Indikator</strong>: {{ $subcpmk->indikator }}
+                                            <br><strong>Evaluasi</strong>: {{ $subcpmk->evaluasi }}
+                                            <br><strong>Bobot</strong>: {{ $subcpmk->bobot }}%
                                         </td>
-                                        <td>{{ $pertemuan->subcpmk->indikator }}</td>
-                                        <td></td>
-                                        <td>{{ $pertemuan->subcpmk->evaluasi }}</td>
-                                        <td>{{ $pertemuan->subcpmk->bobot }}</td>
-                                        <td>{{ $pertemuan->materi }}</td>
+                                        <td>
+                                            <table class="table">
+                                                <tbody>
+                                                    @php
+                                                        $pertemuans = \App\Models\Pertemuan::where('subcpmk_id',$subcpmk->id)->get();
+                                                    @endphp
+                                                    @forelse ($pertemuans as $pertemuan)
+                                                    <tr>
+                                                        <td>
+                                                            @if ($pertemuan->ke)
+                                                                Pertemuan ke-{{ $pertemuan->ke.': ' }}
+                                                            @endif
+                                                            {{-- tombol Edit --}}
+                                                            <a href="{{ route('mks.pertemuans.edit', [$mk, $pertemuan]) }}" class="btn btn-sm btn-white text-primary"><i class="bi bi-pencil-square"></i></a>
+                                                            <br>
+                                                            @if ($pertemuan->materi)
+                                                            {{ $pertemuan->materi }}
+                                                            @endif
+                                                            {{-- tanggal dan waktu --}}
+                                                            <br>
+                                                            @if ($pertemuan->tanggal)
+                                                                <i class="bi bi-calendar-event"></i>
+                                                                {{ \Carbon\Carbon::parse($pertemuan->tanggal)->locale('id')->translatedFormat('l, d F Y') }}
+                                                            @else
+                                                                <span class="badge bg-danger">
+                                                                    <i class="bi bi-calendar-event"></i>
+                                                                    Tanggal belum diatur
+                                                                </span>
+                                                            @endif
+                                                            <br>
+                                                            @if ($pertemuan->jam_mulai && $pertemuan->jam_selesai)
+                                                                <span class="badge bg-secondary">
+                                                                    <i class="bi bi-clock"></i>
+                                                                    {{ \Carbon\Carbon::parse($pertemuan->jam_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($pertemuan->jam_selesai)->format('H:i') }} WIB
+                                                                </span>
+                                                            @else
+                                                                <span class="badge bg-danger">
+                                                                    <i class="bi bi-clock"></i>
+                                                                    Waktu belum diatur
+                                                                </span>
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                    @empty
+                                                    <tr>
+                                                        <td colspan="2"><span class="bg-warning text-dark p-2">
+                                                            Belum ada aktivitas perkuliahan untuk mata kuliah ini.</span>
+                                                        </td>
+                                                    </tr>
+                                                    @endforelse
+                                                </tbody>
+                                            </table>
+                                        </td>
                                     </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="2"><span class="bg-warning text-dark p-2">
-                                                Belum ada aktivitas perkuliahan untuk mata kuliah ini.</span>
-                                            </td>
-                                        </tr>
-                                    @endforelse
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
