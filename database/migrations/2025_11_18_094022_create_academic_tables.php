@@ -210,13 +210,13 @@ return new class extends Migration
         //     $table->foreignUuId('pertemuan_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
         //     $table->timestamps();
         // });
-        // // bentuk pembelajaran
-        // Schema::create('bentuk_kuliahs', function (Blueprint $table) {
-        //     $table->uuid('id')->primary('id');
-        //     $table->string('nama')->nullable();
-        //     $table->text('deskripsi')->nullable();
-        //     $table->timestamps();
-        // });
+        // bentuk pembelajaran
+        Schema::create('metodes', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->string('nama')->nullable();
+            $table->text('deskripsi')->nullable();
+            $table->timestamps();
+        });
         // // bentuk pembelajaran satu pertemuan
         // Schema::create('join_pertemuan_bentuk_kuliahs', function (Blueprint $table) {
         //     $table->uuid('id')->primary('id');
@@ -283,6 +283,8 @@ return new class extends Migration
         //     $table->dropForeign('join_kuliah_dosens_kuliah_id_foreign');
         // });
         // Schema::dropIfExists('join_kuliah_dosens');
+        // metode
+        Schema::dropIfExists('metodes');
         // pertemuan
         Schema::table('pertemuans', function (Blueprint $table) {
             $table->dropForeign('pertemuans_subcpmk_id_foreign');

@@ -24,7 +24,7 @@
         <div class="row mb-3">
             <label for="nama" class="col-md-4 col-form-label text-md-end">Nama Semester</label>
             <div class="col-md-8">
-                <textarea name="nama" rows="3" class="form-control" id="nama" required>{{ $semester->nama }}</textarea>
+                <input type="text" placeholder="" value="{{ $semester->nama }}" name="nama" class="form-control" id="nama" required autofocus>
             </div>
         </div>
         {{-- deskripsi --}}

@@ -29,6 +29,11 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'update semesters'])->assignRole('admin');
         Permission::create(['name' => 'delete semesters'])->assignRole('admin');
 
+        Permission::create(['name' => 'create metodes'])->assignRole('admin');
+        Permission::create(['name' => 'read metodes'])->assignRole('admin');
+        Permission::create(['name' => 'update metodes'])->assignRole('admin');
+        Permission::create(['name' => 'delete metodes'])->assignRole('admin');
+
         Permission::create(['name' => 'create kurikulums'])->assignRole('pimpinan prodi');
         Permission::create(['name' => 'read kurikulums'])->assignRole('pimpinan prodi');
         Permission::create(['name' => 'update kurikulums'])->assignRole('pimpinan prodi');

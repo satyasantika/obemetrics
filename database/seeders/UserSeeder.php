@@ -5,9 +5,10 @@ namespace Database\Seeders;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Prodi;
-use App\Models\JoinProdiUser;
+use App\Models\Metode;
 use App\Models\Semester;
 use App\Models\Permission;
+use App\Models\JoinProdiUser;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
@@ -134,6 +135,35 @@ class UserSeeder extends Seeder
         $semester20252 = Semester::create([
             'nama'=>'Semester Genap 2025/2026',
             'kode'=>'20252',
+        ]);
+
+        // data metode
+        $metode_ceramah = Metode::create([
+            'nama'=>'Ceramah',
+        ]);
+        $metode_diskusi = Metode::create([
+            'nama'=>'Diskusi',
+        ]);
+        $metode_praktikum = Metode::create([
+            'nama'=>'Praktikum',
+        ]);
+        $metode_presentasi = Metode::create([
+            'nama'=>'Student Presentation',
+        ]);
+        $metode_menonton = Metode::create([
+            'nama'=>'Menonton/Video',
+        ]);
+        $metode_case = Metode::create([
+            'nama'=>'Case Based Method',
+        ]);
+        $metode_pbl = Metode::create([
+            'nama'=>'Problem/Project Based Learning',
+        ]);
+        $metode_collaborative = Metode::create([
+            'nama'=>'Collaborative Learning',
+        ]);
+        $metode_penguatan = Metode::create([
+            'nama'=>'Penguatan',
         ]);
 
         // data kurikulum
@@ -1211,7 +1241,7 @@ class UserSeeder extends Seeder
         ]);
 
         // pertemuan tiap sub CPMK
-        $pertemuan_subcpmk1_1 = $subcpmk1_1->pertemuans()->createy([
+        $pertemuan_subcpmk1_1 = $subcpmk1_1->pertemuans()->create([
                 'ke' => 1,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,

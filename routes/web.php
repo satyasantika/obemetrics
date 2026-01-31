@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('prodis', App\Http\Controllers\Setting\ProdiController::class);
     Route::resource('prodis.joinprodiusers', App\Http\Controllers\Setting\JoinProdiUserController::class);
     Route::resource('semesters', App\Http\Controllers\Setting\SemesterController::class);
+    Route::resource('metodes', App\Http\Controllers\Setting\MetodeController::class);
 
     // Ruang Prodi
     Route::resource('prodis.kurikulums', App\Http\Controllers\Prodi\KurikulumController::class)->except('index','show');

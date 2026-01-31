@@ -21,18 +21,17 @@
                 <hr>
                 @endcan
 
+                Manajemen data lainnya:<br>
                 @can('read prodis')
-                manajemen data prodi:<br>
                 <a href="{{ route('prodis.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-journal-bookmark"></i> Prodi</a>
-                <br>
-                <hr>
                 @endcan
 
                 @can('read semesters')
-                manajemen data semester:<br>
                 <a href="{{ route('semesters.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-calendar"></i> Semester</a>
-                <br>
-                <hr>
+                @endcan
+
+                @can('read metodes')
+                <a href="{{ route('metodes.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-people"></i> Metode Perkuliahan</a>
                 @endcan
             </div>
         </div>
