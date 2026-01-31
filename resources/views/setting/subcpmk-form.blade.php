@@ -192,6 +192,7 @@
                     <option value="13" @selected($subcpmk->waktu_penagihan == '13')>Pertemuan ke-13</option>
                     <option value="14" @selected($subcpmk->waktu_penagihan == '14')>Pertemuan ke-14</option>
                     <option value="15" @selected($subcpmk->waktu_penagihan == '15')>Pertemuan ke-15</option>
+                    <option value="16" @selected($subcpmk->waktu_penagihan == '16')>Pertemuan ke-16</option>
                 </select>
             </div>
         </div>

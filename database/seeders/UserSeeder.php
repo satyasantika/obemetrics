@@ -127,11 +127,11 @@ class UserSeeder extends Seeder
         ]);
 
         // data semester
-        $semester1 = Semester::create([
+        $semester20251 = Semester::create([
             'nama'=>'Semester Ganjil 2025/2026',
             'kode'=>'20251',
         ]);
-        $semester2 = Semester::create([
+        $semester20252 = Semester::create([
             'nama'=>'Semester Genap 2025/2026',
             'kode'=>'20252',
         ]);
@@ -1210,7 +1210,106 @@ class UserSeeder extends Seeder
             'join_cpl_cpmk_id' => $join_cpl_cpmk4->id,
         ]);
 
+        // pertemuan tiap sub CPMK
+        $pertemuan_subcpmk1_1 = $subcpmk1_1->pertemuans()->createy([
+                'ke' => 1,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Jenis software/aplikasi pembelajaran matematika – Types of mathematics learning software/applications',
+            ]);
+        $pertemuan_subcpmk1_2 = $subcpmk1_2->pertemuans()->create([
+                'ke' => 2,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Aplikasi matematika dinamis dan berbasis web – Dynamic and web-based mathematics applications',
+            ]);
+        $pertemuan_subcpmk2_1 = $subcpmk2_1->pertemuans()->create([
+                'ke' => 3,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Pengenalan Geometer’s Sketchpad (GSP) – Introduction to Geometer’s Sketchpad (GSP)',
+            ]);
+        $pertemuan_subcpmk2_1 = $subcpmk2_1->pertemuans()->create([
 
+                'ke' => 4,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Bangun ruang sisi datar dan sisi lengkung (GSP) – Polyhedra and curved solids using GSP',
+            ]);
+        $pertemuan_subcpmk2_2 = $subcpmk2_2->pertemuans()->create([
+
+                'ke' => 5,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Grafik fungsi, jarak, panjang, keliling, luas, dan sudut – Function graphs, distance, length, perimeter, area, and angles',
+            ]);
+        $pertemuan_subcpmk3_1 = $subcpmk3_1->pertemuans()->create([
+
+                'ke' => 6,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Transformasi geometri (rotasi, translasi, refleksi, dilatasi) – Geometric transformations (rotation, translation, reflection, dilation)',
+            ]);
+        $pertemuan_subcpmk3_1 = $subcpmk3_1->pertemuans()->create([
+                'ke' => 7,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Pengenalan dan penggunaan Cabri 3D – Introduction and use of Cabri 3D',
+            ]);
+        $pertemuan_subcpmk3_1 = $subcpmk3_1->pertemuans()->create([
+                'ke' => 8,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'UTS: Implementasi software matematika untuk geometri, transformasi, dan pemodelan – Midterm exam: implementation of mathematics software',
+            ]);
+        $pertemuan_subcpmk2_1 = $subcpmk2_1->pertemuans()->create([
+                'ke' => 9,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Pengenalan GeoGebra dan konstruksi objek matematika – Introduction to GeoGebra and construction of mathematical objects',
+            ]);
+        $pertemuan_subcpmk2_2 = $subcpmk2_2->pertemuans()->create([
+                'ke' => 10,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Perhitungan matematis menggunakan GeoGebra – Mathematical computations using GeoGebra',
+            ]);
+        $pertemuan_subcpmk3_2 = $subcpmk3_2->pertemuans()->create([
+                'ke' => 11,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Pengenalan software Maple dan konstruksi formula matematika – Introduction to Maple and mathematical formula construction',
+            ]);
+        $pertemuan_subcpmk3_2 = $subcpmk3_2->pertemuans()->create([
+                'ke' => 12,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Penyelesaian masalah aljabar dan matriks dengan Maple – Solving algebra and matrix problems using Maple',
+            ]);
+        $pertemuan_subcpmk3_2 = $subcpmk3_2->pertemuans()->create([
+                'ke' => 13,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Limit, diferensial, dan integral dengan Maple – Limits, differentials, and integrals using Maple',
+            ]);
+        $pertemuan_subcpmk4_1 = $subcpmk4_1->pertemuans()->create([
+                'ke' => 14,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Pengenalan SPSS dan uji validitas serta reliabilitas – Introduction to SPSS and validity & reliability testing',
+            ]);
+        $pertemuan_subcpmk4_1 = $subcpmk4_1->pertemuans()->create([
+                'ke' => 15,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'Uji prasyarat analisis dan uji statistik – Assumption testing and statistical analysis',
+            ]);
+        $pertemuan_subcpmk4_2 = $subcpmk4_2->pertemuans()->create([
+                'ke' => 16,
+                'mk_id' => $mk_KP21514004->id,
+                'semester_id' => $semester20251->id,
+                'materi' => 'UAS: Analisis dan interpretasi data statistik – Final exam: statistical data analysis and interpretation',
+        ]);
 
     }
 }

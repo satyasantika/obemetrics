@@ -38,4 +38,9 @@ class Mk extends Model
         return $this->hasMany(JoinCplCpmk::class);
     }
 
+    public function pertemuans(): HasMany
+    {
+        return $this->hasMany(Pertemuan::class);
+    }
+
 }

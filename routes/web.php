@@ -25,7 +25,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 Route::middleware('auth')->group(function () {
     Route::get('/mypassword/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'showChangePasswordGet'])->name('mypassword.change');
     Route::post('/mypassword/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'changePasswordPost'])->name('mypassword.change.post');
-    // Admin
+    // Ruang Admin
     Route::post('/users/{user}/resetpassword', [App\Http\Controllers\Auth\PasswordChangeController::class, 'resetPasswordPost'])->name('users.resetpassword');
     Route::post('/users/{user}/activation', [App\Http\Controllers\Setting\UserController::class, 'activation'])->name('users.activation');
     Route::resource('users', App\Http\Controllers\Setting\UserController::class)->except(['show']);
@@ -38,7 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('prodis.joinprodiusers', App\Http\Controllers\Setting\JoinProdiUserController::class);
     Route::resource('semesters', App\Http\Controllers\Setting\SemesterController::class);
 
-    // Prodi
+    // Ruang Prodi
     Route::resource('prodis.kurikulums', App\Http\Controllers\Prodi\KurikulumController::class)->except('index','show');
     Route::resource('kurikulums.profils', App\Http\Controllers\Prodi\ProfilController::class)->except('show');
     Route::resource('profils.profilindikators', App\Http\Controllers\Prodi\ProfilIndikatorController::class)->except('index','show');
@@ -57,9 +57,10 @@ Route::middleware('auth')->group(function () {
     // Dosen >< MK
     Route::resource('mks.users', App\Http\Controllers\Prodi\JoinMkUserController::class)->only('index','update');
 
-    // Dosen
+    // Ruang Dosen
     Route::resource('mks.cpmks', App\Http\Controllers\Dosen\CpmkController::class)->except('show');
     Route::resource('mks.subcpmks', App\Http\Controllers\Dosen\SubCpmkController::class)->except('show');
+    Route::resource('mks.pertemuans', App\Http\Controllers\Dosen\PertemuanController::class)->except('show');
     // CPL >< BK
     Route::get('mks/{mk}/joincplcpmks', [App\Http\Controllers\Dosen\JoinCplCpmkController::class,'index'])->name('mks.joincplcpmks.index');
     Route::put('joincplcpmks/{joincplbk}/{cpmk}', [App\Http\Controllers\Dosen\JoinCplCpmkController::class, 'update'])->name('joincplcpmks.update');

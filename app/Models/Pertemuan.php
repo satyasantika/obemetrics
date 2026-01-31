@@ -8,23 +8,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Subcpmk extends Model
+class Pertemuan extends Model
 {
     use HasFactory, HasUuids;
     protected $guarded = ['id'];
+
+    public function subcpmk(): BelongsTo
+    {
+        return $this->belongsTo(SubCpmk::class);
+    }
 
     public function mk(): BelongsTo
     {
         return $this->belongsTo(Mk::class);
     }
 
-    public function joinCplCpmk(): BelongsTo
+    public function semester(): BelongsTo
     {
-        return $this->belongsTo(JoinCplCpmk::class);
+        return $this->belongsTo(Semester::class);
     }
 
-    public function pertemuans(): HasMany
-    {
-        return $this->hasMany(Pertemuan::class);
-    }
 }

@@ -84,5 +84,10 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'update subcpmks'])->assignRole('dosen');
         Permission::create(['name' => 'delete subcpmks'])->assignRole('dosen');
 
+        Permission::create(['name' => 'create pertemuans'])->assignRole('dosen');
+        Permission::create(['name' => 'read pertemuans'])->assignRole('dosen');
+        Permission::create(['name' => 'update pertemuans'])->assignRole('dosen');
+        Permission::create(['name' => 'delete pertemuans'])->assignRole('dosen');
+
     }
 }
