@@ -211,7 +211,7 @@
     @csrf
     @method('DELETE')
     <hr>
-    <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $mk->name }}?');">
+    <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $subcpmk->kode }}: {{ $subcpmk->nama }}?');">
         <i class="bi bi-trash"></i>
     </button>
 </form>

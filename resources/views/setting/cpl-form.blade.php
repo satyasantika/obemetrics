@@ -67,7 +67,7 @@
     @csrf
     @method('DELETE')
     <hr>
-    <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $cpl->name }}?');">
+    <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus  {{ $cpl->kode }}: {{ $cpl->nama }}?');">
         <i class="bi bi-trash"></i>
     </button>
 </form>

@@ -45,7 +45,7 @@
     <form id="delete-form" action="{{ route('prodis.joinprodiusers.destroy',[$prodi->id,$joinprodiuser->id]) }}" method="POST">
         @csrf
         @method('DELETE')
-        <button type="submit" for="delete-form" onclick="return confirm('Yakin akan menghapus {{ $joinprodiuser->name }}?');" class="btn btn-outline-danger btn-sm float-end">
+    <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus {{ $joinprodiuser->user->name }} dari prodi {{ $joinprodiuser->prodi->nama }}?');">
             <i class="bi bi-trash"></i>
         </button>
     </form>
