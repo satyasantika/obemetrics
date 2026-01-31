@@ -156,21 +156,17 @@ return new class extends Migration
             $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->timestamps();
         });
-        // // interaksi mk-cpmk
-        // Schema::create('join_mk_cpmks', function (Blueprint $table) {
-        //     $table->uuid('id')->primary('id');
-        //     $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->foreignUuid('cpmk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->timestamps();
-        // });
-        // // sub cpmk
-        // Schema::create('subcpmks', function (Blueprint $table) {
-        //     $table->uuid('id')->primary('id');
-        //     $table->string('kode')->nullable();
-        //     $table->text('nama')->nullable();
-        //     $table->foreignUuId('cpmk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->timestamps();
-        // });
+        // sub cpmk
+        Schema::create('subcpmks', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->string('kode')->nullable();
+            $table->string('kompetensi_c')->nullable();
+            $table->string('kompetensi_a')->nullable();
+            $table->string('kompetensi_p')->nullable();
+            $table->text('nama')->nullable();
+            $table->foreignUuid('join_cpl_cpmk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->timestamps();
+        });
         // // kuliah
         // Schema::create('kuliahs', function (Blueprint $table) {
         //     $table->uuid('id')->primary('id');
@@ -276,17 +272,11 @@ return new class extends Migration
         //     $table->dropForeign('kuliahs_subcpmk_id_foreign');
         // });
         // Schema::dropIfExists('kuliahs');
-        // // sub cpmk
-        // Schema::table('subcpmks', function (Blueprint $table) {
-        //     $table->dropForeign('subcpmks_cpmk_id_foreign');
-        // });
-        // Schema::dropIfExists('subcpmks');
-        // // interaksi mk-cpmk
-        // Schema::table('join_mk_cpmks', function (Blueprint $table) {
-        //     $table->dropForeign('join_mk_cpmks_mk_id_foreign');
-        //     $table->dropForeign('join_mk_cpmks_cpmk_id_foreign');
-        // });
-        // Schema::dropIfExists('join_mk_cpmks');
+        // sub cpmk
+        Schema::table('subcpmks', function (Blueprint $table) {
+            $table->dropForeign('subcpmks_join_cpl_cpmk_id_foreign');
+        });
+        Schema::dropIfExists('subcpmks');
         // interaksi cpl-cpmk
         Schema::table('join_cpl_cpmks', function (Blueprint $table) {
             $table->dropForeign('join_cpl_cpmks_join_cpl_bk_id_foreign');

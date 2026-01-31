@@ -27,4 +27,9 @@ class JoinBkMk extends Model
         return $this->belongsTo(Bk::class);
     }
 
+    public function joinCplCpmk() : HasMany
+    {
+        return $this->hasMany(JoinCplCpmk::class);
+    }
+
 }

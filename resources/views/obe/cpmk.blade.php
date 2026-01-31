@@ -37,7 +37,7 @@
                                     <tr style="vertical-align: text-top;">
                                         <td>
                                             <strong>{{ $cpmk->kode }}</strong>
-                                            {{-- Edit BK --}}
+                                            {{-- Edit CPMK --}}
                                             <a href="{{ route('mks.cpmks.edit',[$mk->id,$cpmk->id]) }}" class="btn btn-sm btn-white text-primary">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>

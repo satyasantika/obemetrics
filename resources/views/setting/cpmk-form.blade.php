@@ -30,9 +30,8 @@
         @endif
         <input type="hidden" name="mk_id" value="{{ $mk->id }}">
 
+        {{-- kode cpmk --}}
         <div class="row mb-3">
-            {{-- semester --}}
-            {{-- kode cpmk --}}
             <div class="col">
                 <label for="kode" class="form-label"><strong>Kode</strong> CPMK <span class="text-danger">(*)</span></label>
                 <input type="text" placeholder="" value="{{ $cpmk->kode }}" name="kode" class="form-control" id="kode">

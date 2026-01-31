@@ -1091,6 +1091,91 @@ class UserSeeder extends Seeder
             'nama' => 'mampu menganalisis data dan hasil pembelajaran matematika menggunakan software statistik',
         ]);
 
+        // Join CPL BK dengan CPMK
+        $join_cpl_cpmk1 = $mk_KP21514004->joinCplCpmks()->create([
+            'join_cpl_bk_id' => $join_cpl06_bk06->id,
+            'cpmk_id' => $cpmk1->id,
+        ]);
+        $join_cpl_cpmk2 = $mk_KP21514004->joinCplCpmks()->create([
+            'join_cpl_bk_id' => $join_cpl06_bk06->id,
+            'cpmk_id' => $cpmk2->id,
+        ]);
+        $join_cpl_cpmk3 = $mk_KP21514004->joinCplCpmks()->create([
+            'join_cpl_bk_id' => $join_cpl06_bk06->id,
+            'cpmk_id' => $cpmk3->id,
+        ]);
+        $join_cpl_cpmk4 = $mk_KP21514004->joinCplCpmks()->create([
+            'join_cpl_bk_id' => $join_cpl06_bk06->id,
+            'cpmk_id' => $cpmk4->id,
+        ]);
+
+        // Sub CPMK
+        $subcpmk1_1 = $join_cpl_cpmk1->subcpmks()->create([
+            'kode' => 'SubCPMK-1.1',
+            'kompetensi_c' => 'C2',
+            'kompetensi_a' => 'A1',
+            'kompetensi_p' => 'P1',
+            'nama' => 'mampu menjelaskan jenis dan karakteristik software pembelajaran matematika',
+            'join_cpl_cpmk_id' => $join_cpl_cpmk1->id,
+        ]);
+        $subcpmk1_2 = $join_cpl_cpmk1->subcpmks()->create([
+            'kode' => 'SubCPMK-1.2',
+            'kompetensi_c' => 'C2',
+            'kompetensi_a' => 'A2',
+            'kompetensi_p' => 'P1',
+            'nama' => 'mampu mengidentifikasi software matematika sesuai materi pembelajaran',
+            'join_cpl_cpmk_id' => $join_cpl_cpmk1->id,
+        ]);
+        $subcpmk2_1 = $join_cpl_cpmk2->subcpmks()->create([
+            'kode' => 'SubCPMK-2.1',
+            'kompetensi_c' => 'C3',
+            'kompetensi_a' => 'A2',
+            'kompetensi_p' => 'P2',
+            'nama' => 'mampu mengonstruksi objek matematika menggunakan GSP, Cabri 3D, dan GeoGebra',
+            'join_cpl_cpmk_id' => $join_cpl_cpmk2->id,
+        ]);
+        $subcpmk2_2 = $join_cpl_cpmk2->subcpmks()->create([
+            'kode' => 'SubCPMK-2.2',
+            'kompetensi_c' => 'C3',
+            'kompetensi_a' => 'A2',
+            'kompetensi_p' => 'P2',
+            'nama' => 'mampu melakukan perhitungan matematis menggunakan software matematika',
+            'join_cpl_cpmk_id' => $join_cpl_cpmk2->id,
+        ]);
+        $subcpmk3_1 = $join_cpl_cpmk3->subcpmks()->create([
+            'kode' => 'SubCPMK-3.1',
+            'kompetensi_c' => 'C4',
+            'kompetensi_a' => 'A3',
+            'kompetensi_p' => 'P3',
+            'nama' => 'mampu menerapkan software matematika untuk menyelesaikan masalah geometri dan transformasi',
+            'join_cpl_cpmk_id' => $join_cpl_cpmk3->id,
+        ]);
+        $subcpmk3_2 = $join_cpl_cpmk3->subcpmks()->create([
+            'kode' => 'SubCPMK-3.2',
+            'kompetensi_c' => 'C4',
+            'kompetensi_a' => 'A4',
+            'kompetensi_p' => 'P3',
+            'nama' => 'mampu memanfaatkan software matematika dalam pemodelan matematika',
+            'join_cpl_cpmk_id' => $join_cpl_cpmk3->id,
+        ]);
+        $subcpmk4_1 = $join_cpl_cpmk4->subcpmks()->create([
+            'kode' => 'SubCPMK-4.1',
+            'kompetensi_c' => 'C5',
+            'kompetensi_a' => 'A3',
+            'kompetensi_p' => 'P4',
+            'nama' => 'mampu mengolah dan menganalisis data menggunakan SPSS',
+            'join_cpl_cpmk_id' => $join_cpl_cpmk4->id,
+        ]);
+        $subcpmk4_2 = $join_cpl_cpmk4->subcpmks()->create([
+            'kode' => 'SubCPMK-4.2',
+            'kompetensi_c' => 'C5',
+            'kompetensi_a' => 'A5',
+            'kompetensi_p' => 'P4',
+            'nama' => 'mampu menginterpretasikan hasil uji statistik untuk keperluan pembelajaran',
+            'join_cpl_cpmk_id' => $join_cpl_cpmk4->id,
+        ]);
+
+
 
     }
 }

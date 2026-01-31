@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Cpmk extends Model
+class Subcpmk extends Model
 {
     use HasFactory, HasUuids;
     protected $guarded = ['id'];
@@ -18,14 +18,8 @@ class Cpmk extends Model
         return $this->belongsTo(Mk::class);
     }
 
-    public function subcpmks(): HasMany
+    public function joinCplCpmk(): BelongsTo
     {
-        return $this->hasMany(SubCpmk::class);
+        return $this->belongsTo(JoinCplCpmk::class);
     }
-
-    public function joinCplCpmks(): HasMany
-    {
-        return $this->hasMany(JoinCplCpmk::class);
-    }
-    
 }

@@ -27,4 +27,9 @@ class JoinCplCpmk extends Model
         return $this->belongsTo(Mk::class);
     }
 
+    public function subcpmks()
+    {
+        return $this->hasMany(Subcpmk::class);
+    }
+
 }

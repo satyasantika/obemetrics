@@ -32,4 +32,10 @@ class Mk extends Model
     {
         return $this->hasMany(Cpmk::class);
     }
+
+    public function joinCplCpmks(): HasMany
+    {
+        return $this->hasMany(JoinCplCpmk::class);
+    }
+
 }
