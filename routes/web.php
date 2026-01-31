@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('userpermissions', App\Http\Controllers\Setting\UserPermissionController::class)->only('edit', 'update');
     Route::resource('prodis', App\Http\Controllers\Setting\ProdiController::class);
     Route::resource('prodis.joinprodiusers', App\Http\Controllers\Setting\JoinProdiUserController::class);
+    Route::resource('semesters', App\Http\Controllers\Setting\SemesterController::class);
 
     // Prodi
     Route::resource('prodis.kurikulums', App\Http\Controllers\Prodi\KurikulumController::class)->except('index','show');

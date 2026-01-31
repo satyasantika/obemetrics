@@ -28,12 +28,12 @@
                 <hr>
                 @endcan
 
-                manajemen data obe:<br>
-                {{-- <a href="{{ route('profils.index') }}" class="btn btn-sm btn-primary">profil</a> --}}
-                {{-- <a href="{{ route('cpls.index') }}" class="btn btn-sm btn-primary">CPL</a>
-                <a href="{{ route('bks.index') }}" class="btn btn-sm btn-primary">bk</a>
-                <a href="{{ route('cpmks.index') }}" class="btn btn-sm btn-primary">cpmk</a>
-                <a href="{{ route('subcpmks.index') }}" class="btn btn-sm btn-primary">subcpmk</a> --}}
+                @can('read semesters')
+                manajemen data semester:<br>
+                <a href="{{ route('semesters.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-calendar"></i> Semester</a>
+                <br>
+                <hr>
+                @endcan
             </div>
         </div>
     </div>

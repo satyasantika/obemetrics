@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\Prodi;
 use App\Models\JoinProdiUser;
+use App\Models\Semester;
 use App\Models\Permission;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -123,6 +124,16 @@ class UserSeeder extends Seeder
             'prodi_id' => $prodimat->id,
             'user_id' => $dosenuser->id,
             'status' => 'Dosen matematika',
+        ]);
+
+        // data semester
+        $semester1 = Semester::create([
+            'nama'=>'Semester Ganjil 2025/2026',
+            'kode'=>'20251',
+        ]);
+        $semester2 = Semester::create([
+            'nama'=>'Semester Genap 2025/2026',
+            'kode'=>'20252',
         ]);
 
         // data kurikulum
