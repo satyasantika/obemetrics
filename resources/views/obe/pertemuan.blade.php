@@ -30,9 +30,16 @@
                     <hr>
                     <div class="row">
                         <div class="col">
-                            <span class="h4 float-end">Total Pertemuan: {{ $pertemuans->count() }}</span>
+                            <div class="float-end">
+                                <span class="h4">Total Pertemuan: {{ $pertemuans->count() }}</span>
+                                <br>
+                                <a href="{{ route('mks.joinpertemuanmetodes.index',[$mk->id]) }}" class="btn btn-sm btn-secondary mt-1">
+                                    <i class="bi bi-gear"></i> Set Metode Perkuliahan
+                                </a>
+                            </div>
                         </div>
                     </div>
+                    <hr>
                     <div class="row">
                         <div class="col">
                             <table class="table">
@@ -46,7 +53,9 @@
                                             if ($subcpmk->kompetensi_p) $kompetensi[] = $subcpmk->kompetensi_p;
                                         @endphp
                                         <td>
-                                            {{ $subcpmk->kode }}
+                                            <span class="h4">
+                                                {{ $subcpmk->kode }}
+                                            </span>
                                             <br>
                                             <span class="badge bg-info text-dark mb-3">
                                                 [{{ implode(', ', $kompetensi) }}]
@@ -64,39 +73,59 @@
                                                     @forelse ($pertemuans as $pertemuan)
                                                     <tr>
                                                         <td>
-                                                            @if ($pertemuan->ke)
-                                                                Pertemuan ke-{{ $pertemuan->ke.': ' }}
-                                                            @endif
+                                                            <span class="h5">
+                                                                @if ($pertemuan->ke)
+                                                                    Pertemuan ke-{{ $pertemuan->ke.': ' }}
+                                                                @endif
+                                                            </span>
                                                             {{-- tombol Edit --}}
                                                             <a href="{{ route('mks.pertemuans.edit', [$mk, $pertemuan]) }}" class="btn btn-sm btn-white text-primary"><i class="bi bi-pencil-square"></i></a>
                                                             <br>
-                                                            @if ($pertemuan->materi)
-                                                            {{ $pertemuan->materi }}
-                                                            @endif
-                                                            {{-- tanggal dan waktu --}}
+                                                            {{-- materi --}}
+                                                            {{ $pertemuan->materi ?? '' }}
                                                             <br>
-                                                            @if ($pertemuan->tanggal)
-                                                                <i class="bi bi-calendar-event"></i>
-                                                                {{ \Carbon\Carbon::parse($pertemuan->tanggal)->locale('id')->translatedFormat('l, d F Y') }}
-                                                            @else
-                                                                <span class="badge bg-danger">
+                                                            <div class="bg-primary text-white opacity-25"></div>
+                                                                {{-- metode --}}
+                                                                <span class="badge bg-primary text-white">
+                                                                    <i class="bi bi-people"></i>
+                                                                    metode:
+                                                                </span>
+                                                                @php
+                                                                    $joinPertemuanMetode = \App\Models\JoinPertemuanMetode::where('mk_id',$mk->id)->where('pertemuan_id',$pertemuan->id);
+                                                                    $cekMetode = $joinPertemuanMetode->exists();
+                                                                    $joinPertemuanMetodes = $joinPertemuanMetode->get()->map(function($item) {
+                                                                        return $item->metode->nama;
+                                                                    })->toArray();
+                                                                @endphp
+                                                                @if ($cekMetode)
+                                                                    {{ implode(', ', $joinPertemuanMetodes) }}
+                                                                @endif
+
+                                                                {{-- tanggal dan waktu --}}
+                                                                <br>
+                                                                @if ($pertemuan->tanggal)
                                                                     <i class="bi bi-calendar-event"></i>
-                                                                    Tanggal belum diatur
-                                                                </span>
-                                                            @endif
-                                                            <br>
-                                                            @if ($pertemuan->jam_mulai && $pertemuan->jam_selesai)
-                                                                <span class="badge bg-secondary">
-                                                                    <i class="bi bi-clock"></i>
-                                                                    {{ \Carbon\Carbon::parse($pertemuan->jam_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($pertemuan->jam_selesai)->format('H:i') }} WIB
-                                                                </span>
-                                                            @else
-                                                                <span class="badge bg-danger">
-                                                                    <i class="bi bi-clock"></i>
-                                                                    Waktu belum diatur
-                                                                </span>
-                                                            @endif
-                                                        </td>
+                                                                    {{ \Carbon\Carbon::parse($pertemuan->tanggal)->locale('id')->translatedFormat('l, d F Y') }}
+                                                                @else
+                                                                    <span class="badge bg-danger">
+                                                                        <i class="bi bi-calendar-event"></i>
+                                                                        Tanggal belum diatur
+                                                                    </span>
+                                                                @endif
+                                                                <br>
+                                                                @if ($pertemuan->jam_mulai && $pertemuan->jam_selesai)
+                                                                    <span class="badge bg-secondary">
+                                                                        <i class="bi bi-clock"></i>
+                                                                        {{ \Carbon\Carbon::parse($pertemuan->jam_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($pertemuan->jam_selesai)->format('H:i') }} WIB
+                                                                    </span>
+                                                                @else
+                                                                    <span class="badge bg-danger">
+                                                                        <i class="bi bi-clock"></i>
+                                                                        Waktu belum diatur
+                                                                    </span>
+                                                                @endif
+                                                            </td>
+                                                        </div>
                                                     </tr>
                                                     @empty
                                                     <tr>
