@@ -43,4 +43,9 @@ class Mk extends Model
         return $this->hasMany(Pertemuan::class);
     }
 
+    public function joinPertemuanMetode(): HasMany
+    {
+        return $this->hasMany(JoinPertemuanMetode::class);
+    }
+
 }

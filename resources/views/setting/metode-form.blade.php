@@ -13,11 +13,18 @@
         @method('PUT')
     @endif
     <div class="card-body">
+        {{-- kode --}}
+        <div class="row mb-3">
+            <label for="kode" class="col-md-4 col-form-label text-md-end">Kode Metode</label>
+            <div class="col-md-8">
+                <input type="text" placeholder="" value="{{ $metode->kode }}" name="kode" class="form-control" id="kode" required autofocus>
+            </div>
+        </div>
         {{-- nama --}}
         <div class="row mb-3">
             <label for="nama" class="col-md-4 col-form-label text-md-end">Nama Metode</label>
             <div class="col-md-8">
-                <input type="text" placeholder="" value="{{ $metode->nama }}" name="nama" class="form-control" id="nama" required autofocus>
+                <input type="text" placeholder="" value="{{ $metode->nama }}" name="nama" class="form-control" id="nama" required>
             </div>
         </div>
         {{-- deskripsi --}}

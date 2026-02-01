@@ -72,6 +72,7 @@ class MetodesDataTable extends DataTable
     {
         return [
             Column::make('nama'),
+            Column::make('kode'),
             Column::make('deskripsi'),
             Column::make('updated_at'),
             Column::computed('action')

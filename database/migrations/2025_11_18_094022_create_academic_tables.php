@@ -196,6 +196,22 @@ return new class extends Migration
             $table->text('keterangan')->nullable();
             $table->timestamps();
         });
+        // petode perkuliahan
+        Schema::create('metodes', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->string('kode')->nullable();
+            $table->string('nama')->nullable();
+            $table->text('deskripsi')->nullable();
+            $table->timestamps();
+        });
+        // metode perkuliahan pada pertemuan
+        Schema::create('join_pertemuan_metodes', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->foreignUuId('pertemuan_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuId('metode_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuId('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->timestamps();
+        });
         // // dosen pada pertemuan tertentu
         // Schema::create('join_pertemuan_dosens', function (Blueprint $table) {
         //     $table->uuid('id')->primary('id');
@@ -208,21 +224,6 @@ return new class extends Migration
         //     $table->uuid('id')->primary('id');
         //     $table->text('nama')->nullable();
         //     $table->foreignUuId('pertemuan_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->timestamps();
-        // });
-        // bentuk pembelajaran
-        Schema::create('metodes', function (Blueprint $table) {
-            $table->uuid('id')->primary('id');
-            $table->string('nama')->nullable();
-            $table->text('deskripsi')->nullable();
-            $table->timestamps();
-        });
-        // // bentuk pembelajaran satu pertemuan
-        // Schema::create('join_pertemuan_bentuk_kuliahs', function (Blueprint $table) {
-        //     $table->uuid('id')->primary('id');
-        //     $table->foreignUuId('bentuk_kuliah_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->foreignUuId('pertemuan_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->text('deskripsi')->nullable();
         //     $table->timestamps();
         // });
         // // bentuk pembelajaran
@@ -266,23 +267,24 @@ return new class extends Migration
         // });
         // Schema::dropIfExists('join_kuliah_evaluasis');
         // Schema::dropIfExists('bentuk_evaluasis');
-        // // bentuk pembelajaran
-        // Schema::table('join_kuliah_bentuks', function (Blueprint $table) {
-        //     $table->dropForeign('join_kuliah_bentuks_kuliah_id_foreign');
-        //     $table->dropForeign('join_kuliah_bentuks_bentuk_kuliah_id_foreign');
-        // });
-        // Schema::dropIfExists('join_kuliah_bentuks');
         // Schema::dropIfExists('bentuk_kuliahs');
         // // sub materi
         // Schema::table('join_kuliah_submateris', function (Blueprint $table) {
-        //     $table->dropForeign('join_kuliah_submateris_kuliah_id_foreign');
-        // });
-        // Schema::dropIfExists('join_kuliah_submateris');
-        // // dosen pertemuan
-        // Schema::table('join_kuliah_dosens', function (Blueprint $table) {
-        //     $table->dropForeign('join_kuliah_dosens_kuliah_id_foreign');
-        // });
-        // Schema::dropIfExists('join_kuliah_dosens');
+            //     $table->dropForeign('join_kuliah_submateris_kuliah_id_foreign');
+            // });
+            // Schema::dropIfExists('join_kuliah_submateris');
+            // // dosen pertemuan
+            // Schema::table('join_kuliah_dosens', function (Blueprint $table) {
+                //     $table->dropForeign('join_kuliah_dosens_kuliah_id_foreign');
+                // });
+                // Schema::dropIfExists('join_kuliah_dosens');
+        // bentuk pembelajaran
+        Schema::table('join_pertemuan_metodes', function (Blueprint $table) {
+            $table->dropForeign('join_pertemuan_metodes_pertemuan_id_foreign');
+            $table->dropForeign('join_pertemuan_metodes_metode_id_foreign');
+            $table->dropForeign('join_pertemuan_metodes_mk_id_foreign');
+        });
+        Schema::dropIfExists('join_pertemuan_metodes');
         // metode
         Schema::dropIfExists('metodes');
         // pertemuan

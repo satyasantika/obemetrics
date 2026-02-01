@@ -139,30 +139,43 @@ class UserSeeder extends Seeder
 
         // data metode
         $metode_ceramah = Metode::create([
+            'kode'=>'ceramah',
             'nama'=>'Ceramah',
         ]);
         $metode_diskusi = Metode::create([
+            'kode'=>'diskusi',
             'nama'=>'Diskusi',
         ]);
         $metode_praktikum = Metode::create([
+            'kode'=>'praktik',
             'nama'=>'Praktikum',
         ]);
         $metode_presentasi = Metode::create([
+            'kode'=>'presentasi',
             'nama'=>'Student Presentation',
         ]);
         $metode_menonton = Metode::create([
+            'kode'=>'video',
             'nama'=>'Menonton/Video',
         ]);
         $metode_case = Metode::create([
+            'kode'=>'case',
             'nama'=>'Case Based Method',
         ]);
         $metode_pbl = Metode::create([
-            'nama'=>'Problem/Project Based Learning',
+            'kode'=>'PBL',
+            'nama'=>'Problem Based Learning',
+        ]);
+        $metode_pjbl = Metode::create([
+            'kode'=>'PJBL',
+            'nama'=>'Project Based Learning',
         ]);
         $metode_collaborative = Metode::create([
+            'kode'=>'kolab',
             'nama'=>'Collaborative Learning',
         ]);
         $metode_penguatan = Metode::create([
+            'kode'=>'penguatan',
             'nama'=>'Penguatan',
         ]);
 
@@ -1241,104 +1254,246 @@ class UserSeeder extends Seeder
         ]);
 
         // pertemuan tiap sub CPMK
-        $pertemuan_subcpmk1_1 = $subcpmk1_1->pertemuans()->create([
+        $pertemuan1 = $subcpmk1_1->pertemuans()->create([
                 'ke' => 1,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Jenis software/aplikasi pembelajaran matematika – Types of mathematics learning software/applications',
             ]);
-        $pertemuan_subcpmk1_2 = $subcpmk1_2->pertemuans()->create([
+        $pertemuan2 = $subcpmk1_2->pertemuans()->create([
                 'ke' => 2,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Aplikasi matematika dinamis dan berbasis web – Dynamic and web-based mathematics applications',
             ]);
-        $pertemuan_subcpmk2_1 = $subcpmk2_1->pertemuans()->create([
+        $pertemuan3 = $subcpmk2_1->pertemuans()->create([
                 'ke' => 3,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Pengenalan Geometer’s Sketchpad (GSP) – Introduction to Geometer’s Sketchpad (GSP)',
             ]);
-        $pertemuan_subcpmk2_1 = $subcpmk2_1->pertemuans()->create([
+        $pertemuan4 = $subcpmk2_1->pertemuans()->create([
 
                 'ke' => 4,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Bangun ruang sisi datar dan sisi lengkung (GSP) – Polyhedra and curved solids using GSP',
             ]);
-        $pertemuan_subcpmk2_2 = $subcpmk2_2->pertemuans()->create([
+        $pertemuan5 = $subcpmk2_2->pertemuans()->create([
 
                 'ke' => 5,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Grafik fungsi, jarak, panjang, keliling, luas, dan sudut – Function graphs, distance, length, perimeter, area, and angles',
             ]);
-        $pertemuan_subcpmk3_1 = $subcpmk3_1->pertemuans()->create([
+        $pertemuan6 = $subcpmk3_1->pertemuans()->create([
 
                 'ke' => 6,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Transformasi geometri (rotasi, translasi, refleksi, dilatasi) – Geometric transformations (rotation, translation, reflection, dilation)',
             ]);
-        $pertemuan_subcpmk3_1 = $subcpmk3_1->pertemuans()->create([
+        $pertemuan7 = $subcpmk3_1->pertemuans()->create([
                 'ke' => 7,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Pengenalan dan penggunaan Cabri 3D – Introduction and use of Cabri 3D',
             ]);
-        $pertemuan_subcpmk3_1 = $subcpmk3_1->pertemuans()->create([
+        $pertemuan8 = $subcpmk3_1->pertemuans()->create([
                 'ke' => 8,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'UTS: Implementasi software matematika untuk geometri, transformasi, dan pemodelan – Midterm exam: implementation of mathematics software',
             ]);
-        $pertemuan_subcpmk2_1 = $subcpmk2_1->pertemuans()->create([
+        $pertemuan9 = $subcpmk2_1->pertemuans()->create([
                 'ke' => 9,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Pengenalan GeoGebra dan konstruksi objek matematika – Introduction to GeoGebra and construction of mathematical objects',
             ]);
-        $pertemuan_subcpmk2_2 = $subcpmk2_2->pertemuans()->create([
+        $pertemuan10 = $subcpmk2_2->pertemuans()->create([
                 'ke' => 10,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Perhitungan matematis menggunakan GeoGebra – Mathematical computations using GeoGebra',
             ]);
-        $pertemuan_subcpmk3_2 = $subcpmk3_2->pertemuans()->create([
+        $pertemuan11 = $subcpmk3_2->pertemuans()->create([
                 'ke' => 11,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Pengenalan software Maple dan konstruksi formula matematika – Introduction to Maple and mathematical formula construction',
             ]);
-        $pertemuan_subcpmk3_2 = $subcpmk3_2->pertemuans()->create([
+        $pertemuan12 = $subcpmk3_2->pertemuans()->create([
                 'ke' => 12,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Penyelesaian masalah aljabar dan matriks dengan Maple – Solving algebra and matrix problems using Maple',
             ]);
-        $pertemuan_subcpmk3_2 = $subcpmk3_2->pertemuans()->create([
+        $pertemuan13 = $subcpmk3_2->pertemuans()->create([
                 'ke' => 13,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Limit, diferensial, dan integral dengan Maple – Limits, differentials, and integrals using Maple',
             ]);
-        $pertemuan_subcpmk4_1 = $subcpmk4_1->pertemuans()->create([
+        $pertemuan14 = $subcpmk4_1->pertemuans()->create([
                 'ke' => 14,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Pengenalan SPSS dan uji validitas serta reliabilitas – Introduction to SPSS and validity & reliability testing',
             ]);
-        $pertemuan_subcpmk4_1 = $subcpmk4_1->pertemuans()->create([
+        $pertemuan15 = $subcpmk4_1->pertemuans()->create([
                 'ke' => 15,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'Uji prasyarat analisis dan uji statistik – Assumption testing and statistical analysis',
             ]);
-        $pertemuan_subcpmk4_2 = $subcpmk4_2->pertemuans()->create([
+        $pertemuan16 = $subcpmk4_2->pertemuans()->create([
                 'ke' => 16,
                 'mk_id' => $mk_KP21514004->id,
                 'semester_id' => $semester20251->id,
                 'materi' => 'UAS: Analisis dan interpretasi data statistik – Final exam: statistical data analysis and interpretation',
+        ]);
+
+        // join pertemuan metode
+        $pertemuan1->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_ceramah->id,
+            ],
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_menonton->id,
+            ],
+        ]);
+        $pertemuan2->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_diskusi->id,
+            ],
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_case->id,
+            ],
+        ]);
+        $pertemuan3->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_praktikum->id,
+            ],
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_collaborative->id,
+            ],
+        ]);
+        $pertemuan4->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_praktikum->id,
+            ],
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_collaborative->id,
+            ],
+        ]);
+        $pertemuan5->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_praktikum->id,
+            ],
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_pbl->id,
+            ],
+        ]);
+        $pertemuan6->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_pbl->id,
+            ],
+        ]);
+        $pertemuan7->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_pbl->id,
+            ],
+        ]);
+        $pertemuan8->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_pbl->id,
+            ],
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_presentasi->id,
+            ],
+        ]);
+        $pertemuan9->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_praktikum->id,
+            ],
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_collaborative->id,
+            ],
+        ]);
+        $pertemuan10->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_praktikum->id,
+            ],
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_pbl->id,
+            ],
+        ]);
+        $pertemuan11->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_pjbl->id,
+            ],
+        ]);
+        $pertemuan12->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_pjbl->id,
+            ],
+        ]);
+        $pertemuan13->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_pjbl->id,
+            ],
+        ]);
+        $pertemuan14->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_praktikum->id,
+            ],
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_case->id,
+            ],
+        ]);
+        $pertemuan15->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_praktikum->id,
+            ],
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_case->id,
+            ],
+        ]);
+        $pertemuan16->joinPertemuanMetodes()->createMany([
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_praktikum->id,
+            ],
+            [
+                'mk_id' => $mk_KP21514004->id,
+                'metode_id' => $metode_presentasi->id,
+            ],
         ]);
 
     }

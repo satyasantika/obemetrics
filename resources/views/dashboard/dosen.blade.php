@@ -56,6 +56,9 @@
                                         <a href="{{ route('mks.pertemuans.index',[$mk->id]) }}" class="btn btn-sm btn-secondary mt-1">
                                             <i class="bi bi-gear"></i> Set Pertemunan
                                         </a>
+                                        <a href="{{ route('mks.joinpertemuanmetodes.index',[$mk->id]) }}" class="btn btn-sm btn-secondary mt-1">
+                                            <i class="bi bi-gear"></i> Set Metode Perkuliahan
+                                        </a>
                                     </li>
                                 @endforeach
                             </ol>

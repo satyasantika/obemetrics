@@ -65,5 +65,8 @@ Route::middleware('auth')->group(function () {
     // CPL >< BK
     Route::get('mks/{mk}/joincplcpmks', [App\Http\Controllers\Dosen\JoinCplCpmkController::class,'index'])->name('mks.joincplcpmks.index');
     Route::put('joincplcpmks/{joincplbk}/{cpmk}', [App\Http\Controllers\Dosen\JoinCplCpmkController::class, 'update'])->name('joincplcpmks.update');
+    // Pertemuan >< Metode Perkuliahan
+    Route::get('mks/{mk}/joinpertemuanmetodes', [App\Http\Controllers\Dosen\JoinPertemuanMetodeController::class,'index'])->name('mks.joinpertemuanmetodes.index');
+    Route::put('joinpertemuanmetodes/{pertemuan}/{metode}', [App\Http\Controllers\Dosen\JoinPertemuanMetodeController::class, 'update'])->name('joinpertemuanmetodes.update');
 
 });

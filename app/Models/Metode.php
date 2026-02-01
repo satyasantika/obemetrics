@@ -12,4 +12,9 @@ class Metode extends Model
     use HasFactory, HasUuids;
     protected $guarded = ['id'];
 
+    public function joinPertemuanMetode(): HasMany
+    {
+        return $this->hasMany(JoinPertemuanMetode::class);
+    }
+
 }

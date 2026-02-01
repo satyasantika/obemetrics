@@ -28,4 +28,9 @@ class Pertemuan extends Model
         return $this->belongsTo(Semester::class);
     }
 
+    public function joinPertemuanMetodes(): HasMany
+    {
+        return $this->hasMany(JoinPertemuanMetode::class);
+    }
+
 }
