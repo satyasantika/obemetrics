@@ -196,7 +196,7 @@ return new class extends Migration
             $table->text('keterangan')->nullable();
             $table->timestamps();
         });
-        // petode perkuliahan
+        // metode perkuliahan
         Schema::create('metodes', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
             $table->string('kode')->nullable();
@@ -212,6 +212,15 @@ return new class extends Migration
             $table->foreignUuId('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->timestamps();
         });
+        // evaluasi perkuliahan
+        Schema::create('evaluasis', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->string('kode')->nullable();
+            $table->string('nama')->nullable();
+            $table->string('kategori')->nullable();
+            $table->text('deskripsi')->nullable();
+            $table->timestamps();
+        });
         // // dosen pada pertemuan tertentu
         // Schema::create('join_pertemuan_dosens', function (Blueprint $table) {
         //     $table->uuid('id')->primary('id');
@@ -224,13 +233,6 @@ return new class extends Migration
         //     $table->uuid('id')->primary('id');
         //     $table->text('nama')->nullable();
         //     $table->foreignUuId('pertemuan_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->timestamps();
-        // });
-        // // bentuk pembelajaran
-        // Schema::create('bentuk_evaluasis', function (Blueprint $table) {
-        //     $table->uuid('id')->primary('id');
-        //     $table->string('nama')->nullable();
-        //     $table->text('deskripsi')->nullable();
         //     $table->timestamps();
         // });
         // // evaluasi pembelajaran
@@ -278,6 +280,8 @@ return new class extends Migration
                 //     $table->dropForeign('join_kuliah_dosens_kuliah_id_foreign');
                 // });
                 // Schema::dropIfExists('join_kuliah_dosens');
+        // evaluasi
+        Schema::dropIfExists('evaluasis');
         // bentuk pembelajaran
         Schema::table('join_pertemuan_metodes', function (Blueprint $table) {
             $table->dropForeign('join_pertemuan_metodes_pertemuan_id_foreign');

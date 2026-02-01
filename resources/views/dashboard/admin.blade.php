@@ -33,6 +33,10 @@
                 @can('read metodes')
                 <a href="{{ route('metodes.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-people"></i> Metode Perkuliahan</a>
                 @endcan
+
+                @can('read evaluasis')
+                <a href="{{ route('evaluasis.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-clipboard-check"></i> Evaluasi</a>
+                @endcan
             </div>
         </div>
     </div>

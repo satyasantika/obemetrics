@@ -6,6 +6,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\Prodi;
 use App\Models\Metode;
+use App\Models\Evaluasi;
 use App\Models\Semester;
 use App\Models\Permission;
 use App\Models\JoinProdiUser;
@@ -179,6 +180,47 @@ class UserSeeder extends Seeder
             'nama'=>'Penguatan',
         ]);
 
+        // data evaluasi
+        $evaluasi_uts = Evaluasi::create([
+            'kode'=>'uts',
+            'kategori'=>'Pengetahuan/Kognitif',
+            'nama'=>'Ujian Tengah Semester (UTS)',
+        ]);
+        $evaluasi_uas = Evaluasi::create([
+            'kode'=>'uas',
+            'kategori'=>'Pengetahuan/Kognitif',
+            'nama'=>'Ujian Akhir Semester (UAS)',
+        ]);
+        $evaluasi_kuis = Evaluasi::create([
+            'kode'=>'kuis',
+            'kategori'=>'Pengetahuan/Kognitif',
+            'nama'=>'Kuis',
+        ]);
+        $evaluasi_tugas = Evaluasi::create([
+            'kode'=>'tugas',
+            'kategori'=>'Pengetahuan/Kognitif',
+            'nama'=>'Tugas',
+        ]);
+        $evaluasi_proyek = Evaluasi::create([
+            'kode'=>'proyek_individu',
+            'kategori'=>'Hasil Proyek',
+            'nama'=>'Hasil Proyek Individu',
+        ]);
+        $evaluasi_proyek_kelompok = Evaluasi::create([
+            'kode'=>'proyek_kelompok',
+            'kategori'=>'Hasil Proyek',
+            'nama'=>'Hasil Proyek Kelompok',
+        ]);
+        $evaluasi_partisipasi_individu = Evaluasi::create([
+            'kode'=>'partisipasi_individu',
+            'kategori'=>'Aktivitas Partisipatif',
+            'nama'=>'Partisipasi Individu',
+        ]);
+        $evaluasi_partisipasi_kelompok = Evaluasi::create([
+            'kode'=>'partisipasi_kelompok',
+            'kategori'=>'Aktivitas Partisipatif',
+            'nama'=>'Partisipasi Kelompok',
+        ]);
         // data kurikulum
         $kurikulum = $prodimat->kurikulums()->create([
             'nama'=>'Kurikulum OBE 2025',
@@ -1495,6 +1537,8 @@ class UserSeeder extends Seeder
                 'metode_id' => $metode_presentasi->id,
             ],
         ]);
+
+
 
     }
 }
