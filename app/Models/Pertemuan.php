@@ -33,4 +33,9 @@ class Pertemuan extends Model
         return $this->hasMany(JoinPertemuanMetode::class);
     }
 
+    public function penugasans(): HasMany
+    {
+        return $this->hasMany(Penugasan::class);
+    }
+
 }

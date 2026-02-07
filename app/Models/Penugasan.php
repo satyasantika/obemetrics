@@ -7,14 +7,24 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Evaluasi extends Model
+class Penugasan extends Model
 {
     use HasFactory, HasUuids;
     protected $guarded = ['id'];
 
-    public function penugasans(): HasMany
+    public function mk(): BelongsTo
     {
-        return $this->hasMany(Penugasan::class);
+        return $this->belongsTo(Mk::class);
+    }
+
+    public function evaluasi()
+    {
+        return $this->belongsTo(Evaluasi::class);
+    }
+
+    public function pertemuan()
+    {
+        return $this->belongsTo(Pertemuan::class);
     }
 
 }

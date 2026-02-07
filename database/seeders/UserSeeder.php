@@ -201,7 +201,7 @@ class UserSeeder extends Seeder
             'kategori'=>'Pengetahuan/Kognitif',
             'nama'=>'Tugas',
         ]);
-        $evaluasi_proyek = Evaluasi::create([
+        $evaluasi_proyek_individu = Evaluasi::create([
             'kode'=>'proyek_individu',
             'kategori'=>'Hasil Proyek',
             'nama'=>'Hasil Proyek Individu',
@@ -1538,7 +1538,84 @@ class UserSeeder extends Seeder
             ],
         ]);
 
-
+        // data penugasan mata kuliah KP21514004
+        $penugasan1 = $mk_KP21514004->penugasans()->create([
+            'nama' => 'Kuis Konseptual dan Ringkasan Tertulis Terstruktur',
+            'bobot' => 5,
+            'pertemuan_id' => $pertemuan1->id,
+            'evaluasi_id' => $evaluasi_kuis->id,
+            'deskripsi' => 'Kuis singkat untuk menguji pemahaman konsep jenis dan karakteristik software pembelajaran matematika, serta ringkasan tertulis terstruktur sebagai refleksi pembelajaran.',
+        ]);
+        $penugasan2 = $mk_KP21514004->penugasans()->create([
+            'nama' => 'Tugas Klasifikasi Software Berbasis Studi Kasus',
+            'bobot' => 5,
+            'pertemuan_id' => $pertemuan2->id,
+            'evaluasi_id' => $evaluasi_tugas->id,
+            'deskripsi' => 'Tugas individu untuk mengklasifikasikan berbagai software/aplikasi pembelajaran matematika berdasarkan studi kasus yang diberikan.',
+        ]);
+        $penugasan3 = $mk_KP21514004->penugasans()->create([
+            'nama' => 'Observasi proses Konstruksi Objek Matematika Bangunan Ruang dengan GSP',
+            'bobot' => 10,
+            'pertemuan_id' => $pertemuan5->id,
+            'evaluasi_id' => $evaluasi_partisipasi_individu->id,
+            'deskripsi' => 'Praktikum menggunakan GSP untuk mengonstruksi berbagai objek matematika, diikuti dengan pengumpulan lembar kerja praktikum.',
+        ]);
+        $penugasan4 = $mk_KP21514004->penugasans()->create([
+            'nama' => 'Observasi proses Konstruksi Objek Matematika Bangunan Ruang dengan GeoGebra',
+            'bobot' => 5,
+            'pertemuan_id' => $pertemuan9->id,
+            'evaluasi_id' => $evaluasi_partisipasi_individu->id,
+            'deskripsi' => 'Praktikum menggunakan GSP untuk mengonstruksi berbagai objek matematika, diikuti dengan pengumpulan lembar kerja praktikum.',
+        ]);
+        $penugasan5 = $mk_KP21514004->penugasans()->create([
+            'nama' => 'Tugas Pemecahan Soal Berbantuan Software GSP',
+            'bobot' => 10,
+            'pertemuan_id' => $pertemuan5->id,
+            'evaluasi_id' => $evaluasi_tugas->id,
+            'deskripsi' => 'Tugas individu untuk menyelesaikan berbagai soal matematika dengan bantuan software matematika, meliputi output dan langkah penyelesaian.',
+        ]);
+        $penugasan6 = $mk_KP21514004->penugasans()->create([
+            'nama' => 'Tugas Pemecahan Soal Berbantuan Software Geogebra',
+            'bobot' => 10,
+            'pertemuan_id' => $pertemuan10->id,
+            'evaluasi_id' => $evaluasi_tugas->id,
+            'deskripsi' => 'Tugas individu untuk menyelesaikan berbagai soal matematika dengan bantuan software matematika, meliputi output dan langkah penyelesaian.',
+        ]);
+        $penugasan7 = $mk_KP21514004->penugasans()->create([
+            'nama' => 'Proyek Mini Hasil Pemodelan',
+            'bobot' => 10,
+            'pertemuan_id' => $pertemuan6->id,
+            'evaluasi_id' => $evaluasi_proyek_kelompok->id,
+            'deskripsi' => 'Proyek kelompok untuk menerapkan software matematika dalam menyelesaikan masalah geometri dan transformasi hasil pemodelan.',
+        ]);
+        $penugasan8 = $mk_KP21514004->penugasans()->create([
+            'nama' => 'Presentasi Hasil Pemodelan',
+            'bobot' => 10,
+            'pertemuan_id' => $pertemuan8->id,
+            'evaluasi_id' => $evaluasi_proyek_kelompok->id,
+            'deskripsi' => 'Presentasi hasil pemodelan.',
+        ]);
+        $penugasan9 = $mk_KP21514004->penugasans()->create([
+            'nama' => 'Proyek Terstruktur Menggunakan Maple',
+            'bobot' => 15,
+            'pertemuan_id' => $pertemuan13->id,
+            'evaluasi_id' => $evaluasi_proyek_individu->id,
+            'deskripsi' => 'Proyek individu yang melibatkan pemodelan matematika menggunakan software Maple, dengan pengumpulan laporan dan file proyek.',
+        ]);
+        $penugasan10 = $mk_KP21514004->penugasans()->create([
+            'nama' => 'Interpretasi Analisis Data dengan SPSS',
+            'bobot' => 10,
+            'pertemuan_id' => $pertemuan15->id,
+            'evaluasi_id' => $evaluasi_proyek_individu->id,
+            'deskripsi' => 'Praktikum untuk mengolah dan menganalisis data menggunakan SPSS, diikuti dengan pengumpulan output SPSS dan interpretasi tertulis.',
+        ]);
+        $penugasan11 = $mk_KP21514004->penugasans()->create([
+            'nama' => 'Presentasi Laporan Interpretasi Hasil Statistik',
+            'bobot' => 10,
+            'pertemuan_id' => $pertemuan16->id,
+            'evaluasi_id' => $evaluasi_partisipasi_individu->id,
+            'deskripsi' => 'Ujian akhir semester berbasis studi kasus yang menguji kemampuan mahasiswa dalam menganalisis dan menginterpretasikan hasil uji statistik untuk keperluan pembelajaran.',
+        ]);
 
     }
 }

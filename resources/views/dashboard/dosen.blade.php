@@ -53,12 +53,16 @@
                                         <a href="{{ route('mks.subcpmks.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
                                             <i class="bi bi-list-nested"></i> SubCPMK
                                         </a>
-                                        <a href="{{ route('mks.pertemuans.index',[$mk->id]) }}" class="btn btn-sm btn-secondary mt-1">
-                                            <i class="bi bi-gear"></i> Set Pertemunan
+                                        <a href="{{ route('mks.pertemuans.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
+                                            <i class="bi bi-easel"></i> Perkuliahan
                                         </a>
                                         <a href="{{ route('mks.joinpertemuanmetodes.index',[$mk->id]) }}" class="btn btn-sm btn-secondary mt-1">
                                             <i class="bi bi-gear"></i> Set Metode Perkuliahan
                                         </a>
+                                        <a href="{{ route('mks.penugasans.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
+                                            <i class="bi bi-clipboard-list"></i> Penugasan
+                                        </a>
+
                                     </li>
                                 @endforeach
                             </ol>

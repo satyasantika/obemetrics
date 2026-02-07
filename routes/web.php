@@ -69,5 +69,7 @@ Route::middleware('auth')->group(function () {
     // Pertemuan >< Metode Perkuliahan
     Route::get('mks/{mk}/joinpertemuanmetodes', [App\Http\Controllers\Dosen\JoinPertemuanMetodeController::class,'index'])->name('mks.joinpertemuanmetodes.index');
     Route::put('joinpertemuanmetodes/{pertemuan}/{metode}', [App\Http\Controllers\Dosen\JoinPertemuanMetodeController::class, 'update'])->name('joinpertemuanmetodes.update');
+    // Penilaian
+    Route::resource('mks.penugasans', App\Http\Controllers\Dosen\PenugasanController::class)->except('show');
 
 });

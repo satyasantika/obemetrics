@@ -176,7 +176,6 @@ return new class extends Migration
             $table->text('indikator')->nullable();
             $table->text('evaluasi')->nullable();
             $table->double('bobot')->nullable();
-            $table->integer('waktu_penagihan')->nullable();
             $table->foreignUuid('join_cpl_cpmk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->string('paket_subcpmk')->nullable();
             $table->timestamps();
@@ -212,12 +211,23 @@ return new class extends Migration
             $table->foreignUuId('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->timestamps();
         });
-        // evaluasi perkuliahan
+        // evaluasi
         Schema::create('evaluasis', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
             $table->string('kode')->nullable();
             $table->string('nama')->nullable();
             $table->string('kategori')->nullable();
+            $table->text('deskripsi')->nullable();
+            $table->timestamps();
+        });
+        // asesmen (penilaian) pada sub cpmk
+        Schema::create('penugasans', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->string('nama')->nullable();
+            $table->double('bobot')->nullable();
+            $table->foreignUuId('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuId('evaluasi_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuId('pertemuan_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->text('deskripsi')->nullable();
             $table->timestamps();
         });
@@ -280,6 +290,13 @@ return new class extends Migration
                 //     $table->dropForeign('join_kuliah_dosens_kuliah_id_foreign');
                 // });
                 // Schema::dropIfExists('join_kuliah_dosens');
+        // penugasan
+        Schema::table('penugasans', function (Blueprint $table) {
+            $table->dropForeign('penugasans_mk_id_foreign');
+            $table->dropForeign('penugasans_evaluasi_id_foreign');
+            $table->dropForeign('penugasans_pertemuan_id_foreign');
+        });
+        Schema::dropIfExists('penugasans');
         // evaluasi
         Schema::dropIfExists('evaluasis');
         // bentuk pembelajaran
