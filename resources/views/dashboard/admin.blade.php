@@ -37,6 +37,10 @@
                 @can('read evaluasis')
                 <a href="{{ route('evaluasis.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-clipboard-check"></i> Evaluasi</a>
                 @endcan
+
+                @can('read mahasiswas')
+                <a href="{{ route('mahasiswas.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-people-fill"></i> Mahasiswa</a>
+                @endcan
             </div>
         </div>
     </div>

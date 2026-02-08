@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('semesters', App\Http\Controllers\Setting\SemesterController::class);
     Route::resource('metodes', App\Http\Controllers\Setting\MetodeController::class);
     Route::resource('evaluasis', App\Http\Controllers\Setting\EvaluasiController::class);
+    Route::resource('mahasiswas', App\Http\Controllers\Setting\MahasiswaController::class);
 
     // Ruang Prodi
     Route::resource('prodis.kurikulums', App\Http\Controllers\Prodi\KurikulumController::class)->except('index','show');

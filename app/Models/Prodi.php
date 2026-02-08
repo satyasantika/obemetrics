@@ -17,4 +17,9 @@ class Prodi extends Model
         return $this->hasMany(Kurikulum::class);
     }
 
+    public function mahasiswas(): HasMany
+    {
+        return $this->hasMany(Mahasiswa::class);
+    }
+
 }

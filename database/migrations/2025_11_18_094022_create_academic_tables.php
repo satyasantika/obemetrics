@@ -177,7 +177,7 @@ return new class extends Migration
             $table->text('evaluasi')->nullable();
             $table->double('bobot')->nullable();
             $table->foreignUuid('join_cpl_cpmk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->string('paket_subcpmk')->nullable();
+            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->timestamps();
         });
         // pertemuan
@@ -228,6 +228,7 @@ return new class extends Migration
             $table->foreignUuId('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->foreignUuId('evaluasi_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->foreignUuId('pertemuan_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuId('semester_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->text('deskripsi')->nullable();
             $table->timestamps();
         });
@@ -240,6 +241,28 @@ return new class extends Migration
             $table->double('bobot')->nullable()->default(100);
             $table->timestamps();
         });
+        // identitas mahasiswa
+        Schema::create('mahasiswas', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->string('nim');
+            $table->index('nim');
+            $table->string('nama')->nullable();
+            $table->string('angkatan')->nullable();
+            $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
+            $table->timestamps();
+        });
+        // // penilaian mahasiswa pada penugasan
+        // Schema::create('nilai_penugasans', function (Blueprint $table) {
+        //     $table->uuid('id')->primary('id');
+        //     $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+        //     $table->foreignUuid('penugasan_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+        //     $table->foreignUuid('mahasiswa_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+        //     $table->double('nilai')->nullable();
+        //     $table->text('komentar')->nullable();
+        //     $table->timestamps();
+        // });
         // // dosen pada pertemuan tertentu
         // Schema::create('join_pertemuan_dosens', function (Blueprint $table) {
         //     $table->uuid('id')->primary('id');
@@ -299,6 +322,18 @@ return new class extends Migration
                 //     $table->dropForeign('join_kuliah_dosens_kuliah_id_foreign');
                 // });
                 // Schema::dropIfExists('join_kuliah_dosens');
+        // penilaian mahasiswa pada penugasan
+        // Schema::table('nilai_penugasans', function (Blueprint $table) {
+        //     $table->dropForeign('nilai_penugasans_mk_id_foreign');
+        //     $table->dropForeign('nilai_penugasans_penugasan_id_foreign');
+        //     $table->dropForeign('nilai_penugasans_mahasiswa_id_foreign');
+        // });
+        // Schema::dropIfExists('nilai_penugasans');
+        // mahasiswa
+        Schema::table('mahasiswas', function (Blueprint $table) {
+            $table->dropForeign('mahasiswas_prodi_id_foreign');
+        });
+        Schema::dropIfExists('mahasiswas');
         // set subcpmk pada penugasan
         Schema::table('join_subcpmk_penugasans', function (Blueprint $table) {
             $table->dropForeign('join_subcpmk_penugasans_penugasan_id_foreign');
@@ -311,6 +346,7 @@ return new class extends Migration
             $table->dropForeign('penugasans_mk_id_foreign');
             $table->dropForeign('penugasans_evaluasi_id_foreign');
             $table->dropForeign('penugasans_pertemuan_id_foreign');
+            $table->dropForeign('penugasans_semester_id_foreign');
         });
         Schema::dropIfExists('penugasans');
         // evaluasi

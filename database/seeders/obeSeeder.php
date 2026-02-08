@@ -110,5 +110,15 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'read join subcpmk penugasans'])->assignRole('dosen');
         Permission::create(['name' => 'update join subcpmk penugasans'])->assignRole('dosen');
 
+        Permission::create(['name' => 'create mahasiswas'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'read mahasiswas'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'update mahasiswas'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'delete mahasiswas'])->assignRole('admin','operator prodi');
+
+        Permission::create(['name' => 'create nilaipenugasans'])->assignRole('dosen');
+        Permission::create(['name' => 'read nilaipenugasans'])->assignRole('dosen');
+        Permission::create(['name' => 'update nilaipenugasans'])->assignRole('dosen');
+        Permission::create(['name' => 'delete nilaipenugasans'])->assignRole('dosen');
+
     }
 }
