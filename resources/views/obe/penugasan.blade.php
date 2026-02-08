@@ -8,7 +8,7 @@
                 <div class="card-header">
                     {{-- header --}}
                     <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Data Aktivitas Pertemuan</strong>
+                    Rancangan Tugas</strong>
                     <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                 </div>
                 <div class="card-body">
@@ -30,8 +30,26 @@
                     <hr>
                     <div class="row">
                         <div class="col">
+                            <div class="">
+                                @if ($penugasans->count()>0)
+                                <a href="{{ route('mks.joinsubcpmkpenugasans.index',$mk) }}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-link-45deg"></i> Kelola Hubungan SubCPMK & Tugas
+                                </a>
+                                @endif
+                                <a href="{{ route('mks.pertemuans.index',[$mk->id]) }}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-easel"></i> Kelola Pertemuan
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <hr>
+                    <div class="row">
+                        <div class="col">
                             <div class="float-end">
-                                <span class="h4">Total Tugas: {{ $penugasans->count() }}</span>
+                                <span class="h4">Banyak Tugas: {{ $penugasans->count() }}</span>
+                                <br>
+                                <span class="h4 {{ $penugasans->sum('bobot')!=100 ? 'text-danger' : '' }}">Total Bobot Tugas: {{ $penugasans->sum('bobot') }} %</span>
                             </div>
                         </div>
                     </div>
@@ -41,6 +59,7 @@
                             <a href="{{ route('mks.penugasans.create',$mk) }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Tambah Tugas</a>
                         </div>
                     </div>
+
                     <div class="row">
                         <div class="col">
                             <table class="table">
@@ -57,9 +76,13 @@
                                     @forelse ($penugasans as $penugasan)
                                     <tr>
                                         <td>
-                                            <span class="badge bg-secondary">
-                                                {{ $penugasan->pertemuan->subcpmk->kode }}.
+                                            @forelse ($penugasan->joinSubcpmkPenugasans as $item)
+                                            <span class="badge bg-white text-dark border">
+                                                {{ $item->subcpmk->kode }} (<span class="text-primary">{{ $item->bobot }}%</span>)
                                             </span>
+                                            @empty
+                                            <span class="text-muted">- Belum ada SubCPMK yang terkait -</span>
+                                            @endforelse
                                         </td>
                                         <td>
                                             {{ $penugasan->nama }}

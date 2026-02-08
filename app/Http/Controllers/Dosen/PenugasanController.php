@@ -23,7 +23,7 @@ class PenugasanController extends Controller
     {
         $evaluasis = Evaluasi::all();
         $pertemuans = $mk->pertemuans;
-        $penugasans = $mk->penugasans;
+        $penugasans = $mk->penugasans()->orderBy('pertemuan_id')->get();
         $joinCplCpmks = JoinCplCpmk::where('mk_id', $mk->id)->get();
         $subcpmks = $joinCplCpmks->pluck('subcpmks')->flatten()->unique('id')->values();
 
@@ -41,7 +41,11 @@ class PenugasanController extends Controller
     public function store(Request $request, Mk $mk)
     {
         $nama = $request->input('nama');
-        $mk->penugasans()->create($request->all());
+        $newPenugasan = $mk->penugasans()->create($request->all());
+        $newPenugasan->joinSubcpmkPenugasan()->create([
+            'mk_id' => $mk->id,
+            'subcpmk_id' => $newPenugasan->pertemuan->subcpmk->id,
+        ]);
 
         return to_route('mks.penugasans.index', $mk->id)->with('success', 'Tugas: ' . $nama . ' telah dibuat.');
     }
@@ -56,6 +60,11 @@ class PenugasanController extends Controller
     public function update(Request $request, Mk $mk, Penugasan $penugasan)
     {
         $penugasan->update($request->all());
+        $penugasan->joinSubcpmkPenugasan()->update(
+            [
+                'subcpmk_id' => $penugasan->pertemuan->subcpmk->id,
+            ],
+        );
         $nama = $request->input('nama');
 
         return to_route('mks.penugasans.index', $mk->id)->with('success', 'Tugas: ' . $nama . ' telah diperbarui.');

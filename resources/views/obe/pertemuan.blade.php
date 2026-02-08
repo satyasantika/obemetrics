@@ -30,12 +30,25 @@
                     <hr>
                     <div class="row">
                         <div class="col">
+                            <a href="{{ route('mks.joinpertemuanmetodes.index',[$mk->id]) }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-link-45deg"></i> Hubungkan Metode pada Pertemuan
+                            </a>
+                            <a href="{{ route('mks.penugasans.index',[$mk->id]) }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-list-task"></i> Kelola Tugas pada Pertemuan
+                            </a>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col">
                             <div class="float-end">
-                                <span class="h4">Total Pertemuan: {{ $pertemuans->count() }}</span>
+                                <span class="h4">
+                                    Total Pertemuan: {{ $pertemuans->count() }}
+                                </span>
                                 <br>
-                                <a href="{{ route('mks.joinpertemuanmetodes.index',[$mk->id]) }}" class="btn btn-sm btn-secondary mt-1">
-                                    <i class="bi bi-gear"></i> Set Metode Perkuliahan
-                                </a>
+                                <span class="h4 {{ $subcpmks->sum('bobot') != 100 ? 'text-danger' : '' }}">
+                                    Total Bobot Tugas: {{ $subcpmks->sum('bobot') }} %
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -62,15 +75,32 @@
                                             </span>
                                             <br><strong>Indikator</strong>: {{ $subcpmk->indikator }}
                                             <br><strong>Evaluasi</strong>: {{ $subcpmk->evaluasi }}
-                                            <br><strong>Bobot</strong>: {{ $subcpmk->bobot }}%
+                                            <br><strong>Komponen Tugas</strong>:
+                                            {{-- menampilkan komponen tugas beserta bobotnya --}}
+                                            @php
+                                                $penugasanByEvaluasi = [];
+                                                foreach($subcpmk->joinSubcpmkPenugasans as $item) {
+                                                    $evaluasiId = $item->penugasan->evaluasi_id;
+                                                    if (!isset($penugasanByEvaluasi[$evaluasiId])) {
+                                                        $penugasanByEvaluasi[$evaluasiId] = [
+                                                            'nama' => $item->penugasan->evaluasi->nama,
+                                                            'bobot' => 0
+                                                        ];
+                                                    }
+                                                    $penugasanByEvaluasi[$evaluasiId]['bobot'] += $item->penugasan->bobot * $item->bobot/100;
+                                                }
+                                                $penugasanText = [];
+                                                foreach($penugasanByEvaluasi as $eval) {
+                                                    $penugasanText[] = $eval['nama'] . ' (' . $eval['bobot'] . '%)';
+                                                }
+                                            @endphp
+                                            {{ implode(', ', $penugasanText) }}
+                                            <br><strong>Bobot SubCPMK</strong>: {{ array_sum(array_column($penugasanByEvaluasi, 'bobot')) }}%
                                         </td>
                                         <td>
                                             <table class="table">
                                                 <tbody>
-                                                    @php
-                                                        $pertemuans = \App\Models\Pertemuan::where('subcpmk_id',$subcpmk->id)->get();
-                                                    @endphp
-                                                    @forelse ($pertemuans as $pertemuan)
+                                                    @forelse ($subcpmk->pertemuans as $pertemuan)
                                                     <tr>
                                                         <td>
                                                             <span class="h5">
@@ -91,14 +121,29 @@
                                                                     metode:
                                                                 </span>
                                                                 @php
-                                                                    $joinPertemuanMetode = \App\Models\JoinPertemuanMetode::where('mk_id',$mk->id)->where('pertemuan_id',$pertemuan->id);
-                                                                    $cekMetode = $joinPertemuanMetode->exists();
-                                                                    $joinPertemuanMetodes = $joinPertemuanMetode->get()->map(function($item) {
+                                                                    $cekMetode = $pertemuan->joinPertemuanMetodes->count() > 0;
+                                                                    $joinPertemuanMetodes = $pertemuan->joinPertemuanMetodes->map(function($item) {
                                                                         return $item->metode->nama;
                                                                     })->toArray();
+                                                                    $cekPenugasan = $pertemuan->penugasans->count() > 0;
                                                                 @endphp
                                                                 @if ($cekMetode)
                                                                     {{ implode(', ', $joinPertemuanMetodes) }}
+                                                                @endif
+
+                                                                {{-- penugasan --}}
+                                                                @if ($cekPenugasan)
+                                                                    <br>
+                                                                    <span class="badge bg-secondary text-white">
+                                                                        <i class="bi bi-list-task"></i>
+                                                                        tagihan:
+                                                                    </span>
+                                                                    @php
+                                                                        $penugasanList = $pertemuan->penugasans->map(function($item) {
+                                                                            return $item->evaluasi->nama.' ('.$item->bobot.'%)';
+                                                                        })->toArray();
+                                                                    @endphp
+                                                                    {{ implode(', ', $penugasanList) }}
                                                                 @endif
 
                                                                 {{-- tanggal dan waktu --}}

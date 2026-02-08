@@ -1546,12 +1546,20 @@ class UserSeeder extends Seeder
             'evaluasi_id' => $evaluasi_kuis->id,
             'deskripsi' => 'Kuis singkat untuk menguji pemahaman konsep jenis dan karakteristik software pembelajaran matematika, serta ringkasan tertulis terstruktur sebagai refleksi pembelajaran.',
         ]);
+        $penugasan1->joinSubcpmkPenugasans()->create([
+            'mk_id' => $mk_KP21514004->id,
+            'subcpmk_id' => $penugasan1->pertemuan->subcpmk->id,
+        ]);
         $penugasan2 = $mk_KP21514004->penugasans()->create([
             'nama' => 'Tugas Klasifikasi Software Berbasis Studi Kasus',
             'bobot' => 5,
             'pertemuan_id' => $pertemuan2->id,
             'evaluasi_id' => $evaluasi_tugas->id,
             'deskripsi' => 'Tugas individu untuk mengklasifikasikan berbagai software/aplikasi pembelajaran matematika berdasarkan studi kasus yang diberikan.',
+        ]);
+        $penugasan2->joinSubcpmkPenugasans()->create([
+            'mk_id' => $mk_KP21514004->id,
+            'subcpmk_id' => $penugasan2->pertemuan->subcpmk->id,
         ]);
         $penugasan3 = $mk_KP21514004->penugasans()->create([
             'nama' => 'Observasi proses Konstruksi Objek Matematika Bangunan Ruang dengan GSP',
@@ -1560,12 +1568,20 @@ class UserSeeder extends Seeder
             'evaluasi_id' => $evaluasi_partisipasi_individu->id,
             'deskripsi' => 'Praktikum menggunakan GSP untuk mengonstruksi berbagai objek matematika, diikuti dengan pengumpulan lembar kerja praktikum.',
         ]);
+        $penugasan3->joinSubcpmkPenugasans()->create([
+            'mk_id' => $mk_KP21514004->id,
+            'subcpmk_id' => $penugasan3->pertemuan->subcpmk->id,
+        ]);
         $penugasan4 = $mk_KP21514004->penugasans()->create([
             'nama' => 'Observasi proses Konstruksi Objek Matematika Bangunan Ruang dengan GeoGebra',
             'bobot' => 5,
             'pertemuan_id' => $pertemuan9->id,
             'evaluasi_id' => $evaluasi_partisipasi_individu->id,
             'deskripsi' => 'Praktikum menggunakan GSP untuk mengonstruksi berbagai objek matematika, diikuti dengan pengumpulan lembar kerja praktikum.',
+        ]);
+        $penugasan4->joinSubcpmkPenugasans()->create([
+            'mk_id' => $mk_KP21514004->id,
+            'subcpmk_id' => $penugasan4->pertemuan->subcpmk->id,
         ]);
         $penugasan5 = $mk_KP21514004->penugasans()->create([
             'nama' => 'Tugas Pemecahan Soal Berbantuan Software GSP',
@@ -1574,12 +1590,20 @@ class UserSeeder extends Seeder
             'evaluasi_id' => $evaluasi_tugas->id,
             'deskripsi' => 'Tugas individu untuk menyelesaikan berbagai soal matematika dengan bantuan software matematika, meliputi output dan langkah penyelesaian.',
         ]);
+        $penugasan5->joinSubcpmkPenugasans()->create([
+            'mk_id' => $mk_KP21514004->id,
+            'subcpmk_id' => $penugasan5->pertemuan->subcpmk->id,
+        ]);
         $penugasan6 = $mk_KP21514004->penugasans()->create([
             'nama' => 'Tugas Pemecahan Soal Berbantuan Software Geogebra',
             'bobot' => 10,
             'pertemuan_id' => $pertemuan10->id,
             'evaluasi_id' => $evaluasi_tugas->id,
             'deskripsi' => 'Tugas individu untuk menyelesaikan berbagai soal matematika dengan bantuan software matematika, meliputi output dan langkah penyelesaian.',
+        ]);
+        $penugasan6->joinSubcpmkPenugasans()->create([
+            'mk_id' => $mk_KP21514004->id,
+            'subcpmk_id' => $penugasan6->pertemuan->subcpmk->id,
         ]);
         $penugasan7 = $mk_KP21514004->penugasans()->create([
             'nama' => 'Proyek Mini Hasil Pemodelan',
@@ -1588,12 +1612,20 @@ class UserSeeder extends Seeder
             'evaluasi_id' => $evaluasi_proyek_kelompok->id,
             'deskripsi' => 'Proyek kelompok untuk menerapkan software matematika dalam menyelesaikan masalah geometri dan transformasi hasil pemodelan.',
         ]);
+        $penugasan7->joinSubcpmkPenugasans()->create([
+            'mk_id' => $mk_KP21514004->id,
+            'subcpmk_id' => $penugasan7->pertemuan->subcpmk->id,
+        ]);
         $penugasan8 = $mk_KP21514004->penugasans()->create([
             'nama' => 'Presentasi Hasil Pemodelan',
             'bobot' => 10,
             'pertemuan_id' => $pertemuan8->id,
             'evaluasi_id' => $evaluasi_proyek_kelompok->id,
             'deskripsi' => 'Presentasi hasil pemodelan.',
+        ]);
+        $penugasan8->joinSubcpmkPenugasans()->create([
+            'mk_id' => $mk_KP21514004->id,
+            'subcpmk_id' => $penugasan8->pertemuan->subcpmk->id,
         ]);
         $penugasan9 = $mk_KP21514004->penugasans()->create([
             'nama' => 'Proyek Terstruktur Menggunakan Maple',
@@ -1602,12 +1634,20 @@ class UserSeeder extends Seeder
             'evaluasi_id' => $evaluasi_proyek_individu->id,
             'deskripsi' => 'Proyek individu yang melibatkan pemodelan matematika menggunakan software Maple, dengan pengumpulan laporan dan file proyek.',
         ]);
+        $penugasan9->joinSubcpmkPenugasans()->create([
+            'mk_id' => $mk_KP21514004->id,
+            'subcpmk_id' => $penugasan9->pertemuan->subcpmk->id,
+        ]);
         $penugasan10 = $mk_KP21514004->penugasans()->create([
             'nama' => 'Interpretasi Analisis Data dengan SPSS',
             'bobot' => 10,
             'pertemuan_id' => $pertemuan15->id,
             'evaluasi_id' => $evaluasi_proyek_individu->id,
             'deskripsi' => 'Praktikum untuk mengolah dan menganalisis data menggunakan SPSS, diikuti dengan pengumpulan output SPSS dan interpretasi tertulis.',
+        ]);
+        $penugasan10->joinSubcpmkPenugasans()->create([
+            'mk_id' => $mk_KP21514004->id,
+            'subcpmk_id' => $penugasan10->pertemuan->subcpmk->id,
         ]);
         $penugasan11 = $mk_KP21514004->penugasans()->create([
             'nama' => 'Presentasi Laporan Interpretasi Hasil Statistik',
@@ -1616,51 +1656,9 @@ class UserSeeder extends Seeder
             'evaluasi_id' => $evaluasi_partisipasi_individu->id,
             'deskripsi' => 'Ujian akhir semester berbasis studi kasus yang menguji kemampuan mahasiswa dalam menganalisis dan menginterpretasikan hasil uji statistik untuk keperluan pembelajaran.',
         ]);
-
-        // data join subcpmk penugasan
-        $join_subcpmk_penugasan1 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
-            'subcpmk_id' => $subcpmk1_1->id,
-            'penugasan_id' => $penugasan1->id,
-        ]);
-        $join_subcpmk_penugasan2 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
-            'subcpmk_id' => $subcpmk1_2->id,
-            'penugasan_id' => $penugasan2->id,
-        ]);
-        $join_subcpmk_penugasan3 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
-            'subcpmk_id' => $subcpmk2_1->id,
-            'penugasan_id' => $penugasan3->id,
-        ]);
-        $join_subcpmk_penugasan4 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
-            'subcpmk_id' => $subcpmk2_2->id,
-            'penugasan_id' => $penugasan4->id,
-        ]);
-        $join_subcpmk_penugasan5 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
-            'subcpmk_id' => $subcpmk2_1->id,
-            'penugasan_id' => $penugasan5->id,
-        ]);
-        $join_subcpmk_penugasan6 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
-            'subcpmk_id' => $subcpmk3_2->id,
-            'penugasan_id' => $penugasan6->id,
-        ]);
-        $join_subcpmk_penugasan7 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
-            'subcpmk_id' => $subcpmk3_1->id,
-            'penugasan_id' => $penugasan7->id,
-        ]);
-        $join_subcpmk_penugasan8 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
-            'subcpmk_id' => $subcpmk3_2->id,
-            'penugasan_id' => $penugasan8->id,
-        ]);
-        $join_subcpmk_penugasan9 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
-            'subcpmk_id' => $subcpmk4_1->id,
-            'penugasan_id' => $penugasan9->id,
-        ]);
-        $join_subcpmk_penugasan10 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
-            'subcpmk_id' => $subcpmk4_2->id,
-            'penugasan_id' => $penugasan10->id,
-        ]);
-        $join_subcpmk_penugasan11 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
-            'subcpmk_id' => $subcpmk4_2->id,
-            'penugasan_id' => $penugasan11->id,
+        $penugasan11->joinSubcpmkPenugasans()->create([
+            'mk_id' => $mk_KP21514004->id,
+            'subcpmk_id' => $penugasan11->pertemuan->subcpmk->id,
         ]);
 
     }

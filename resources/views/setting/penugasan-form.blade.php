@@ -37,9 +37,9 @@
                 <textarea name="nama" rows="3" class="form-control" id="nama" required autofocus>{{ $penugasan->nama }}</textarea>
             </div>
         </div>
-        {{-- evaluasi --}}
         <div class="row mb-3">
-            <div class="col">
+            {{-- evaluasi --}}
+            <div class="col-md-8">
                 <label for="evaluasi_id" class="form-label">Evaluasi <span class="text-danger">(*)</span></label>
                 <select
                     name="evaluasi_id"
@@ -56,15 +56,15 @@
                     @endforeach
                 </select>
             </div>
-        </div>
-        <div class="row mb-3">
             {{-- bobot --}}
             <div class="col-md-4">
-                <label for="bobot" class="form-label">Bobot <span class="text-danger">(*)</span></label>
+                <label for="bobot" class="form-label">Bobot (%) <span class="text-danger">(*)</span></label>
                 <input type="number" step="1" name="bobot" class="form-control" id="bobot" value="{{ $penugasan->bobot }}" required>
             </div>
+        </div>
+        <div class="row mb-3">
             {{-- pertemuan --}}
-            <div class="col-md-8">
+            <div class="col">
                 <label for="pertemuan_id" class="form-label">Tugas Pertemuan ke-</label>
                 <select
                     name="pertemuan_id"

@@ -28,6 +28,14 @@
                         <div class="col"><strong>{{ $mk->kurikulum->prodi->jenjang }} {{ $mk->kurikulum->prodi->nama }}</strong></div>
                     </div>
                     <hr>
+                    <div class="row">
+                        <div class="col">
+                            <a href="{{ route('mks.penugasans.index',[$mk->id]) }}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-list-task"></i> Kelola Tugas pada Pertemuan
+                            </a>
+                        </div>
+                    </div>
+                    <hr>
 
                     <div class="row">
                         <div class="col">

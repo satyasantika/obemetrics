@@ -235,7 +235,7 @@ return new class extends Migration
         Schema::create('join_subcpmk_penugasans', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
             $table->foreignUuId('subcpmk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('penugasan_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('penugasan_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->double('bobot')->nullable()->default(100);
             $table->timestamps();
