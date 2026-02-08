@@ -53,4 +53,9 @@ class Mk extends Model
         return $this->hasMany(Penugasan::class);
     }
 
+    public function joinSubcpmkPenugasans(): HasMany
+    {
+        return $this->hasMany(JoinSubcpmkPenugasan::class);
+    }
+
 }

@@ -27,4 +27,9 @@ class Subcpmk extends Model
     {
         return $this->hasMany(Pertemuan::class);
     }
+
+    public function joinSubcpmkPenugasans(): HasMany
+    {
+        return $this->hasMany(JoinSubcpmkPenugasan::class);
+    }
 }

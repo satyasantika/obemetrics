@@ -27,4 +27,9 @@ class Penugasan extends Model
         return $this->belongsTo(Pertemuan::class);
     }
 
+    public function joinSubcpmkPenugasans(): HasMany
+    {
+        return $this->hasMany(JoinSubcpmkPenugasan::class);
+    }
+
 }

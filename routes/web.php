@@ -71,5 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::put('joinpertemuanmetodes/{pertemuan}/{metode}', [App\Http\Controllers\Dosen\JoinPertemuanMetodeController::class, 'update'])->name('joinpertemuanmetodes.update');
     // Penilaian
     Route::resource('mks.penugasans', App\Http\Controllers\Dosen\PenugasanController::class)->except('show');
+    Route::get('mks/{mk}/joinsubcpmkpenugasans', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class,'index'])->name('mks.joinsubcpmkpenugasans.index');
+    Route::put('joinsubcpmkpenugasans/{subcpmk}/{penugasan}', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class, 'update'])->name('joinsubcpmkpenugasans.update');
 
 });

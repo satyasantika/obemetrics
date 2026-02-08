@@ -60,7 +60,10 @@
                                             <i class="bi bi-gear"></i> Set Metode Perkuliahan
                                         </a>
                                         <a href="{{ route('mks.penugasans.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
-                                            <i class="bi bi-clipboard-list"></i> Penugasan
+                                            <i class="bi bi-list-task"></i> Tugas Pertemuan
+                                        </a>
+                                        <a href="{{ route('mks.joinsubcpmkpenugasans.index',[$mk->id]) }}" class="btn btn-sm btn-secondary mt-1">
+                                            <i class="bi bi-gear"></i> Set SubCPMK >< Tugas
                                         </a>
 
                                     </li>

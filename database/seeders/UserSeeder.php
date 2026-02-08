@@ -1617,5 +1617,51 @@ class UserSeeder extends Seeder
             'deskripsi' => 'Ujian akhir semester berbasis studi kasus yang menguji kemampuan mahasiswa dalam menganalisis dan menginterpretasikan hasil uji statistik untuk keperluan pembelajaran.',
         ]);
 
+        // data join subcpmk penugasan
+        $join_subcpmk_penugasan1 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
+            'subcpmk_id' => $subcpmk1_1->id,
+            'penugasan_id' => $penugasan1->id,
+        ]);
+        $join_subcpmk_penugasan2 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
+            'subcpmk_id' => $subcpmk1_2->id,
+            'penugasan_id' => $penugasan2->id,
+        ]);
+        $join_subcpmk_penugasan3 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
+            'subcpmk_id' => $subcpmk2_1->id,
+            'penugasan_id' => $penugasan3->id,
+        ]);
+        $join_subcpmk_penugasan4 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
+            'subcpmk_id' => $subcpmk2_2->id,
+            'penugasan_id' => $penugasan4->id,
+        ]);
+        $join_subcpmk_penugasan5 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
+            'subcpmk_id' => $subcpmk2_1->id,
+            'penugasan_id' => $penugasan5->id,
+        ]);
+        $join_subcpmk_penugasan6 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
+            'subcpmk_id' => $subcpmk3_2->id,
+            'penugasan_id' => $penugasan6->id,
+        ]);
+        $join_subcpmk_penugasan7 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
+            'subcpmk_id' => $subcpmk3_1->id,
+            'penugasan_id' => $penugasan7->id,
+        ]);
+        $join_subcpmk_penugasan8 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
+            'subcpmk_id' => $subcpmk3_2->id,
+            'penugasan_id' => $penugasan8->id,
+        ]);
+        $join_subcpmk_penugasan9 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
+            'subcpmk_id' => $subcpmk4_1->id,
+            'penugasan_id' => $penugasan9->id,
+        ]);
+        $join_subcpmk_penugasan10 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
+            'subcpmk_id' => $subcpmk4_2->id,
+            'penugasan_id' => $penugasan10->id,
+        ]);
+        $join_subcpmk_penugasan11 = $mk_KP21514004->joinSubcpmkPenugasans()->create([
+            'subcpmk_id' => $subcpmk4_2->id,
+            'penugasan_id' => $penugasan11->id,
+        ]);
+
     }
 }

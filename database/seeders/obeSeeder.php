@@ -107,5 +107,8 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'update penugasans'])->assignRole('dosen');
         Permission::create(['name' => 'delete penugasans'])->assignRole('dosen');
 
+        Permission::create(['name' => 'read join subcpmk penugasans'])->assignRole('dosen');
+        Permission::create(['name' => 'update join subcpmk penugasans'])->assignRole('dosen');
+
     }
 }
