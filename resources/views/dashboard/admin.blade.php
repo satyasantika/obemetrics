@@ -41,6 +41,12 @@
                 @can('read mahasiswas')
                 <a href="{{ route('mahasiswas.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-people-fill"></i> Mahasiswa</a>
                 @endcan
+                <hr>
+
+                Import data (bulk upload):<br>
+                @can('read bulk-import mahasiswas')
+                <a href="{{ route('setting.import.mahasiswas') }}" class="btn btn-sm btn-primary"><i class="bi bi-upload"></i> Mahasiswa</a>
+                @endcan
             </div>
         </div>
     </div>

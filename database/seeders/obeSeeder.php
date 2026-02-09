@@ -120,5 +120,9 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'update nilaipenugasans'])->assignRole('dosen');
         Permission::create(['name' => 'delete nilaipenugasans'])->assignRole('dosen');
 
+        Permission::create(['name' => 'read bulk-import mahasiswas'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'create bulk-import mahasiswas'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'delete bulk-import mahasiswas'])->assignRole('admin','operator prodi');
+
     }
 }

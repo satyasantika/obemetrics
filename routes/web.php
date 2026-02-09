@@ -75,4 +75,10 @@ Route::middleware('auth')->group(function () {
     Route::get('mks/{mk}/joinsubcpmkpenugasans', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class,'index'])->name('mks.joinsubcpmkpenugasans.index');
     Route::put('joinsubcpmkpenugasans/{subcpmk}/{penugasan}', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class, 'update'])->name('joinsubcpmkpenugasans.update');
 
+    // Bulk Upload Routes
+    Route::get('setting/import/mahasiswas', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'importMahasiswaForm'])->name('setting.import.mahasiswas');
+    Route::post('setting/import/mahasiswas', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'importMahasiswa'])->name('setting.import.mahasiswas');
+    Route::post('setting/import/mahasiswas/commit', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'commitMahasiswa'])->name('setting.import.mahasiswas.commit');
+    Route::get('setting/import/mahasiswas/template', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'downloadTemplate'])->name('setting.import.mahasiswas.template');
+    Route::post('setting/import/mahasiswas/clear', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'clearPreview'])->name('setting.import.mahasiswas.clear');
 });
