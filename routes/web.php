@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return to_route('home');
 });
 
 Auth::routes();
@@ -63,13 +63,9 @@ Route::middleware('auth')->group(function () {
     // Ruang Dosen
     Route::resource('mks.cpmks', App\Http\Controllers\Dosen\CpmkController::class)->except('show');
     Route::resource('mks.subcpmks', App\Http\Controllers\Dosen\SubCpmkController::class)->except('show');
-    Route::resource('mks.pertemuans', App\Http\Controllers\Dosen\PertemuanController::class)->except('show');
     // CPL >< BK
     Route::get('mks/{mk}/joincplcpmks', [App\Http\Controllers\Dosen\JoinCplCpmkController::class,'index'])->name('mks.joincplcpmks.index');
     Route::put('joincplcpmks/{joincplbk}/{cpmk}', [App\Http\Controllers\Dosen\JoinCplCpmkController::class, 'update'])->name('joincplcpmks.update');
-    // Pertemuan >< Metode Perkuliahan
-    Route::get('mks/{mk}/joinpertemuanmetodes', [App\Http\Controllers\Dosen\JoinPertemuanMetodeController::class,'index'])->name('mks.joinpertemuanmetodes.index');
-    Route::put('joinpertemuanmetodes/{pertemuan}/{metode}', [App\Http\Controllers\Dosen\JoinPertemuanMetodeController::class, 'update'])->name('joinpertemuanmetodes.update');
     // Penilaian
     Route::resource('mks.penugasans', App\Http\Controllers\Dosen\PenugasanController::class)->except('show');
     Route::get('mks/{mk}/joinsubcpmkpenugasans', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class,'index'])->name('mks.joinsubcpmkpenugasans.index');

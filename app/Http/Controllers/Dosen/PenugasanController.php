@@ -22,30 +22,24 @@ class PenugasanController extends Controller
     public function index(Mk $mk)
     {
         $evaluasis = Evaluasi::all();
-        $pertemuans = $mk->pertemuans;
-        $penugasans = $mk->penugasans()->orderBy('pertemuan_id')->get();
+        $penugasans = $mk->penugasans()->orderBy('kode')->get();
         $joinCplCpmks = JoinCplCpmk::where('mk_id', $mk->id)->get();
         $subcpmks = $joinCplCpmks->pluck('subcpmks')->flatten()->unique('id')->values();
 
-        return view('obe.penugasan', compact('mk', 'evaluasis', 'penugasans', 'subcpmks', 'pertemuans'));
+        return view('obe.penugasan', compact('mk', 'evaluasis', 'penugasans', 'subcpmks'));
     }
 
     public function create(Mk $mk)
     {
         $penugasan = New Penugasan();
-        $pertemuans = $mk->pertemuans;
         $evaluasis = Evaluasi::all();
-        return view('setting.penugasan-form', compact('mk', 'penugasan','pertemuans','evaluasis'));
+        return view('setting.penugasan-form', compact('mk', 'penugasan','evaluasis'));
     }
 
     public function store(Request $request, Mk $mk)
     {
         $nama = $request->input('nama');
         $newPenugasan = $mk->penugasans()->create($request->all());
-        $newPenugasan->joinSubcpmkPenugasan()->create([
-            'mk_id' => $mk->id,
-            'subcpmk_id' => $newPenugasan->pertemuan->subcpmk->id,
-        ]);
 
         return to_route('mks.penugasans.index', $mk->id)->with('success', 'Tugas: ' . $nama . ' telah dibuat.');
     }
@@ -53,18 +47,12 @@ class PenugasanController extends Controller
     public function edit(Mk $mk, Penugasan $penugasan)
     {
         $evaluasis = Evaluasi::all();
-        $pertemuans = $mk->pertemuans;
-        return view('setting.penugasan-form', compact('mk', 'penugasan','evaluasis','pertemuans'));
+        return view('setting.penugasan-form', compact('mk', 'penugasan','evaluasis'));
     }
 
     public function update(Request $request, Mk $mk, Penugasan $penugasan)
     {
         $penugasan->update($request->all());
-        $penugasan->joinSubcpmkPenugasan()->update(
-            [
-                'subcpmk_id' => $penugasan->pertemuan->subcpmk->id,
-            ],
-        );
         $nama = $request->input('nama');
 
         return to_route('mks.penugasans.index', $mk->id)->with('success', 'Tugas: ' . $nama . ' telah diperbarui.');

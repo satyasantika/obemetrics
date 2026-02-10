@@ -31,7 +31,7 @@
                     <div class="row">
                         <div class="col">
                             <a href="{{ route('mks.penugasans.index',[$mk->id]) }}" class="btn btn-sm btn-primary">
-                                <i class="bi bi-list-task"></i> Kelola Tugas pada Pertemuan
+                                <i class="bi bi-list-task"></i> Kelola Tagihan Tugas
                             </a>
                         </div>
                     </div>
@@ -56,7 +56,7 @@
                                 @forelse ($penugasans as $penugasan)
                                     <tr style="vertical-align: text-top;">
                                         <td>
-                                            Pertemuan ke-{{ $penugasan->pertemuan->ke }}:<br>
+                                            {{ $penugasan->kode }}:<br>
                                             {{ $penugasan->nama }}
                                             <br>
                                             @php

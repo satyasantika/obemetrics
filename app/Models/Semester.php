@@ -12,9 +12,4 @@ class Semester extends Model
     use HasFactory, HasUuids;
     protected $guarded = ['id'];
 
-    public function pertemuans(): HasMany
-    {
-        return $this->hasMany(Pertemuan::class);
-    }
-
 }

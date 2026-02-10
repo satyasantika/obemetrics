@@ -36,9 +36,6 @@
                                     <i class="bi bi-link-45deg"></i> Kelola Hubungan SubCPMK & Tugas
                                 </a>
                                 @endif
-                                <a href="{{ route('mks.pertemuans.index',[$mk->id]) }}" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-easel"></i> Kelola Pertemuan
-                                </a>
                             </div>
                         </div>
                     </div>
@@ -65,16 +62,17 @@
                             <table class="table">
                                 <thead>
                                     <tr>
+                                        <th>Kode</th>
                                         <th>SubCPMK</th>
                                         <th>Nama Tugas</th>
                                         <th>Bobot (%)</th>
                                         <th>Bentuk Evaluasi</th>
-                                        <th>Pertemuan Ke-</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($penugasans as $penugasan)
                                     <tr>
+                                        <td class="text-end">{{ $penugasan->kode }}</td>
                                         <td>
                                             @forelse ($penugasan->joinSubcpmkPenugasans as $item)
                                             <span class="badge bg-white text-dark border">
@@ -92,7 +90,6 @@
                                         </td>
                                         <td>{{ $penugasan->bobot }}</td>
                                         <td>{{ $penugasan->evaluasi->nama }}</td>
-                                        <td class="text-end">{{ $penugasan->pertemuan->ke }}</td>
                                     </tr>
                                     @empty
                                     <tr>

@@ -1,7 +1,6 @@
 @push('title')
     Dashboard ADMIN
 @endpush
-<h3>Selamat datang, {{ auth()->user()->name }}</h3>
 <div class="row">
     <div class="col-auto">
         <div class="card">

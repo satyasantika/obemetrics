@@ -22,11 +22,6 @@ class Penugasan extends Model
         return $this->belongsTo(Evaluasi::class);
     }
 
-    public function pertemuan()
-    {
-        return $this->belongsTo(Pertemuan::class);
-    }
-
     public function joinSubcpmkPenugasans(): HasMany
     {
         return $this->hasMany(JoinSubcpmkPenugasan::class);

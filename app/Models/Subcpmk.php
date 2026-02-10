@@ -23,11 +23,6 @@ class Subcpmk extends Model
         return $this->belongsTo(JoinCplCpmk::class);
     }
 
-    public function pertemuans(): HasMany
-    {
-        return $this->hasMany(Pertemuan::class);
-    }
-
     public function joinSubcpmkPenugasans(): HasMany
     {
         return $this->hasMany(JoinSubcpmkPenugasan::class);

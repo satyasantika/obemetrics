@@ -38,9 +38,21 @@
             </div>
         </div>
         <div class="row mb-3">
-            {{-- evaluasi --}}
-            <div class="col-md-8">
-                <label for="evaluasi_id" class="form-label">Evaluasi <span class="text-danger">(*)</span></label>
+            {{-- kode --}}
+            <div class="col">
+                <label for="kode" class="form-label">Kode</label>
+                <input type="text" name="kode" class="form-control" id="kode" value="{{ $penugasan->kode }}">
+            </div>
+            {{-- bobot --}}
+            <div class="col">
+                <label for="bobot" class="form-label">Bobot (%) <span class="text-danger">(*)</span></label>
+                <input type="number" step="1" name="bobot" class="form-control" id="bobot" value="{{ $penugasan->bobot }}" required>
+            </div>
+        </div>
+        {{-- bentuk evaluasi --}}
+        <div class="row mb-3">
+            <div class="col">
+                <label for="evaluasi_id" class="form-label">Bentuk Evaluasi <span class="text-danger">(*)</span></label>
                 <select
                     name="evaluasi_id"
                     id="evaluasi_id"
@@ -52,30 +64,6 @@
                         <option value="{{ $evaluasi->id }}"
                             @selected($penugasan->evaluasi_id == $evaluasi->id)>
                             {{ $evaluasi->nama }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-            {{-- bobot --}}
-            <div class="col-md-4">
-                <label for="bobot" class="form-label">Bobot (%) <span class="text-danger">(*)</span></label>
-                <input type="number" step="1" name="bobot" class="form-control" id="bobot" value="{{ $penugasan->bobot }}" required>
-            </div>
-        </div>
-        <div class="row mb-3">
-            {{-- pertemuan --}}
-            <div class="col">
-                <label for="pertemuan_id" class="form-label">Tugas Pertemuan ke-</label>
-                <select
-                    name="pertemuan_id"
-                    id="pertemuan_id"
-                    class="form-select"
-                >
-                    <option value="">-Pilih Pertemuan-</option>
-                    @foreach ($pertemuans as $pertemuan)
-                        <option value="{{ $pertemuan->id }}"
-                            @selected($penugasan->pertemuan_id == $pertemuan->id)>
-                            {{ $pertemuan->ke }} - {{ $pertemuan->materi }}
                         </option>
                     @endforeach
                 </select>

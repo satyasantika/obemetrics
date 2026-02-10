@@ -20,7 +20,7 @@ class JoinSubcpmkPenugasanController extends Controller
     public function index(Mk $mk)
     {
         $subcpmks = Subcpmk::all();
-        $penugasans = Penugasan::where('mk_id', $mk->id)->orderBy('pertemuan_id')->get();
+        $penugasans = Penugasan::where('mk_id', $mk->id)->orderBy('kode')->get();
 
         return view('obe.subcpmk-penugasan')
                 ->with('mk', $mk)
