@@ -66,15 +66,24 @@ Route::middleware('auth')->group(function () {
     // CPL >< BK
     Route::get('mks/{mk}/joincplcpmks', [App\Http\Controllers\Dosen\JoinCplCpmkController::class,'index'])->name('mks.joincplcpmks.index');
     Route::put('joincplcpmks/{joincplbk}/{cpmk}', [App\Http\Controllers\Dosen\JoinCplCpmkController::class, 'update'])->name('joincplcpmks.update');
-    // Penilaian
+    // Tugas Mata Kuliah
     Route::resource('mks.penugasans', App\Http\Controllers\Dosen\PenugasanController::class)->except('show');
     Route::get('mks/{mk}/joinsubcpmkpenugasans', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class,'index'])->name('mks.joinsubcpmkpenugasans.index');
     Route::put('joinsubcpmkpenugasans/{subcpmk}/{penugasan}', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class, 'update'])->name('joinsubcpmkpenugasans.update');
+    // Penilaian Mata Kuliah
+    Route::resource('mks.penilaians', App\Http\Controllers\Dosen\PenilaianController::class)->except('show');
 
-    // Bulk Upload Routes
+    // Bulk Upload Mahasiswa
     Route::get('setting/import/mahasiswas', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'importMahasiswaForm'])->name('setting.import.mahasiswas');
     Route::post('setting/import/mahasiswas', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'importMahasiswa'])->name('setting.import.mahasiswas');
     Route::post('setting/import/mahasiswas/commit', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'commitMahasiswa'])->name('setting.import.mahasiswas.commit');
     Route::get('setting/import/mahasiswas/template', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'downloadTemplate'])->name('setting.import.mahasiswas.template');
     Route::post('setting/import/mahasiswas/clear', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'clearPreview'])->name('setting.import.mahasiswas.clear');
+
+    // Bulk Upload Kontrak MK
+    Route::get('setting/import/kontrakmks', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'importKontrakMkForm'])->name('setting.import.kontrakmks');
+    Route::post('setting/import/kontrakmks', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'importKontrakMk'])->name('setting.import.kontrakmks');
+    Route::post('setting/import/kontrakmks/commit', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'commitKontrakMk'])->name('setting.import.kontrakmks.commit');
+    Route::get('setting/import/kontrakmks/template', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'downloadTemplate'])->name('setting.import.kontrakmks.template');
+    Route::post('setting/import/kontrakmks/clear', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'clearPreview'])->name('setting.import.kontrakmks.clear');
 });

@@ -91,6 +91,7 @@ class UsersDataTable extends DataTable
         return [
             Column::make('name'),
             Column::make('username'),
+            Column::make('nidn'),
             Column::make('updated_at'),
             Column::computed('action')
                   ->exportable(false)

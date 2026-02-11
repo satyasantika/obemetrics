@@ -39,6 +39,24 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'update evaluasis'])->assignRole('admin');
         Permission::create(['name' => 'delete evaluasis'])->assignRole('admin');
 
+        Permission::create(['name' => 'create mahasiswas'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'read mahasiswas'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'update mahasiswas'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'delete mahasiswas'])->assignRole('admin','operator prodi');
+
+        Permission::create(['name' => 'read bulk-import mahasiswas'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'create bulk-import mahasiswas'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'delete bulk-import mahasiswas'])->assignRole('admin','operator prodi');
+
+        Permission::create(['name' => 'create kontrak mks'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'read kontrak mks'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'update kontrak mks'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'delete kontrak mks'])->assignRole('admin','operator prodi');
+
+        Permission::create(['name' => 'read bulk-import kontrakmks'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'create bulk-import kontrakmks'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'delete bulk-import kontrakmks'])->assignRole('admin','operator prodi');
+
         Permission::create(['name' => 'create kurikulums'])->assignRole('pimpinan prodi');
         Permission::create(['name' => 'read kurikulums'])->assignRole('pimpinan prodi');
         Permission::create(['name' => 'update kurikulums'])->assignRole('pimpinan prodi');
@@ -99,22 +117,13 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'update penugasans'])->assignRole('dosen');
         Permission::create(['name' => 'delete penugasans'])->assignRole('dosen');
 
-        Permission::create(['name' => 'read join subcpmk penugasans'])->assignRole('dosen');
-        Permission::create(['name' => 'update join subcpmk penugasans'])->assignRole('dosen');
-
-        Permission::create(['name' => 'create mahasiswas'])->assignRole('admin','operator prodi');
-        Permission::create(['name' => 'read mahasiswas'])->assignRole('admin','operator prodi');
-        Permission::create(['name' => 'update mahasiswas'])->assignRole('admin','operator prodi');
-        Permission::create(['name' => 'delete mahasiswas'])->assignRole('admin','operator prodi');
-
         Permission::create(['name' => 'create nilaipenugasans'])->assignRole('dosen');
         Permission::create(['name' => 'read nilaipenugasans'])->assignRole('dosen');
         Permission::create(['name' => 'update nilaipenugasans'])->assignRole('dosen');
         Permission::create(['name' => 'delete nilaipenugasans'])->assignRole('dosen');
 
-        Permission::create(['name' => 'read bulk-import mahasiswas'])->assignRole('admin','operator prodi');
-        Permission::create(['name' => 'create bulk-import mahasiswas'])->assignRole('admin','operator prodi');
-        Permission::create(['name' => 'delete bulk-import mahasiswas'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'read join subcpmk penugasans'])->assignRole('dosen');
+        Permission::create(['name' => 'update join subcpmk penugasans'])->assignRole('dosen');
 
     }
 }

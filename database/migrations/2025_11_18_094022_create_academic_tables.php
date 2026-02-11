@@ -222,17 +222,29 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->timestamps();
         });
-        // // penilaian mahasiswa pada penugasan
-        // Schema::create('nilai_penugasans', function (Blueprint $table) {
-        //     $table->uuid('id')->primary('id');
-        //     $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->foreignUuid('penugasan_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->foreignUuid('mahasiswa_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-        //     $table->double('nilai')->nullable();
-        //     $table->text('komentar')->nullable();
-        //     $table->timestamps();
-        // });
-    }
+        // kontrak mata kuliah mahasiswa
+        Schema::create('kontrak_mks', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->string('kelas')->nullable();
+            $table->foreignUuid('mahasiswa_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('user_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete(); // dosen pengampu
+            $table->double('nilai_angka')->nullable();
+            $table->string('nilai_huruf')->nullable();
+            $table->timestamps();
+        });
+
+/*         // penilaian mahasiswa pada penugasan
+        Schema::create('nilai_penugasans', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('penugasan_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('mahasiswa_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->double('nilai')->nullable();
+            $table->text('komentar')->nullable();
+            $table->timestamps();
+        });
+ */    }
 
     /**
      * Reverse the migrations.
@@ -246,6 +258,13 @@ return new class extends Migration
         //     $table->dropForeign('nilai_penugasans_mahasiswa_id_foreign');
         // });
         // Schema::dropIfExists('nilai_penugasans');
+        // kontrak mata kuliah mahasiswa
+        Schema::table('kontrak_mks', function (Blueprint $table) {
+            $table->dropForeign('kontrak_mks_mahasiswa_id_foreign');
+            $table->dropForeign('kontrak_mks_mk_id_foreign');
+            $table->dropForeign('kontrak_mks_user_id_foreign');
+        });
+        Schema::dropIfExists('kontrak_mks');
         // mahasiswa
         Schema::table('mahasiswas', function (Blueprint $table) {
             $table->dropForeign('mahasiswas_prodi_id_foreign');

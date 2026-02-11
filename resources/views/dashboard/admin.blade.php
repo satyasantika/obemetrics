@@ -46,6 +46,9 @@
                 @can('read bulk-import mahasiswas')
                 <a href="{{ route('setting.import.mahasiswas') }}" class="btn btn-sm btn-primary"><i class="bi bi-upload"></i> Mahasiswa</a>
                 @endcan
+                @can('read bulk-import kontrakmks')
+                <a href="{{ route('setting.import.kontrakmks') }}" class="btn btn-sm btn-primary"><i class="bi bi-upload"></i> Kontrak Mata Kuliah</a>
+                @endcan
             </div>
         </div>
     </div>

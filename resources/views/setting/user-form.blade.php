@@ -56,6 +56,14 @@
                 <input type="text" placeholder="phone" value="{{ $user->phone }}" name="phone" class="form-control" id="phone">
             </div>
         </div>
+        {{-- NIDN --}}
+        <div class="row mb-3">
+            <label for="nidn" class="col-md-4 col-form-label text-md-end">NIDN</label>
+            <div class="col-md-8">
+                <input type="text" placeholder="NIDN" value="{{ $user->nidn }}" name="nidn" class="form-control" id="nidn">
+                <small class="text-muted">Nomor Induk Dosen Nasional</small>
+            </div>
+        </div>
         {{-- submit Button --}}
         <div class="row mb-0">
             <div class="col-md-8 offset-md-4">
