@@ -1255,7 +1255,7 @@ class UserSeeder extends Seeder
 
         // data penugasan mata kuliah KP21514004
         $penugasan1 = $mk_KP21514004->penugasans()->create([
-            'kode' => 'Tugas01',
+            'kode' => 'Asesmen01',
             'nama' => 'Kuis Konseptual dan Ringkasan Tertulis Terstruktur',
             'bobot' => 5,
             'evaluasi_id' => $evaluasi_kuis->id,
@@ -1266,7 +1266,7 @@ class UserSeeder extends Seeder
             'subcpmk_id' => $subcpmk1_1->id,
         ]);
         $penugasan2 = $mk_KP21514004->penugasans()->create([
-            'kode' => 'Tugas02',
+            'kode' => 'Asesmen02',
             'nama' => 'Tugas Klasifikasi Software Berbasis Studi Kasus',
             'bobot' => 5,
             'evaluasi_id' => $evaluasi_tugas->id,
@@ -1277,7 +1277,7 @@ class UserSeeder extends Seeder
             'subcpmk_id' => $subcpmk1_2->id,
         ]);
         $penugasan3 = $mk_KP21514004->penugasans()->create([
-            'kode' => 'Tugas03',
+            'kode' => 'Asesmen03',
             'nama' => 'Observasi proses Konstruksi Objek Matematika Bangunan Ruang dengan GSP',
             'bobot' => 10,
             'evaluasi_id' => $evaluasi_partisipasi_individu->id,
@@ -1288,7 +1288,7 @@ class UserSeeder extends Seeder
             'subcpmk_id' => $subcpmk2_1->id,
         ]);
         $penugasan4 = $mk_KP21514004->penugasans()->create([
-            'kode' => 'Tugas04',
+            'kode' => 'Asesmen04',
             'nama' => 'Observasi proses Konstruksi Objek Matematika Bangunan Ruang dengan GeoGebra',
             'bobot' => 5,
             'evaluasi_id' => $evaluasi_partisipasi_individu->id,
@@ -1299,7 +1299,7 @@ class UserSeeder extends Seeder
             'subcpmk_id' => $subcpmk2_1->id,
         ]);
         $penugasan5 = $mk_KP21514004->penugasans()->create([
-            'kode' => 'Tugas05',
+            'kode' => 'Asesmen05',
             'nama' => 'Tugas Pemecahan Soal Berbantuan Software GSP',
             'bobot' => 10,
             'evaluasi_id' => $evaluasi_tugas->id,
@@ -1310,7 +1310,7 @@ class UserSeeder extends Seeder
             'subcpmk_id' => $subcpmk2_2->id,
         ]);
         $penugasan6 = $mk_KP21514004->penugasans()->create([
-            'kode' => 'Tugas06',
+            'kode' => 'Asesmen06',
             'nama' => 'Tugas Pemecahan Soal Berbantuan Software Geogebra',
             'bobot' => 10,
             'evaluasi_id' => $evaluasi_tugas->id,
@@ -1321,7 +1321,7 @@ class UserSeeder extends Seeder
             'subcpmk_id' => $subcpmk2_2->id,
         ]);
         $penugasan7 = $mk_KP21514004->penugasans()->create([
-            'kode' => 'Tugas07',
+            'kode' => 'Asesmen07',
             'nama' => 'Proyek Mini Hasil Pemodelan',
             'bobot' => 10,
             'evaluasi_id' => $evaluasi_proyek_kelompok->id,
@@ -1332,7 +1332,7 @@ class UserSeeder extends Seeder
             'subcpmk_id' => $subcpmk3_1->id,
         ]);
         $penugasan8 = $mk_KP21514004->penugasans()->create([
-            'kode' => 'Tugas08',
+            'kode' => 'Asesmen08',
             'nama' => 'Presentasi Hasil Pemodelan',
             'bobot' => 10,
             'evaluasi_id' => $evaluasi_proyek_kelompok->id,
@@ -1343,7 +1343,7 @@ class UserSeeder extends Seeder
             'subcpmk_id' => $subcpmk3_1->id,
         ]);
         $penugasan9 = $mk_KP21514004->penugasans()->create([
-            'kode' => 'Tugas09',
+            'kode' => 'Asesmen09',
             'nama' => 'Proyek Terstruktur Menggunakan Maple',
             'bobot' => 15,
             'evaluasi_id' => $evaluasi_proyek_individu->id,
@@ -1354,7 +1354,7 @@ class UserSeeder extends Seeder
             'subcpmk_id' => $subcpmk3_2->id,
         ]);
         $penugasan10 = $mk_KP21514004->penugasans()->create([
-            'kode' => 'Tugas10',
+            'kode' => 'Asesmen10',
             'nama' => 'Interpretasi Analisis Data dengan SPSS',
             'bobot' => 10,
             'evaluasi_id' => $evaluasi_proyek_individu->id,
@@ -1365,7 +1365,7 @@ class UserSeeder extends Seeder
             'subcpmk_id' => $subcpmk4_1->id,
         ]);
         $penugasan11 = $mk_KP21514004->penugasans()->create([
-            'kode' => 'Tugas11',
+            'kode' => 'Asesmen11',
             'nama' => 'Presentasi Laporan Interpretasi Hasil Statistik',
             'bobot' => 10,
             'evaluasi_id' => $evaluasi_partisipasi_individu->id,

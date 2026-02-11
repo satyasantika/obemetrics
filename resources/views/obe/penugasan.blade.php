@@ -40,7 +40,6 @@
                         </div>
                     </div>
                     <hr>
-                    <hr>
                     <div class="row">
                         <div class="col">
                             <div class="float-end">
@@ -100,6 +99,99 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-3">
+        <div class="col-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <span class="h5">Tabel Rencana Evaluasi (<i>Assessment Plan</i>)</span>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Komponen Evaluasi</th>
+                                <th>Bentuk Asesmen</th>
+                                <th>Bobot (%)</th>
+                                <th>Mengukur CPL</th>
+                                <th>Mengukur CPMK</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($evaluasis->pluck('kategori')->unique() as $kategori_evaluasi)
+                                <tr class="table-secondary">
+                                    <th colspan="5" class="table-secondary text-center">
+                                        <strong>{{ $kategori_evaluasi }} ({{ $evaluasis->where('kategori', $kategori_evaluasi)->map(function($evaluasi) use ($mk){
+                                            return $evaluasi->penugasans->where('mk_id', $mk->id)->sum('bobot');
+                                        })->sum() }}%)</strong>
+                                    </th>
+                                </tr>
+                                @forelse ($evaluasis->where('kategori', $kategori_evaluasi) as $evaluasi)
+                                @php
+                                    $asesmens = $evaluasi->penugasans->where('mk_id', $mk->id);
+                                @endphp
+                                <tr>
+                                    <td>{{ $evaluasi->nama }}</td>
+                                    <td>
+                                        @forelse ($asesmens as $tugas)
+                                            <table>
+                                                <tbody>
+                                                    <tr style="vertical-align: top">
+                                                        <td>{{ $tugas->kode }}:</td>
+                                                        <td>{{ $tugas->nama }} (bobot: {{ $tugas->bobot }}%)</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        @empty
+                                            -
+                                        @endforelse
+                                    </td>
+                                    <td class="text-end">
+                                        {{ $asesmens->sum('bobot') }}%
+                                    </td>
+                                    <td>
+                                        {{ $asesmens
+                                            ->pluck('joinSubcpmkPenugasans.*.subcpmk.joinCplCpmk.joinCplBk.Cpl.kode')
+                                            ->flatten()
+                                            ->filter()
+                                            ->unique()
+                                            ->sort()
+                                            ->values()
+                                            ->whenEmpty(fn () => collect(['-']))
+                                            ->implode(', ')
+                                        }}
+                                    </td>
+                                    <td>
+                                        {{ $asesmens
+                                            ->pluck('joinSubcpmkPenugasans.*.subcpmk.joinCplCpmk.cpmk.kode')
+                                            ->flatten()
+                                            ->filter()
+                                            ->unique()
+                                            ->sort()
+                                            ->values()
+                                            ->whenEmpty(fn () => collect(['-']))
+                                            ->implode(', ')
+                                        }}
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="5" class="text-center">Belum ada data Tugas untuk mata kuliah ini.</td>
+                                </tr>
+                                @endforelse
+                            @endforeach
+                            <tr class="table-secondary">
+                                <th colspan="2" class="text-end">Total Bobot</th>
+                                <th class="text-end">
+                                    {{ $penugasans->sum('bobot') }}%
+                                </th>
+                                <th colspan="2"></th>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
