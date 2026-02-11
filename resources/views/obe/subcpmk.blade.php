@@ -28,6 +28,8 @@
                         <div class="col"><strong>{{ $mk->kurikulum->prodi->jenjang }} {{ $mk->kurikulum->prodi->nama }}</strong></div>
                     </div>
                     <hr>
+                    @include('layouts.menu-mk',$mk)
+                    <hr>
                     <div class="row">
                         <div class="col">
                             <span class="h4 float-end">Total bobot evaluasi: {{ $total_bobot }}%</span>
@@ -37,17 +39,13 @@
                         <div class="col">
                             @forelse ($cpmks as $cpmk)
                             <div class="card mb-3">
-                                <div class="card-header bg-primary text-white">
+                                <div class="card-header bg-dark text-white">
                                     <strong class="h4">{{ $cpmk->kode }}</strong><br>
                                     <span class="h5">{{ $cpmk->nama }}</span>
                                 </div>
                                 <div class="card-body">
-                                    @php
-                                        $JoinCplCpmk = \App\Models\JoinCplCpmk::where('cpmk_id',$cpmk->id)->pluck('id');
-                                        $subcpmks = \App\Models\Subcpmk::whereIn('join_cpl_cpmk_id',$JoinCplCpmk)->get();
-                                    @endphp
                                     <ul>
-                                        @foreach ($subcpmks as $subcpmk)
+                                        @foreach ($cpmk->joinCplCpmks->pluck('subcpmks')->flatten() as $subcpmk)
                                             <li>
                                                 <strong class="h5">{{ $subcpmk->kode }}</strong>
                                                 {{-- Edit SubCPMK --}}
@@ -76,8 +74,30 @@
                                                     <tbody>
                                                         <tr>
                                                             <td>{{ $subcpmk->indikator }}</td>
-                                                            <td>{{ $subcpmk->evaluasi }}</td>
-                                                            <td>{{ $subcpmk->bobot }}%</td>
+                                                            <td>
+                                                                {{ $subcpmk->evaluasi }}<hr>
+                                                                <strong>Tagihan: </strong>
+                                                                {{ $subcpmk->joinSubcpmkPenugasans
+                                                                    ->groupBy(fn($t) => $t->penugasan->evaluasi->nama ?? '-')
+                                                                    ->map(fn($group) =>
+                                                                        $group->sum(fn($t) =>
+                                                                            (float)($t->penugasan->bobot ?? 0) * ((float)($t->bobot ?? 0) / 100)
+                                                                        )
+                                                                    )
+                                                                    ->filter(fn($total) => $total > 0) // opsional: buang total 0
+                                                                    ->map(fn($total, $nama) =>
+                                                                        // tampilkan tanpa desimal jika bilangan bulat, else 2 desimal
+                                                                        $nama.' ('.(intval($total) == $total ? intval($total) : number_format($total, 2)).'%)'
+                                                                    )
+                                                                    ->values()
+                                                                    ->whenEmpty(fn () => collect(['-'])) // fallback jika tidak ada data
+                                                                    ->implode(', ')
+                                                                }}
+                                                            </td>
+                                                            <td>
+                                                                {{ $subcpmk->joinSubcpmkPenugasans->sum(fn ($row) => (float)($row->penugasan->bobot ?? 0) * (float)($row->bobot ?? 0)/100);
+                                                                }}%
+                                                            </td>
                                                         </tr>
                                                     </tbody>
                                                 </table>

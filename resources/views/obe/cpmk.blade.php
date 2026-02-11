@@ -28,6 +28,8 @@
                         <div class="col"><strong>{{ $mk->kurikulum->prodi->jenjang }} {{ $mk->kurikulum->prodi->nama }}</strong></div>
                     </div>
                     <hr>
+                    @include('layouts.menu-mk',$mk)
+                    <hr>
 
                     <div class="row">
                         <div class="col">

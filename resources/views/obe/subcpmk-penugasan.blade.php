@@ -28,13 +28,7 @@
                         <div class="col"><strong>{{ $mk->kurikulum->prodi->jenjang }} {{ $mk->kurikulum->prodi->nama }}</strong></div>
                     </div>
                     <hr>
-                    <div class="row">
-                        <div class="col">
-                            <a href="{{ route('mks.penugasans.index',[$mk->id]) }}" class="btn btn-sm btn-primary">
-                                <i class="bi bi-list-task"></i> Kelola Tagihan Tugas
-                            </a>
-                        </div>
-                    </div>
+                    @include('layouts.menu-mk',$mk)
                     <hr>
 
                     <div class="row">
@@ -45,7 +39,9 @@
                                         <th></th>
                                         @forelse ($subcpmks as $subcpmk)
                                             <th>
-                                                {{ $subcpmk->kode }}
+                                                <span title="{{ $subcpmk->nama }}">
+                                                    {{ $subcpmk->kode }}
+                                                </span>
                                             </th>
                                         @empty
                                             <th></th>
@@ -87,6 +83,7 @@
                                                             class="form-check-input"
                                                             type="checkbox"
                                                             name="is_linked"
+                                                            title="{{ $subcpmk->nama }}"
                                                             id="is_linked_{{ $penugasan->id }}_{{ $subcpmk->id }}"
                                                             onchange="this.form.submit()"
                                                             @checked($cek)

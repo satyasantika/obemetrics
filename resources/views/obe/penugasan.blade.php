@@ -28,17 +28,7 @@
                         <div class="col"><strong>{{ $mk->kurikulum->prodi->jenjang }} {{ $mk->kurikulum->prodi->nama }}</strong></div>
                     </div>
                     <hr>
-                    <div class="row">
-                        <div class="col">
-                            <div class="">
-                                @if ($penugasans->count()>0)
-                                <a href="{{ route('mks.joinsubcpmkpenugasans.index',$mk) }}" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-link-45deg"></i> Kelola Hubungan SubCPMK & Tugas
-                                </a>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+                    @include('layouts.menu-mk',$mk)
                     <hr>
                     <div class="row">
                         <div class="col">
