@@ -66,8 +66,13 @@ class MahasiswasDataTable extends DataTable
                     ->buttons([
                         Button::make('add'),
                         Button::make('reset'),
-                        Button::make('reload')
-                    ]);
+                        Button::make('reload'),
+                        Button::make([
+                                        'text'   => '<i class="bi bi-upload"></i> Import',
+                                        'className' => 'btn btn-success',
+                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('setting.import.mahasiswas').'"; }',
+                                    ]),
+                                ]);
     }
 
     /**
