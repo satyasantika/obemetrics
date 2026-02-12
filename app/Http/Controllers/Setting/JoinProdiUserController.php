@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Setting;
 
-use App\Models\User;
-use App\Models\Prodi;
-use App\Models\JoinProdiUser;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use App\DataTables\AddJoinProdiUsersDataTable;
 use App\DataTables\JoinProdiUsersDataTable;
+use App\Http\Controllers\Controller;
+use App\Models\JoinProdiUser;
+use App\Models\Prodi;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class JoinProdiUserController extends Controller
 {
@@ -26,10 +27,10 @@ class JoinProdiUserController extends Controller
         return $dataTable->with('prodi_id', $prodi->id)->render('layouts.setting', $this->_dataSelection($prodi,''),compact('back_route'));
     }
 
-    public function create(Prodi $prodi)
+    public function create(AddJoinProdiUsersDataTable $dataTable, Prodi $prodi)
     {
-        $joinprodiuser = new JoinProdiUser();
-        return view('setting.joinprodiuser-form', $this->_dataSelection($prodi,$joinprodiuser));
+        // $back_route = 'prodis.joinprodiusers.index'.$prodi;
+        return $dataTable->with('prodi_id', $prodi->id)->render('layouts.setting', $this->_dataSelection($prodi,''));
     }
 
     public function store(Request $request, Prodi $prodi)
@@ -37,7 +38,7 @@ class JoinProdiUserController extends Controller
         JoinProdiUser::create($request->all());
         $username = User::find($request->user_id)->name;
         $prodiname = strtoupper($prodi->nama);
-        return to_route('prodis.joinprodiusers.index',$prodi)
+        return to_route('prodis.joinprodiusers.create',$prodi)
                 ->with('success', 'User ' . $username . ' pada Prodi ' . $prodiname . ' telah ditambahkan');
     }
 

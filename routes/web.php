@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('metodes', App\Http\Controllers\Setting\MetodeController::class);
     Route::resource('evaluasis', App\Http\Controllers\Setting\EvaluasiController::class);
     Route::resource('mahasiswas', App\Http\Controllers\Setting\MahasiswaController::class);
+    Route::resource('kontrakmks', App\Http\Controllers\Setting\KontrakMkController::class);
 
     // Ruang Prodi
     Route::resource('prodis.kurikulums', App\Http\Controllers\Prodi\KurikulumController::class)->except('index','show');
@@ -79,6 +80,13 @@ Route::middleware('auth')->group(function () {
     Route::post('setting/import/mahasiswas/commit', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'commitMahasiswa'])->name('setting.import.mahasiswas.commit');
     Route::get('setting/import/mahasiswas/template', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'downloadTemplate'])->name('setting.import.mahasiswas.template');
     Route::post('setting/import/mahasiswas/clear', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'clearPreview'])->name('setting.import.mahasiswas.clear');
+
+    // Bulk Upload Users
+    Route::get('setting/import/users', [App\Http\Controllers\Bulk\ImportUserController::class, 'importUserForm'])->name('setting.import.users');
+    Route::post('setting/import/users', [App\Http\Controllers\Bulk\ImportUserController::class, 'importUser'])->name('setting.import.users');
+    Route::post('setting/import/users/commit', [App\Http\Controllers\Bulk\ImportUserController::class, 'commitUser'])->name('setting.import.users.commit');
+    Route::get('setting/import/users/template', [App\Http\Controllers\Bulk\ImportUserController::class, 'downloadTemplate'])->name('setting.import.users.template');
+    Route::post('setting/import/users/clear', [App\Http\Controllers\Bulk\ImportUserController::class, 'clearPreview'])->name('setting.import.users.clear');
 
     // Bulk Upload Kontrak MK
     Route::get('setting/import/kontrakmks', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'importKontrakMkForm'])->name('setting.import.kontrakmks');

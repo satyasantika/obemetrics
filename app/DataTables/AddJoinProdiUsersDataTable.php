@@ -13,7 +13,7 @@ use Yajra\DataTables\Services\DataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 
-class JoinProdiUsersDataTable extends DataTable
+class AddJoinProdiUsersDataTable extends DataTable
 {
     /**
      * Build the DataTable class.
@@ -25,7 +25,14 @@ class JoinProdiUsersDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
                 $action = '<div class="row">';
-                $action .= ' <div class="col-auto"><a href="'.route('prodis.joinprodiusers.edit',[$row->prodi_id,$row->id]).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit data user prodi"><i class="bi bi-pencil-square"></i></a></div>';
+                $action .= ' <div class="col-auto">';
+                $action .= '  <form action="'.route('prodis.joinprodiusers.store', [$this->prodi_id]).'" method="POST" style="display:inline;">';
+                $action .= '   <input type="hidden" name="_token" value="'.csrf_token().'">';
+                $action .= '   <input type="hidden" name="user_id" value="'.$row->id.'">';
+                $action .= '   <input type="hidden" name="prodi_id" value="'.$this->prodi_id.'">';
+                $action .= '   <button type="submit" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Tambah data user prodi"><i class="bi bi-plus-circle"></i></button>';
+                $action .= '  </form>';
+                $action .= ' </div>';
                 $action .= '</div>';
                 return $action;
             })
@@ -33,23 +40,19 @@ class JoinProdiUsersDataTable extends DataTable
                 return $row->updated_at->format('Y-m-d H:i:s');
             })
             ->AddColumn('role', function($row) {
-                $role = User::find($row->user_id)->getRoleNames();
-                return $role->join(', ');
+                $role = $row->getRoleNames();
+                return $role->join(', ') ?? '';
             })
-            ->editColumn('user_id', function($row) {
-                return $row->user->name;
-            })
-            ->rawColumns(['action','username'])
+            ->rawColumns(['action','role'])
             ->setRowId('id');
     }
 
     /**
      * Get the query source of dataTable.
      */
-    public function query(JoinProdiUser $model): QueryBuilder
+    public function query(User $model): QueryBuilder
     {
-        return $model->where('prodi_id',$this->prodi_id)->newQuery();
-        // return $model->newQuery();
+        return $model->whereNotIn('id',JoinProdiUser::select('user_id')->where('prodi_id', $this->prodi_id))->newQuery()->role('dosen');
     }
 
     /**
@@ -58,7 +61,7 @@ class JoinProdiUsersDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('joinprodiusers-table')
+                    ->setTableId('addjoinprodiusers-table')
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     ->dom("<'row mb-2'<'col-auto'B><'col-auto'f><'col-auto'l>>" .
@@ -69,13 +72,13 @@ class JoinProdiUsersDataTable extends DataTable
                     ->setTableAttribute('class', 'table table-striped table-bordered table-hover')
                     ->buttons([
                         // Button::make('add'),
-                        Button::make([
-                                        'text'   => '<i class="bi bi-plus-circle"></i> Tambah User Prodi',
-                                        'className' => 'btn btn-success',
-                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('prodis.joinprodiusers.create',$this->prodi_id).'"; }',
-                                    ]),
                         Button::make('reset'),
                         Button::make('reload'),
+                        Button::make([
+                                        'text'   => '<i class="bi bi-left-arrow"></i> Back to User Prodi',
+                                        'className' => 'btn btn-primary',
+                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('prodis.joinprodiusers.index',$this->prodi_id).'"; }',
+                                    ]),
                                 ]);
     }
 
@@ -85,16 +88,15 @@ class JoinProdiUsersDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            // Column::make('prodi_id'),
-            Column::make('user_id')->title('nama user'),
-            Column::make('role'),
-            Column::make('status'),
-            Column::make('updated_at'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
                 ->width(80)
                 ->addClass('text-center'),
+            Column::make('name'),
+            Column::make('role'),
+            Column::make('nidn'),
+            Column::make('updated_at'),
         ];
     }
 
@@ -103,6 +105,6 @@ class JoinProdiUsersDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Joinprodiusers_' . date('YmdHis');
+        return 'AddJoinProdiUsers_' . date('YmdHis');
     }
 }
