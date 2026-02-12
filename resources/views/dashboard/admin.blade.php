@@ -22,30 +22,25 @@
 
                 Manajemen data lainnya:<br>
                 @can('read prodis')
-                <a href="{{ route('prodis.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-journal-bookmark"></i> Prodi</a>
+                <a href="{{ route('prodis.index') }}" class="btn btn-sm btn-primary mt-1"><i class="bi bi-journal-bookmark"></i> Prodi</a>
                 @endcan
 
                 @can('read semesters')
-                <a href="{{ route('semesters.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-calendar"></i> Semester</a>
+                <a href="{{ route('semesters.index') }}" class="btn btn-sm btn-primary mt-1"><i class="bi bi-calendar"></i> Semester</a>
                 @endcan
 
                 @can('read evaluasis')
-                <a href="{{ route('evaluasis.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-clipboard-check"></i> Evaluasi</a>
+                <a href="{{ route('evaluasis.index') }}" class="btn btn-sm btn-primary mt-1"><i class="bi bi-clipboard-check"></i> Evaluasi</a>
                 @endcan
 
                 @can('read mahasiswas')
-                <a href="{{ route('mahasiswas.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-people-fill"></i> Mahasiswa</a>
+                <a href="{{ route('mahasiswas.index') }}" class="btn btn-sm btn-primary mt-1"><i class="bi bi-people-fill"></i> Mahasiswa</a>
                 @endcan
 
                 @can('read kontrakmks')
-                <a href="{{ route('kontrakmks.index') }}" class="btn btn-sm btn-primary"><i class="bi bi-file-earmark-text"></i> Kontrak Mata Kuliah</a>
+                <a href="{{ route('kontrakmks.index') }}" class="btn btn-sm btn-primary mt-1"><i class="bi bi-file-earmark-text"></i> Kontrak Mata Kuliah</a>
                 @endcan
                 <hr>
-
-                Import data (bulk upload):<br>
-                @can('read bulk-import kontrakmks')
-                <a href="{{ route('setting.import.kontrakmks') }}" class="btn btn-sm btn-primary"><i class="bi bi-upload"></i> Kontrak Mata Kuliah</a>
-                @endcan
             </div>
         </div>
     </div>

@@ -8,23 +8,14 @@
             <div class="card-body">
                 @include('layouts.alert')
                 {{-- Program Studi --}}
-                @php
-                    $user_id = auth()->id();
-                    $prodi_ids = \App\Models\JoinProdiUser::where('user_id',$user_id)->pluck('prodi_id');
-                    $prodis = \App\Models\Prodi::whereIn('id',$prodi_ids)->get();
-                @endphp
-
-                @forelse ($prodis as $prodi)
+                @forelse (auth()->user()->joinProdiUsers->pluck('prodi') as $prodi)
                     <span class="h5">Program Studi {{ $prodi->jenjang }} {{ $prodi->nama }}</span>
                     <hr>
-                    @php
-                        $kurikulums = \App\Models\Kurikulum::where('prodi_id',$prodi->id)->get();
-                    @endphp
 
                     {{-- Kurikulum --}}
                     Kurikulum pada program studi ini:
                     <ol>
-                        @forelse ($kurikulums as $kurikulum)
+                        @forelse (auth()->user()->joinMkUsers->pluck('kurikulum')->where('prodi_id',$prodi->id) as $kurikulum)
                         <hr>
                         <div class="row mb-1">
                             <div class="col">

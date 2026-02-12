@@ -8,38 +8,26 @@
             <div class="card-body">
                 @include('layouts.alert')
                 {{-- Program Studi --}}
-                @php
-                    $user_id = auth()->id();
-                    $mk_ids = \App\Models\JoinMkUser::where('user_id',$user_id)->pluck('mk_id');
-                    $kurikulum_ids = \App\Models\JoinMkUser::where('user_id',$user_id)->pluck('kurikulum_id')->unique();
-                    $prodi_ids = \App\Models\Kurikulum::whereIn('id',$kurikulum_ids)->pluck('prodi_id');
-                    $prodis = \App\Models\Prodi::whereIn('id',$prodi_ids)->get();
-                @endphp
 
-                @forelse ($prodis as $prodi)
-                    <h4>Program Studi {{ $prodi->jenjang }} {{ $prodi->nama }}</h4>
+                @forelse (auth()->user()->joinProdiUsers as $joinProdiUser)
+                    <h4>Program Studi {{ $joinProdiUser->prodi->jenjang }} {{ $joinProdiUser->prodi->nama }}</h4>
                     <hr>
 
                     {{-- Mata Kuliah --}}
                     Mata Kuliah pada program studi ini:
-                    @php
-                        $kurikulums = \App\Models\Kurikulum::whereIn('id',$kurikulum_ids)->get();
-                    @endphp
-                    @foreach ($kurikulums as $kurikulum)
-                        @if ($kurikulum->prodi_id == $prodi->id)
-                        @php
-                            $join_mk_users = \App\Models\JoinMkUser::where('kurikulum_id',$kurikulum->id)->pluck('mk_id');
-                            $mks = \App\Models\Mk::whereIn('id',$join_mk_users)->get();
-                        @endphp
+                    {{-- mata kuliah yang ditampilkan adalah mata kuliah yang diampu oleh dosen tersebut pada kurikulum yang terkait dengan program studi ini. --}}
+                    @foreach (auth()->user()->joinMkUsers as $joinMkUser)
+                        @if ($joinMkUser->kurikulum->prodi_id == $joinProdiUser->prodi->id)
                         <div class="row">
                             <div class="col">
-                            {{ $kurikulum->nama }}
+                            {{ $joinMkUser->kurikulum->nama }}
                             </div>
                         </div>
                         <div class="row mb-1">
                             <div class="col">
                                 <ol>
-                                @foreach ($mks as $mk)
+                                {{-- berikut mata kuliah yang Anda ampu pada kurikulum ini: --}}
+                                @foreach (auth()->user()->joinMkUsers->pluck('mk')->where('kurikulum_id',$joinMkUser->kurikulum->id) as $mk)
                                     <hr>
                                     <li>
                                         {{ $mk->kodemk }} {{ $mk->nama }}
