@@ -88,6 +88,20 @@ Route::middleware('auth')->group(function () {
     Route::get('setting/import/users/template', [App\Http\Controllers\Bulk\ImportUserController::class, 'downloadTemplate'])->name('setting.import.users.template');
     Route::post('setting/import/users/clear', [App\Http\Controllers\Bulk\ImportUserController::class, 'clearPreview'])->name('setting.import.users.clear');
 
+    // Bulk Upload User Prodi
+    Route::get('setting/import/joinprodiusers', [App\Http\Controllers\Bulk\ImportJoinProdiUserController::class, 'importJoinProdiUserForm'])->name('setting.import.joinprodiusers');
+    Route::post('setting/import/joinprodiusers', [App\Http\Controllers\Bulk\ImportJoinProdiUserController::class, 'importJoinProdiUser'])->name('setting.import.joinprodiusers');
+    Route::post('setting/import/joinprodiusers/commit', [App\Http\Controllers\Bulk\ImportJoinProdiUserController::class, 'commitJoinProdiUser'])->name('setting.import.joinprodiusers.commit');
+    Route::get('setting/import/joinprodiusers/template', [App\Http\Controllers\Bulk\ImportJoinProdiUserController::class, 'downloadTemplate'])->name('setting.import.joinprodiusers.template');
+    Route::post('setting/import/joinprodiusers/clear', [App\Http\Controllers\Bulk\ImportJoinProdiUserController::class, 'clearPreview'])->name('setting.import.joinprodiusers.clear');
+
+    // Bulk Upload Pengampu Mata Kuliah
+    Route::get('setting/import/joinmkusers', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'importJoinMkUserForm'])->name('setting.import.joinmkusers');
+    Route::post('setting/import/joinmkusers', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'importJoinMkUser'])->name('setting.import.joinmkusers');
+    Route::post('setting/import/joinmkusers/commit', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'commitJoinMkUser'])->name('setting.import.joinmkusers.commit');
+    Route::get('setting/import/joinmkusers/template', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'downloadTemplate'])->name('setting.import.joinmkusers.template');
+    Route::post('setting/import/joinmkusers/clear', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'clearPreview'])->name('setting.import.joinmkusers.clear');
+
     // Bulk Upload Kontrak MK
     Route::get('setting/import/kontrakmks', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'importKontrakMkForm'])->name('setting.import.kontrakmks');
     Route::post('setting/import/kontrakmks', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'importKontrakMk'])->name('setting.import.kontrakmks');

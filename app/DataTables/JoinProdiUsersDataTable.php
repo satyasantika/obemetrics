@@ -76,6 +76,11 @@ class JoinProdiUsersDataTable extends DataTable
                                     ]),
                         Button::make('reset'),
                         Button::make('reload'),
+                        Button::make([
+                                        'text'   => '<i class="bi bi-upload"></i> Import Banyak User Prodi',
+                                        'className' => 'btn btn-success',
+                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('setting.import.joinprodiusers',$this->prodi_id).'"; }',
+                                    ]),
                                 ]);
     }
 
@@ -88,8 +93,8 @@ class JoinProdiUsersDataTable extends DataTable
             // Column::make('prodi_id'),
             Column::make('user_id')->title('nama user'),
             Column::make('role'),
-            Column::make('status'),
-            Column::make('updated_at'),
+            Column::make('status')->title('peran di prodi'),
+            // Column::make('updated_at'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

@@ -29,6 +29,10 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'update join prodi users'])->assignRole('admin');
         Permission::create(['name' => 'delete join prodi users'])->assignRole('admin');
 
+        Permission::create(['name' => 'read bulk-import joinprodiusers'])->assignRole('admin');
+        Permission::create(['name' => 'create bulk-import joinprodiusers'])->assignRole('admin');
+        Permission::create(['name' => 'delete bulk-import joinprodiusers'])->assignRole('admin');
+
         Permission::create(['name' => 'create semesters'])->assignRole('admin');
         Permission::create(['name' => 'read semesters'])->assignRole('admin');
         Permission::create(['name' => 'update semesters'])->assignRole('admin');
@@ -91,6 +95,10 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'read mks'])->assignRole('pimpinan prodi');
         Permission::create(['name' => 'update mks'])->assignRole('pimpinan prodi');
         Permission::create(['name' => 'delete mks'])->assignRole('pimpinan prodi');
+
+        Permission::create(['name' => 'read bulk-import joinmkusers'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'create bulk-import joinmkusers'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'delete bulk-import joinmkusers'])->assignRole('admin','operator prodi');
 
         Permission::create(['name' => 'read join profil cpls'])->assignRole('pimpinan prodi');
         Permission::create(['name' => 'update join profil cpls'])->assignRole('pimpinan prodi');

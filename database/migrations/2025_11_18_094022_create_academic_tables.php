@@ -145,6 +145,7 @@ return new class extends Migration
             $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->foreignUuid('user_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->boolean('koordinator')->default(0);
             $table->timestamps();
         });
@@ -309,6 +310,7 @@ return new class extends Migration
             $table->dropForeign('join_mk_users_user_id_foreign');
             $table->dropForeign('join_mk_users_mk_id_foreign');
             $table->dropForeign('join_mk_users_kurikulum_id_foreign');
+            $table->dropForeign('join_mk_users_semester_id_foreign');
         });
         Schema::dropIfExists('join_mk_users');
         // interaksi bk-mk

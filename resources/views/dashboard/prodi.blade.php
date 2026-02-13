@@ -15,7 +15,7 @@
                     {{-- Kurikulum --}}
                     Kurikulum pada program studi ini:
                     <ol>
-                        @forelse (auth()->user()->joinMkUsers->pluck('kurikulum')->where('prodi_id',$prodi->id) as $kurikulum)
+                        @forelse (auth()->user()->joinProdiUsers->pluck('prodi.kurikulums')->flatten() as $kurikulum)
                         <hr>
                         <div class="row mb-1">
                             <div class="col">

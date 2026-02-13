@@ -29,6 +29,7 @@
                     <div class="row mb-2">
                         <div class="col">
                             <a href="{{ route('kurikulums.mks.create',$kurikulum) }}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Tambah Mata Kuliah</a>
+                            <a href="{{ route('setting.import.joinmkusers',$kurikulum) }}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Tambahkan User ke Mata Kuliah</a>
                         </div>
                     </div>
 
