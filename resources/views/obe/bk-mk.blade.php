@@ -24,6 +24,8 @@
                         <div class="col"><strong>{{ $kurikulum->prodi->jenjang }} {{ $kurikulum->prodi->nama }}</strong></div>
                     </div>
                     <hr>
+                    @include('layouts.menu-kurikulum',$kurikulum)
+                    <hr>
 
                     <div class="row">
                         <div class="col">
@@ -46,6 +48,7 @@
                                 @forelse ($mks as $mk)
                                     <tr style="vertical-align: text-top;">
                                         <th>
+                                            <span class="text-secondary fw-lighter">{{ $mk->kodemk }}</span><br>
                                             <span data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $mk->nama }}">
                                                 {{ $mk->nama }}
                                             </span>

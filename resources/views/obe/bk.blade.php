@@ -24,6 +24,17 @@
                         <div class="col"><strong>{{ $kurikulum->prodi->jenjang }} {{ $kurikulum->prodi->nama }}</strong></div>
                     </div>
                     <hr>
+                    <div class="row">
+                        <div class="col">
+                            @include('layouts.menu-kurikulum',$kurikulum)
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-2">
+                        <div class="col">
+                            <a href="{{ route('kurikulums.bks.create',$kurikulum) }}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Tambah Bahan Kajian</a>
+                        </div>
+                    </div>
 
                     <div class="row">
                         <div class="col">
@@ -51,11 +62,6 @@
                                 @endforelse
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <a href="{{ route('kurikulums.bks.create',$kurikulum) }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Tambah Bahan Kajian</a>
                         </div>
                     </div>
                 </div>

@@ -24,15 +24,22 @@
                         <div class="col"><strong>{{ $kurikulum->prodi->jenjang }} {{ $kurikulum->prodi->nama }}</strong></div>
                     </div>
                     <hr>
-
                     <div class="row">
                         <div class="col">
-                            <a href="{{ route('kurikulums.profils.create',$kurikulum) }}" class="btn btn-primary btn-sm">
-                                <i class="bi bi-plus-circle"></i> Tambah Profil
-                            </a>
+                            @include('layouts.menu-kurikulum',$kurikulum)
                         </div>
                     </div>
                     <hr>
+                    <div class="row mb-2">
+                        <div class="col">
+                            <a href="{{ route('kurikulums.profils.create',$kurikulum) }}" class="btn btn-success btn-sm">
+                                <i class="bi bi-plus-circle"></i> Tambah Profil Lulusan
+                            </a>
+                        </div>
+                    </div>
+
+                    {{-- daftar profil --}}
+
                     <div class="row">
                         @forelse ($profils as $profil)
                         <!-- Card -->
@@ -52,6 +59,7 @@
                                         {{ $profil->deskripsi }}
                                     </p>
                                     <hr>
+                                    {{-- indikator profil lulusan: --}}
                                     <h6>
                                         <strong>Indikator:</strong>
                                     </h6>

@@ -24,6 +24,8 @@
                         <div class="col"><strong>{{ $kurikulum->prodi->jenjang }} {{ $kurikulum->prodi->nama }}</strong></div>
                     </div>
                     <hr>
+                    @include('layouts.menu-kurikulum',$kurikulum)
+                    <hr>
 
                     <div class="row">
                         <div class="col">
