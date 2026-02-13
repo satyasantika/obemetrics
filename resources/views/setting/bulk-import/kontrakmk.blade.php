@@ -17,6 +17,21 @@
                         @csrf
                         <div class="row mt-3">
                             <div class="col-md-3 text-end">
+                                Semester <span class="text-danger">*</span>
+                            </div>
+                            <div class="col">
+                                <select name="semester_id" class="form-control" required>
+                                    <option value="">-Pilih Semester-</option>
+                                    @foreach ($semesters as $semester)
+                                        <option value="{{ $semester->id }}" @selected(old('semester_id', $preview['semester_id'] ?? '') == $semester->id)>
+                                            {{ $semester->kode }} - {{ $semester->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-3 text-end">
                                 File Upload <span class="text-danger">*</span>
                             </div>
                             <div class="col">
@@ -70,6 +85,7 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 40px;">Pilih</th>
+                                        <th>Kode Semester</th>
                                         <th>NIM</th>
                                         <th>Nama Mahasiswa</th>
                                         <th>Kode MK</th>
@@ -96,6 +112,7 @@
                                                     @disabled($hasError)
                                                 >
                                             </td>
+                                            <td>{{ $row['kode_semester'] }}</td>
                                             <td>{{ $row['nim'] }}</td>
                                             <td>{{ $row['nama_mahasiswa'] }}</td>
                                             <td>{{ $row['kode_mk'] }}</td>

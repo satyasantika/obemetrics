@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class JoinMkUser extends Model
+class Nilai extends Model
 {
     use HasFactory, HasUuids;
     protected $guarded = ['id'];
@@ -17,14 +17,19 @@ class JoinMkUser extends Model
         return $this->belongsTo(Mk::class);
     }
 
-    public function kurikulum(): BelongsTo
+    public function penugasan(): BelongsTo
     {
-        return $this->belongsTo(Kurikulum::class);
+        return $this->belongsTo(Penugasan::class);
     }
 
-    public function user(): BelongsTo
+    public function mahasiswa(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(Mahasiswa::class);
+    }
+
+    public function semester(): BelongsTo
+    {
+        return $this->belongsTo(Semester::class);
     }
 
 }

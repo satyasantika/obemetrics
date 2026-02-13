@@ -72,7 +72,15 @@ Route::middleware('auth')->group(function () {
     Route::get('mks/{mk}/joinsubcpmkpenugasans', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class,'index'])->name('mks.joinsubcpmkpenugasans.index');
     Route::put('joinsubcpmkpenugasans/{subcpmk}/{penugasan}', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class, 'update'])->name('joinsubcpmkpenugasans.update');
     // Penilaian Mata Kuliah
-    Route::resource('mks.penilaians', App\Http\Controllers\Dosen\PenilaianController::class)->except('show');
+    Route::put('mks/{mk}/nilais/live-update', [App\Http\Controllers\Dosen\NilaiController::class, 'liveUpdate'])->name('mks.nilais.live-update');
+    Route::resource('mks.nilais', App\Http\Controllers\Dosen\NilaiController::class)->except('show');
+
+    // Bulk Upload Nilai MK
+    Route::get('setting/import/nilais/{mk}', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'importNilaiForm'])->name('setting.import.nilais');
+    Route::post('setting/import/nilais/{mk}', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'importNilai'])->name('setting.import.nilais');
+    Route::post('setting/import/nilais/{mk}/commit', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'commitNilai'])->name('setting.import.nilais.commit');
+    Route::get('setting/import/nilais/{mk}/template', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'downloadTemplate'])->name('setting.import.nilais.template');
+    Route::post('setting/import/nilais/{mk}/clear', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'clearPreview'])->name('setting.import.nilais.clear');
 
     // Bulk Upload Mahasiswa
     Route::get('setting/import/mahasiswas', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'importMahasiswaForm'])->name('setting.import.mahasiswas');

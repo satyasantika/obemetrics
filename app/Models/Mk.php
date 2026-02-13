@@ -48,4 +48,13 @@ class Mk extends Model
         return $this->hasMany(JoinSubcpmkPenugasan::class);
     }
 
+    public function kontrakMks(): HasMany
+    {
+        return $this->hasMany(KontrakMk::class);
+    }
+
+    public function nilais(): HasMany
+    {
+        return $this->hasMany(Nilai::class);
+    }
 }

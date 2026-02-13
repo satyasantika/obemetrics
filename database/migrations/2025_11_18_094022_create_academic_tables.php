@@ -236,17 +236,18 @@ return new class extends Migration
             $table->timestamps();
         });
 
-/*         // penilaian mahasiswa pada penugasan
-        Schema::create('nilai_penugasans', function (Blueprint $table) {
+         // penilaian mahasiswa pada penugasan
+        Schema::create('nilais', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
             $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->foreignUuid('penugasan_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->foreignUuid('mahasiswa_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->double('nilai')->nullable();
             $table->text('komentar')->nullable();
             $table->timestamps();
         });
- */    }
+    }
 
     /**
      * Reverse the migrations.
@@ -254,12 +255,13 @@ return new class extends Migration
     public function down(): void
     {
         // penilaian mahasiswa pada penugasan
-        // Schema::table('nilai_penugasans', function (Blueprint $table) {
-        //     $table->dropForeign('nilai_penugasans_mk_id_foreign');
-        //     $table->dropForeign('nilai_penugasans_penugasan_id_foreign');
-        //     $table->dropForeign('nilai_penugasans_mahasiswa_id_foreign');
-        // });
-        // Schema::dropIfExists('nilai_penugasans');
+        Schema::table('nilais', function (Blueprint $table) {
+            $table->dropForeign('nilais_mk_id_foreign');
+            $table->dropForeign('nilais_penugasan_id_foreign');
+            $table->dropForeign('nilais_mahasiswa_id_foreign');
+            $table->dropForeign('nilais_semester_id_foreign');
+        });
+        Schema::dropIfExists('nilais');
         // kontrak mata kuliah mahasiswa
         Schema::table('kontrak_mks', function (Blueprint $table) {
             $table->dropForeign('kontrak_mks_mahasiswa_id_foreign');

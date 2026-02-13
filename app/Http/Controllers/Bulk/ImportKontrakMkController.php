@@ -7,6 +7,7 @@ use App\Models\Mahasiswa;
 use App\Models\Mk;
 use App\Models\User;
 use App\Models\Prodi;
+use App\Models\Semester;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Str;
@@ -23,8 +24,9 @@ class ImportKontrakMkController extends Controller
 
     public function importKontrakMkForm()
     {
+        $semesters = Semester::all();
         $preview = session('import_kontrakmk_preview', []);
-        return view('setting.bulk-import.kontrakmk', compact('preview'));
+        return view('setting.bulk-import.kontrakmk', compact('preview', 'semesters'));
     }
 
     public function importKontrakMk(Request $request)
@@ -33,9 +35,16 @@ class ImportKontrakMkController extends Controller
             // Validate and process the uploaded file
             $request->validate([
                 'file' => 'required|mimes:xlsx,csv,ods',
+                'semester_id' => 'required|uuid',
             ]);
 
             $file = $request->file('file');
+            $semesterId = $request->semester_id;
+            $semester = Semester::find($semesterId);
+
+            if (!$semester) {
+                return back()->with('error', 'Semester tidak ditemukan.');
+            }
 
             $spreadsheet = IOFactory::load($file->getPathname());
             $sheet = $spreadsheet->getActiveSheet();
@@ -107,6 +116,7 @@ class ImportKontrakMkController extends Controller
                     'nidn' => $nidn,
                     'nama_dosen' => $namaDosen,
                     'kelas' => $kelas,
+                    'kode_semester' => $semester->kode,
                     'mahasiswa_exists' => (bool) $mahasiswa,
                     'mahasiswa_id' => $mahasiswa?->id,
                     'mk_exists' => (bool) $mk,
@@ -127,12 +137,15 @@ class ImportKontrakMkController extends Controller
                 'import_kontrakmk_preview' => [
                     'rows' => $previewRows,
                     'filename' => $file->getClientOriginalName(),
+                    'semester_id' => $semesterId,
+                    'semester_kode' => $semester->kode,
                 ],
             ]);
 
             // Return view directly with all required data
             $preview = session('import_kontrakmk_preview', []);
-            return view('setting.bulk-import.kontrakmk', compact('preview'))
+            $semesters = Semester::all();
+            return view('setting.bulk-import.kontrakmk', compact('preview', 'semesters'))
                             ->with('success', 'Data berhasil dibaca. Silakan pilih data yang akan disimpan.');
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat membaca file: ' . $e->getMessage());
@@ -148,10 +161,16 @@ class ImportKontrakMkController extends Controller
 
         $preview = session('import_kontrakmk_preview', []);
         $rows = $preview['rows'] ?? [];
+        $semesterId = $preview['semester_id'] ?? null;
 
         if (empty($rows)) {
             return redirect()->route('setting.import.kontrakmks')
                             ->with('error', 'Tidak ada data preview untuk diproses.');
+        }
+
+        if (!$semesterId) {
+            return redirect()->route('setting.import.kontrakmks')
+                            ->with('error', 'Semester tidak ditemukan dalam preview.');
         }
 
         $selectedIndexes = $request->input('selected', []);
@@ -175,6 +194,7 @@ class ImportKontrakMkController extends Controller
                     'mahasiswa_id' => $row['mahasiswa_id'],
                     'mk_id' => $row['mk_id'],
                     'user_id' => $row['dosen_id'],
+                    'semester_id' => $semesterId,
                 ],
                 [
                     'kelas' => $row['kelas'],

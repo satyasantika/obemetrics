@@ -15,9 +15,9 @@ class obeSeeder extends Seeder
     public function run(): void
     {
 
-        Permission::create(['name' => 'read bulk-import users'])->assignRole('admin','operator prodi');
-        Permission::create(['name' => 'create bulk-import users'])->assignRole('admin','operator prodi');
-        Permission::create(['name' => 'delete bulk-import users'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'read bulk-import users'])->assignRole('admin');
+        Permission::create(['name' => 'create bulk-import users'])->assignRole('admin');
+        Permission::create(['name' => 'delete bulk-import users'])->assignRole('admin');
 
         Permission::create(['name' => 'create prodis'])->assignRole('admin');
         Permission::create(['name' => 'read prodis'])->syncRoles('admin','operator prodi','pimpinan prodi');
@@ -130,10 +130,10 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'update penugasans'])->assignRole('dosen');
         Permission::create(['name' => 'delete penugasans'])->assignRole('dosen');
 
-        Permission::create(['name' => 'create nilaipenugasans'])->assignRole('dosen');
-        Permission::create(['name' => 'read nilaipenugasans'])->assignRole('dosen');
-        Permission::create(['name' => 'update nilaipenugasans'])->assignRole('dosen');
-        Permission::create(['name' => 'delete nilaipenugasans'])->assignRole('dosen');
+        Permission::create(['name' => 'create nilais'])->assignRole('dosen');
+        Permission::create(['name' => 'read nilais'])->assignRole('dosen');
+        Permission::create(['name' => 'update nilais'])->assignRole('dosen');
+        Permission::create(['name' => 'delete nilais'])->assignRole('dosen');
 
         Permission::create(['name' => 'read join subcpmk penugasans'])->assignRole('dosen');
         Permission::create(['name' => 'update join subcpmk penugasans'])->assignRole('dosen');
