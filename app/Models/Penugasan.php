@@ -27,4 +27,9 @@ class Penugasan extends Model
         return $this->hasMany(JoinSubcpmkPenugasan::class);
     }
 
+    public function nilais(): HasMany
+    {
+        return $this->hasMany(Nilai::class);
+    }
+
 }

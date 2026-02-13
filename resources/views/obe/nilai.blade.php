@@ -58,12 +58,14 @@
 
                     <div class="row">
                         <div class="col">
-                            <table class="table table-bordered table-striped">
+                            <div class="table-responsive nilai-matrix-wrapper">
+                            <table class="table table-bordered table-striped nilai-matrix-table mb-0">
                                 <thead>
                                     <tr>
-                                        <th></th>
+                                        <th class="sticky-col">Mahasiswa</th>
                                         @forelse ($penugasans as $penugasan)
                                             <th>
+                                                <span class="fs-3">{{ $penugasan->bobot }}%</span>
                                                 <span title="{{ $penugasan->nama }}">
                                                     {{ $penugasan->kode }}
                                                 </span>
@@ -71,6 +73,17 @@
                                                 <small class="text-muted">
                                                     {{ $penugasan->nama }}
                                                 </small>
+                                                @php
+                                                    $cpl = $penugasan->joinSubcpmkPenugasans->pluck('subcpmk.joinCplCpmk.joinCplBk.Cpl.kode')
+                                                                    ->flatten()
+                                                                    ->filter()
+                                                                    ->unique()
+                                                                    ->sort()
+                                                                    ->values()
+                                                                    ->whenEmpty(fn () => collect(['-']))
+                                                                    ->implode(', ');
+                                                @endphp
+                                                <span class="fs-6">({{ $cpl }})</span>
                                             </th>
                                         @empty
                                             <th>Belum ada penugasan</th>
@@ -81,11 +94,13 @@
                                 @if ($kontrakMks->isNotEmpty())
                                 @foreach ($kontrakMks as $kontrakMk)
                                     <tr class="matriks-row" data-semester-id="{{ $kontrakMk->semester_id }}" style="vertical-align: text-top;">
-                                        <td>
+                                        <td class="sticky-col">
                                             <small class="text-muted">{{ $kontrakMk->mahasiswa->nim }}</small><br>
                                             {{ $kontrakMk->mahasiswa->nama }}
                                             <br>
-                                            <small class="text-muted">{{ $kontrakMk->semester->kode ?? '-' }}</small>
+                                            <small class="text-muted">
+                                                Nilai: {{ round($kontrakMk->nilai_angka, 2) ?? '-' }} ({{ $kontrakMk->nilai_huruf ?? '-' }})
+                                            </small>
                                         </td>
                                         @forelse ($penugasans as $penugasan)
                                             <td>
@@ -123,6 +138,14 @@
                                         @endforelse
                                     </tr>
                                 @endforeach
+                                <tr>
+                                    <td>Rata-rata Kelas</td>
+                                    @forelse ($penugasans as $penugasan)
+                                        <td>{{ round($penugasan->nilais->average('nilai'), 2) }}</td>
+                                    @empty
+                                        <td><span class="text-muted">-</span></td>
+                                    @endforelse
+                                </tr>
                                 <tr id="matrix-empty-row" style="display:none;">
                                     <td colspan="{{ max(2, $penugasans->count() + 1) }}"><span class="bg-warning text-dark p-2">
                                         Tidak ada data mahasiswa pada semester yang dipilih.</span>
@@ -137,6 +160,7 @@
                                 @endif
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -227,6 +251,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
+@endpush
+
+@push('styles')
+<style>
+.nilai-matrix-wrapper {
+    max-height: 70vh;
+    overflow: auto;
+}
+
+.nilai-matrix-table thead th {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 20;
+}
+
+.nilai-matrix-table .sticky-col {
+    position: sticky;
+    left: 0;
+    background: #fff;
+    z-index: 15;
+    min-width: 240px;
+}
+
+.nilai-matrix-table thead .sticky-col {
+    z-index: 25;
+}
+</style>
 @endpush
 
 @endsection

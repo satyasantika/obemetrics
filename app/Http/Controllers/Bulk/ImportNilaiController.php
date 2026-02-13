@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Bulk;
 
 use App\Models\Mk;
 use App\Models\Nilai;
+use App\Models\KontrakMk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
@@ -212,6 +213,8 @@ class ImportNilaiController extends Controller
 
                 $savedScores++;
             }
+
+            $this->syncKontrakMkScore($mk, $row['mahasiswa_id'], $row['semester_id']);
         }
 
         session()->forget($this->previewSessionKey($mk));
@@ -247,7 +250,8 @@ class ImportNilaiController extends Controller
         $sampleKontrakMks = $mk->kontrakMks()
             ->with('mahasiswa')
             ->whereNotNull('mahasiswa_id')
-            ->get();
+            ->get()
+            ->sortBy('mahasiswa.nama');
 
         $rowNum = 2;
         foreach ($sampleKontrakMks as $kontrakMk) {
@@ -278,5 +282,95 @@ class ImportNilaiController extends Controller
     private function previewSessionKey(Mk $mk): string
     {
         return 'import_nilai_preview_' . $mk->id;
+    }
+
+    private function syncKontrakMkScore(Mk $mk, string $mahasiswaId, string $semesterId): void
+    {
+        $kontrakMk = KontrakMk::query()
+            ->where('mk_id', $mk->id)
+            ->where('mahasiswa_id', $mahasiswaId)
+            ->where('semester_id', $semesterId)
+            ->first();
+
+        if (!$kontrakMk) {
+            return;
+        }
+
+        $penugasans = $mk->penugasans()->select('id', 'bobot')->get();
+        if ($penugasans->isEmpty()) {
+            $kontrakMk->update([
+                'nilai_angka' => null,
+                'nilai_huruf' => null,
+            ]);
+            return;
+        }
+
+        $bobotByPenugasan = $penugasans->mapWithKeys(function ($item) {
+            return [$item->id => (float) ($item->bobot ?? 0)];
+        });
+
+        $nilais = $mk->nilais()
+            ->where('mahasiswa_id', $mahasiswaId)
+            ->where('semester_id', $semesterId)
+            ->whereIn('penugasan_id', $bobotByPenugasan->keys())
+            ->get(['penugasan_id', 'nilai']);
+
+        $weightedSum = 0.0;
+        $totalBobot = 0.0;
+        foreach ($nilais as $item) {
+            $bobot = (float) ($bobotByPenugasan[$item->penugasan_id] ?? 0);
+            $score = (float) ($item->nilai ?? 0);
+            $weightedSum += $score * $bobot;
+            $totalBobot += $bobot;
+        }
+
+        if ($totalBobot <= 0) {
+            $kontrakMk->update([
+                'nilai_angka' => null,
+                'nilai_huruf' => null,
+            ]);
+            return;
+        }
+
+        $nilaiAngka = $weightedSum / 100;
+        $nilaiHuruf = $this->toNilaiHuruf($nilaiAngka);
+
+        $kontrakMk->update([
+            'nilai_angka' => round($nilaiAngka, 2),
+            'nilai_huruf' => $nilaiHuruf,
+        ]);
+    }
+
+    private function toNilaiHuruf(float $nilaiAngka): string
+    {
+        if ($nilaiAngka >= 85.0) {
+            return 'A';
+        }
+        if ($nilaiAngka >= 77.0) {
+            return 'A-';
+        }
+        if ($nilaiAngka >= 68.5) {
+            return 'B+';
+        }
+        if ($nilaiAngka >= 61.0) {
+            return 'B';
+        }
+        if ($nilaiAngka >= 53.0) {
+            return 'B-';
+        }
+        if ($nilaiAngka >= 45.0) {
+            return 'C+';
+        }
+        if ($nilaiAngka >= 37.0) {
+            return 'C';
+        }
+        if ($nilaiAngka >= 29.0) {
+            return 'C-';
+        }
+        if ($nilaiAngka >= 21.0) {
+            return 'D';
+        }
+
+        return 'E';
     }
 }
