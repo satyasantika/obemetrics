@@ -12,6 +12,7 @@
                 </div>
 
                 <div class="card-body">
+                    @include('layouts.alert')
                     <form action="{{ route('setting.import.kontrakmks') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <div class="row mt-3">

@@ -14,6 +14,11 @@ class obeSeeder extends Seeder
      */
     public function run(): void
     {
+
+        Permission::create(['name' => 'read bulk-import users'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'create bulk-import users'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'delete bulk-import users'])->assignRole('admin','operator prodi');
+
         Permission::create(['name' => 'create prodis'])->assignRole('admin');
         Permission::create(['name' => 'read prodis'])->syncRoles('admin','operator prodi','pimpinan prodi');
         Permission::create(['name' => 'update prodis'])->syncRoles('admin','operator prodi','pimpinan prodi');
@@ -48,10 +53,10 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'create bulk-import mahasiswas'])->assignRole('admin','operator prodi');
         Permission::create(['name' => 'delete bulk-import mahasiswas'])->assignRole('admin','operator prodi');
 
-        Permission::create(['name' => 'create kontrak mks'])->assignRole('admin','operator prodi');
-        Permission::create(['name' => 'read kontrak mks'])->assignRole('admin','operator prodi');
-        Permission::create(['name' => 'update kontrak mks'])->assignRole('admin','operator prodi');
-        Permission::create(['name' => 'delete kontrak mks'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'create kontrakmks'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'read kontrakmks'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'update kontrakmks'])->assignRole('admin','operator prodi');
+        Permission::create(['name' => 'delete kontrakmks'])->assignRole('admin','operator prodi');
 
         Permission::create(['name' => 'read bulk-import kontrakmks'])->assignRole('admin','operator prodi');
         Permission::create(['name' => 'create bulk-import kontrakmks'])->assignRole('admin','operator prodi');

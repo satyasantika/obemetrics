@@ -17,7 +17,7 @@ class JoinMkUser extends Model
         return $this->belongsTo(Mk::class);
     }
 
-    public function kurikulum(): BelongsTo
+    public function kurikulum()
     {
         return $this->belongsTo(Kurikulum::class);
     }

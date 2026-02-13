@@ -12,18 +12,23 @@ class KontrakMk extends Model
     use HasFactory, HasUuids;
     protected $guarded = ['id'];
 
-    public function mahasiswa(): BelongsTo
+    public function mahasiswa()
     {
         return $this->belongsTo(Mahasiswa::class);
     }
 
-    public function mk(): BelongsTo
+    public function mk()
     {
         return $this->belongsTo(Mk::class);
     }
 
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class); // dosen pengampu
+    }
+
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class);
     }
 }

@@ -229,6 +229,7 @@ return new class extends Migration
             $table->foreignUuid('mahasiswa_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->foreignUuid('user_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete(); // dosen pengampu
+            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->double('nilai_angka')->nullable();
             $table->string('nilai_huruf')->nullable();
             $table->timestamps();

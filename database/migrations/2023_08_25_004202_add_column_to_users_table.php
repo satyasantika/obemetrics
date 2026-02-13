@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('suffix')->after('prefix')->nullable();
             $table->enum('gender',['L','P'])->after('suffix')->nullable(); //L,P
             $table->string('phone')->after('gender')->nullable();
-            $table->string('nidn')->nullable()->index();
+            $table->string('nidn')->after('username')->nullable()->index();
         });
     }
 
