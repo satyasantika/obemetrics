@@ -17,5 +17,8 @@
     <i class="bi bi-clipboard-check"></i> Penilaian Tugas
 </a>
 <a href="{{ route('mks.workclouds.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
-    <i class="bi bi-clipboard-check"></i> Workcloud Utama
+    <i class="bi bi-cloud-upload"></i> Workcloud Utama
+</a>
+<a href="{{ route('mks.achievements.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
+    <i class="bi bi-graph-up"></i> Evaluasi Ketercapaian CPL
 </a>

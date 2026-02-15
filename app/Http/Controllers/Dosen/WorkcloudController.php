@@ -19,7 +19,7 @@ class WorkcloudController extends Controller
 {
     function __construct()
     {
-        // $this->middleware('permission:read workcloud-mks', ['only' => ['index','show']]);
+        $this->middleware('permission:read workcloud-mks', ['only' => ['index','show']]);
     }
 
     public function index(Mk $mk)

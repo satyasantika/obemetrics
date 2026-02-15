@@ -61,6 +61,7 @@ return new class extends Migration
             $table->string('nama')->nullable();
             $table->string('kode')->nullable();
             $table->text('deskripsi')->nullable();
+            $table->integer('target_capaian_lulusan')->nullable();
             $table->boolean('status_aktif')->default(0);
             $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->timestamps();
@@ -167,6 +168,7 @@ return new class extends Migration
             $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->timestamps();
         });
+
         // sub cpmk
         Schema::create('subcpmks', function (Blueprint $table) {
             $table->uuid('id')->primary('id');

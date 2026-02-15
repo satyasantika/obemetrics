@@ -185,6 +185,7 @@ class UserSeeder extends Seeder
             'nama'=>'Kurikulum OBE 2025',
             'kode'=>'mat-OBE-2025',
             'deskripsi'=>'Kurikulum berbasis OBE untuk program studi Pendidikan Matematika Universitas Siliwangi Tahun 2025',
+            'target_capaian_lulusan'=>70,
             'status_aktif'=>true,
         ]);
         $kurikulum1 = $prodimat->kurikulums()->create([

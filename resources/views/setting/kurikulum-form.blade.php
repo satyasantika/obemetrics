@@ -35,11 +35,16 @@
                 <input type="text" placeholder="" value="{{ $kurikulum->nama }}" name="nama" class="form-control" id="nama" required autofocus>
             </div>
         </div>
-        {{-- kode kurikulum --}}
         <div class="row mb-3">
-            <div class="col">
+            {{-- kode kurikulum --}}
+            <div class="col-md-6">
                 <label for="kode" class="form-label">Kode Kurikulum <span class="text-danger">(*)</span></label>
                 <input type="text" placeholder="" value="{{ $kurikulum->kode }}" name="kode" class="form-control" id="kode">
+            </div>
+            {{-- target capaian lulusan --}}
+            <div class="col-md-6">
+                <label for="target_capaian_lulusan" class="form-label">Target Capaian Lulusan (%) <span class="text-danger">(*)</span></label>
+                <input type="number" step="1" min="0" max="100" placeholder="" value="{{ $kurikulum->target_capaian_lulusan ?? 100 }}" name="target_capaian_lulusan" class="form-control" id="target_capaian_lulusan">
             </div>
         </div>
         {{-- deksripsi --}}
