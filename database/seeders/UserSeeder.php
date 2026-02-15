@@ -136,6 +136,7 @@ class UserSeeder extends Seeder
         $semester20252 = Semester::create([
             'nama'=>'Semester Genap 2025/2026',
             'kode'=>'20252',
+            'status_aktif'=>true,
         ]);
 
         // data evaluasi
@@ -190,7 +191,6 @@ class UserSeeder extends Seeder
             'nama'=>'Kurikulum OBE 2023',
             'kode'=>'mat-OBE-2023',
             'deskripsi'=>'Kurikulum berbasis OBE untuk program studi Pendidikan Matematika Universitas Siliwangi Tahun 2025',
-            'status_aktif'=>false,
         ]);
 
         // data profil lulusan

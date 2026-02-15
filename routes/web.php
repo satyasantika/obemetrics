@@ -74,6 +74,8 @@ Route::middleware('auth')->group(function () {
     // Penilaian Mata Kuliah
     Route::put('mks/{mk}/nilais/live-update', [App\Http\Controllers\Dosen\NilaiController::class, 'liveUpdate'])->name('mks.nilais.live-update');
     Route::resource('mks.nilais', App\Http\Controllers\Dosen\NilaiController::class)->except('show');
+    Route::get('mks/{mk}/workclouds/export-kelas', [App\Http\Controllers\Dosen\WorkcloudController::class, 'exportKelas'])->name('mks.workclouds.export-kelas');
+    Route::resource('mks.workclouds', App\Http\Controllers\Dosen\WorkcloudController::class)->except('show');
 
     // Bulk Upload Nilai MK
     Route::get('setting/import/nilais/{mk}', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'importNilaiForm'])->name('setting.import.nilais');

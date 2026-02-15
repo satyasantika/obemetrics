@@ -16,3 +16,6 @@
 <a href="{{ route('mks.nilais.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
     <i class="bi bi-clipboard-check"></i> Penilaian Tugas
 </a>
+<a href="{{ route('mks.workclouds.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
+    <i class="bi bi-clipboard-check"></i> Workcloud Utama
+</a>

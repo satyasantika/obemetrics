@@ -32,7 +32,7 @@
                                     <li>
                                         {{ $mk->kodemk }} {{ $mk->nama }}
                                         <br>
-                                        @include('layouts.menu-mk',$mk)
+                                        @include('components.menu-mk',$mk)
                                     </li>
                                 @endforeach
                             </ol>

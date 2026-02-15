@@ -51,6 +51,7 @@ return new class extends Migration
             $table->string('kode')->nullable();
             $table->string('nama')->nullable();
             $table->text('deskripsi')->nullable();
+            $table->boolean('status_aktif')->default(0);
             $table->timestamps();
         });
 
@@ -60,7 +61,7 @@ return new class extends Migration
             $table->string('nama')->nullable();
             $table->string('kode')->nullable();
             $table->text('deskripsi')->nullable();
-            $table->integer('status_aktif')->default(0);
+            $table->boolean('status_aktif')->default(0);
             $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->timestamps();
         });
@@ -187,6 +188,7 @@ return new class extends Migration
             $table->string('kode')->nullable();
             $table->string('nama')->nullable();
             $table->string('kategori')->nullable();
+            $table->string('workcloud')->nullable();
             $table->text('deskripsi')->nullable();
             $table->timestamps();
         });
