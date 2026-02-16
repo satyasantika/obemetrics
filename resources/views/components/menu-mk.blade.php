@@ -22,3 +22,6 @@
 <a href="{{ route('mks.achievements.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
     <i class="bi bi-graph-up"></i> Evaluasi Ketercapaian CPL
 </a>
+<a href="{{ route('mks.ketercapaians.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
+    <i class="bi bi-graph-up"></i> Evaluasi Ketercapaian CPL 2.0
+</a>

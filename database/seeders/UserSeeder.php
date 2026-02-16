@@ -129,6 +129,46 @@ class UserSeeder extends Seeder
         ]);
 
         // data semester
+        $semester20201 = Semester::create([
+            'nama'=>'Semester Ganjil 2020/2021',
+            'kode'=>'20201',
+        ]);
+        $semester20202 = Semester::create([
+            'nama'=>'Semester Genap 2020/2021',
+            'kode'=>'20202',
+        ]);
+        $semester20211 = Semester::create([
+            'nama'=>'Semester Ganjil 2021/2022',
+            'kode'=>'20211',
+        ]);
+        $semester20212 = Semester::create([
+            'nama'=>'Semester Genap 2021/2022',
+            'kode'=>'20212',
+        ]);
+        $semester20221 = Semester::create([
+            'nama'=>'Semester Ganjil 2022/2023',
+            'kode'=>'20221',
+        ]);
+        $semester20222 = Semester::create([
+            'nama'=>'Semester Genap 2022/2023',
+            'kode'=>'20222',
+        ]);
+        $semester20231 = Semester::create([
+            'nama'=>'Semester Ganjil 2023/2024',
+            'kode'=>'20231',
+        ]);
+        $semester20232 = Semester::create([
+            'nama'=>'Semester Genap 2023/2024',
+            'kode'=>'20232',
+        ]);
+        $semester20241 = Semester::create([
+            'nama'=>'Semester Ganjil 2024/2025',
+            'kode'=>'20241',
+        ]);
+        $semester20242 = Semester::create([
+            'nama'=>'Semester Genap 2024/2025',
+            'kode'=>'20242',
+        ]);
         $semester20251 = Semester::create([
             'nama'=>'Semester Ganjil 2025/2026',
             'kode'=>'20251',

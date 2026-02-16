@@ -77,6 +77,7 @@ Route::middleware('auth')->group(function () {
     Route::get('mks/{mk}/workclouds/export-kelas', [App\Http\Controllers\Dosen\WorkcloudController::class, 'exportKelas'])->name('mks.workclouds.export-kelas');
     Route::resource('mks.workclouds', App\Http\Controllers\Dosen\WorkcloudController::class)->only('index');
     Route::resource('mks.achievements', App\Http\Controllers\Dosen\AchievementController::class)->only('index');
+    Route::resource('mks.ketercapaians', App\Http\Controllers\Dosen\KetercapaianController::class)->only('index');
 
     // Bulk Upload Nilai MK
     Route::get('setting/import/nilais/{mk}', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'importNilaiForm'])->name('setting.import.nilais');

@@ -17,7 +17,7 @@ class AchievementController extends Controller
 
     public function index(Mk $mk)
     {
-        return view('obe.report.achievement-per-mk', $this->buildNilaiPageData($mk));
+        return view('obe.report.mk-achievement', $this->buildNilaiPageData($mk));
     }
 
     private function buildNilaiPageData(Mk $mk): array

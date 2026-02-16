@@ -137,6 +137,7 @@ class obeSeeder extends Seeder
 
         Permission::create(['name' => 'read workcloud-mks'])->assignRole('dosen');
         Permission::create(['name' => 'read achievement-mks'])->assignRole('dosen');
+        Permission::create(['name' => 'read ketercapaian-mks'])->assignRole('dosen');
 
         Permission::create(['name' => 'read join subcpmk penugasans'])->assignRole('dosen');
         Permission::create(['name' => 'update join subcpmk penugasans'])->assignRole('dosen');

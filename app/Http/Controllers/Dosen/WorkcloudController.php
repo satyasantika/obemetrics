@@ -24,7 +24,7 @@ class WorkcloudController extends Controller
 
     public function index(Mk $mk)
     {
-        return view('obe.report.workcloud-per-mk', $this->buildNilaiPageData($mk));
+        return view('obe.report.mk-workcloud', $this->buildNilaiPageData($mk));
     }
 
     public function exportKelas(Mk $mk, Request $request)

@@ -20,7 +20,6 @@
                         <div class="col-md-3">Semester</div>
                         <div class="col">
                             <select id="semester-filter" class="form-control form-control-sm" style="max-width: 320px;">
-                                <option value="">Pilih Semester</option>
                                 @foreach ($semesters as $semester)
                                     <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $defaultSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
                                 @endforeach
@@ -30,7 +29,6 @@
                     <div class="row">
                         <div class="col-md-3">Target Kelulusan CPL</div>
                         <div class="col">
-                            {{-- <input type="number" step="1" min="0" max="100" class="form-control form-control-sm" id="target-kelulusan" value="{{ $targetKelulusan ?? '' }}" placeholder="Masukkan target kelulusan CPL (%)" style="max-width: 320px;"> --}}
                             <strong id="target-kelulusan">{{ $mk->kurikulum->target_capaian_lulusan ?? 100 }}%</strong>
                         </div>
                     </div>
