@@ -93,7 +93,7 @@
                                                     <th rowspan="3">No</th>
                                                     <th rowspan="3">Mahasiswa</th>
                                                     <th colspan="2">Nilai Akhir</th>
-                                                    <th colspan="6">Nilai Komponen Evaluasi</th>
+                                                    <th colspan="{{ max(1, $workclouds->count()) }}">Nilai Komponen Evaluasi</th>
                                                 </tr>
                                                 <tr class="text-center align-middle">
                                                     <th rowspan="2">Nilai</th>
@@ -133,11 +133,11 @@
                                                         <small class="text-muted">{{ $kontrakMk->mahasiswa->nim }}</small><br>
                                                         {{ $kontrakMk->mahasiswa->nama }}
                                                     </td>
-                                                    <td class="text-end">{{ number_format((float) $kontrakMk->nilai_angka, 2) ?? '-' }}</td>
+                                                    <td class="text-center">{{ number_format((float) $kontrakMk->nilai_angka, 2) ?? '-' }}</td>
                                                     <td class="text-center">{{ $kontrakMk->nilai_huruf ?? '-' }}</td>
                                                     {{-- Nilai Komponen Evaluasi per Workcloud --}}
                                                     @forelse ($workclouds as $workcloud)
-                                                        <td class="text-end">
+                                                        <td class="text-center">
                                                             @php
                                                                 $key = $kontrakMk->mahasiswa_id . '_' . $kontrakMk->semester_id . '_' . $workcloud;
                                                                 $avgObj = $avgByWorkcloud[$key] ?? null;
@@ -145,15 +145,15 @@
                                                             {{ $avgObj ? number_format((float) $avgObj->avg_nilai, 2) : '-' }}
                                                         </td>
                                                     @empty
-                                                        <td class="text-end"><span class="text-muted">-</span></td>
+                                                        <td class="text-center"><span class="text-muted">-</span></td>
                                                     @endforelse
                                                 </tr>
                                             @endforeach
                                             {{-- Rata-rata Kelas --}}
-                                            <tr>
+                                            <tr class="fw-bold table-secondary">
                                                 <td colspan="2">RATA-RATA KELAS</td>
-                                                <td class="text-end">{{ $kelasAvgNilaiAngka !== null ? number_format((float) $kelasAvgNilaiAngka, 2) : '-' }}</td>
-                                                <td></td>
+                                                <td class="text-center">{{ $kelasAvgNilaiAngka !== null ? number_format((float) $kelasAvgNilaiAngka, 2) : '-' }}</td>
+                                                <td class="text-center"></td>
                                                 @forelse ($workclouds as $workcloud)
                                                     @php
                                                         $kelasWorkcloudValues = $kelasRows->map(function ($row) use ($workcloud, $avgByWorkcloud) {
@@ -164,9 +164,9 @@
                                                         });
                                                         $kelasWorkcloudAvg = $kelasWorkcloudValues->count() > 0 ? $kelasWorkcloudValues->average() : null;
                                                     @endphp
-                                                    <td class="text-end">{{ $kelasWorkcloudAvg !== null ? number_format((float) $kelasWorkcloudAvg, 2) : '-' }}</td>
+                                                    <td class="text-center">{{ $kelasWorkcloudAvg !== null ? number_format((float) $kelasWorkcloudAvg, 2) : '-' }}</td>
                                                 @empty
-                                                    <td class="text-end"><span class="text-muted">-</span></td>
+                                                    <td class="text-center"><span class="text-muted">-</span></td>
                                                 @endforelse
                                             </tr>
                                             <tr class="matrix-empty-row" style="display:none;">

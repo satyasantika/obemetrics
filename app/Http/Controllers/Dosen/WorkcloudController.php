@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Dosen;
 
 use App\Http\Controllers\Controller;
-use App\Models\Evaluasi;
 use App\Models\Mk;
 use App\Models\Nilai;
 use Illuminate\Http\Request;
@@ -221,21 +220,23 @@ class WorkcloudController extends Controller
         $mahasiswaIds = $kontrakMks->pluck('mahasiswa_id')->filter()->unique()->values();
         $semesterIds = $kontrakMks->pluck('semester_id')->filter()->unique()->values();
 
-        $workclouds = Evaluasi::query()
-            ->whereNotNull('workcloud')
-            ->where('workcloud', '!=', '')
-            ->select('workcloud')
-            ->distinct()
-            ->orderBy('workcloud')
-            ->pluck('workcloud')
+        $workcloudKeyExpr = "COALESCE(NULLIF(TRIM(evaluasis.workcloud), ''), NULLIF(TRIM(evaluasis.kategori), ''), NULLIF(TRIM(evaluasis.kode), ''))";
+
+        $workclouds = $mk->penugasans()
+            ->join('evaluasis', 'penugasans.evaluasi_id', '=', 'evaluasis.id')
+            ->selectRaw($workcloudKeyExpr . ' as workcloud_key')
+            ->whereNotNull(DB::raw($workcloudKeyExpr))
+            ->groupBy(DB::raw($workcloudKeyExpr))
+            ->orderBy('workcloud_key')
+            ->pluck('workcloud_key')
             ->values();
 
         $bobotByWorkcloud = $mk->penugasans()
             ->join('evaluasis', 'penugasans.evaluasi_id', '=', 'evaluasis.id')
-            ->whereNotNull('evaluasis.workcloud')
-            ->selectRaw('evaluasis.workcloud, COALESCE(SUM(penugasans.bobot),0) as total_bobot')
-            ->groupBy('evaluasis.workcloud')
-            ->pluck('total_bobot', 'workcloud')
+            ->selectRaw($workcloudKeyExpr . ' as workcloud_key, COALESCE(SUM(penugasans.bobot),0) as total_bobot')
+            ->whereNotNull(DB::raw($workcloudKeyExpr))
+            ->groupBy(DB::raw($workcloudKeyExpr))
+            ->pluck('total_bobot', 'workcloud_key')
             ->all();
 
         $cplsByWorkcloud = DB::table('penugasans')
@@ -249,8 +250,8 @@ class WorkcloudController extends Controller
             ->leftJoin('join_cpl_bks', 'join_cpl_bks.id', '=', 'join_cpl_cpmks.join_cpl_bk_id')
             ->leftJoin('cpls', 'cpls.id', '=', 'join_cpl_bks.cpl_id')
             ->where('penugasans.mk_id', $mk->id)
-            ->whereNotNull('evaluasis.workcloud')
-            ->select('evaluasis.workcloud', 'cpls.kode')
+            ->whereNotNull(DB::raw($workcloudKeyExpr))
+            ->selectRaw($workcloudKeyExpr . ' as workcloud, cpls.kode')
             ->get()
             ->groupBy('workcloud')
             ->map(function ($items) {
@@ -264,7 +265,7 @@ class WorkcloudController extends Controller
             })
             ->all();
 
-        $workcloudMetas = collect($workclouds)
+        $workcloudMetas = collect($workclouds ?? [])
             ->map(function ($workcloud) use ($bobotByWorkcloud, $cplsByWorkcloud) {
                 return [
                     'name' => $workcloud,
@@ -280,12 +281,12 @@ class WorkcloudController extends Controller
             ->where('nilais.mk_id', $mk->id)
             ->whereIn('nilais.mahasiswa_id', $mahasiswaIds)
             ->whereIn('nilais.semester_id', $semesterIds)
-            ->whereNotNull('evaluasis.workcloud')
-            ->selectRaw('nilais.mahasiswa_id, nilais.semester_id, evaluasis.workcloud, AVG(nilais.nilai) as avg_nilai')
-            ->groupBy('nilais.mahasiswa_id', 'nilais.semester_id', 'evaluasis.workcloud')
+            ->whereNotNull(DB::raw($workcloudKeyExpr))
+            ->selectRaw('nilais.mahasiswa_id, nilais.semester_id, ' . $workcloudKeyExpr . ' as workcloud_key, AVG(nilais.nilai) as avg_nilai')
+            ->groupBy('nilais.mahasiswa_id', 'nilais.semester_id', DB::raw($workcloudKeyExpr))
             ->get()
             ->keyBy(function ($item) {
-                return $item->mahasiswa_id . '_' . $item->semester_id . '_' . $item->workcloud;
+                return $item->mahasiswa_id . '_' . $item->semester_id . '_' . $item->workcloud_key;
             })
             ->all();
 
@@ -294,10 +295,10 @@ class WorkcloudController extends Controller
             ->join('evaluasis', 'penugasans.evaluasi_id', '=', 'evaluasis.id')
             ->where('nilais.mk_id', $mk->id)
             ->whereIn('nilais.semester_id', $semesterIds)
-            ->whereNotNull('evaluasis.workcloud')
-            ->selectRaw('evaluasis.workcloud, AVG(nilais.nilai) as avg_nilai')
-            ->groupBy('evaluasis.workcloud')
-            ->pluck('avg_nilai', 'workcloud')
+            ->whereNotNull(DB::raw($workcloudKeyExpr))
+            ->selectRaw($workcloudKeyExpr . ' as workcloud_key, AVG(nilais.nilai) as avg_nilai')
+            ->groupBy(DB::raw($workcloudKeyExpr))
+            ->pluck('avg_nilai', 'workcloud_key')
             ->all();
 
         return compact('mk', 'semesters', 'penugasans', 'kontrakMks', 'workclouds', 'workcloudMetas', 'avgByWorkcloud', 'classAvgByWorkcloud');
