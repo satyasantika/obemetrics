@@ -62,7 +62,12 @@ class ProdisDataTable extends DataTable
                     ->buttons([
                         Button::make('add'),
                         Button::make('reset'),
-                        Button::make('reload')
+                        Button::make('reload'),
+                        Button::make([
+                                        'text'   => '<i class="bi bi-upload"></i> Import',
+                                        'className' => 'btn btn-success',
+                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('setting.import.admin-master', ['target' => 'prodis']).'"; }',
+                                    ]),
                     ]);
     }
 
@@ -72,8 +77,8 @@ class ProdisDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('kode_unsil'),
             Column::make('kode_prodi'),
+            Column::make('kode_pddikti'),
             Column::make('nama'),
             Column::make('updated_at'),
             Column::computed('action')

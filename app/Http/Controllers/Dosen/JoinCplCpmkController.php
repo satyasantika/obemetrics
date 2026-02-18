@@ -21,8 +21,7 @@ class JoinCplCpmkController extends Controller
 
     public function index(Mk $mk)
     {
-        $bk_ids = JoinBkMk::where('mk_id', $mk->id)->pluck('bk_id');
-        $joincplbks = JoinCplBk::whereIn('bk_id', $bk_ids)->get();
+        $joincplbks = $mk->joinBkMks->pluck('bk.joinCplBks')->flatten()->unique('id');
 
         return view('obe.cpl-cpmk')
                 ->with('mk', $mk)

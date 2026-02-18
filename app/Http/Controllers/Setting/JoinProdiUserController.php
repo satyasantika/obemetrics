@@ -36,10 +36,10 @@ class JoinProdiUserController extends Controller
     public function store(Request $request, Prodi $prodi)
     {
         JoinProdiUser::create($request->all());
-        $username = User::find($request->user_id)->name;
-        $prodiname = strtoupper($prodi->nama);
+        $namaUser = User::find($request->user_id)->name;
+        $namaProdi = strtoupper($prodi->nama);
         return to_route('prodis.joinprodiusers.create',$prodi)
-                ->with('success', 'User ' . $username . ' pada Prodi ' . $prodiname . ' telah ditambahkan');
+                ->with('success', 'User ' . $namaUser . ' pada Prodi ' . $namaProdi . ' telah ditambahkan');
     }
 
     public function edit(Prodi $prodi, JoinProdiUser $joinprodiuser)
@@ -49,19 +49,20 @@ class JoinProdiUserController extends Controller
 
     public function update(Request $request, Prodi $prodi, JoinProdiUser $joinprodiuser)
     {
-        $name = strtoupper($joinprodiuser->prodi->nama);
+        $namaProdi = strtoupper($joinprodiuser->prodi->nama);
+        $namaUser = strtoupper($joinprodiuser->user->name);
         $data = $request->all();
         $joinprodiuser->fill($data)->save();
 
-        return to_route('prodis.joinprodiusers.index',$prodi)->with('success','Prodi '.$name.' telah diperbarui');
+        return to_route('prodis.joinprodiusers.index',$prodi)->with('success','User '.$namaUser.' pada Prodi '.$namaProdi.' telah diperbarui');
     }
 
     public function destroy(Prodi $prodi, JoinProdiUser $joinprodiuser)
     {
-        $username = strtoupper($joinprodiuser->user->name);
-        $prodiname = strtoupper($joinprodiuser->prodi->nama);
+        $namaProdi = strtoupper($joinprodiuser->prodi->nama);
+        $namaUser = strtoupper($joinprodiuser->user->name);
         $joinprodiuser->delete();
-        return to_route('prodis.joinprodiusers.index',$prodi)->with('warning','User '.$username.' pada Prodi '.$prodiname.' telah dihapus');
+        return to_route('prodis.joinprodiusers.index',$prodi)->with('warning','User '.$namaUser.' pada Prodi '.$namaProdi.' telah dihapus');
     }
 
     private function _dataSelection($prodi,$joinprodiuser)

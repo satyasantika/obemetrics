@@ -22,7 +22,16 @@
                     <hr>
                     <div class="row">
                         <div class="col">
-                            <span class="h4 float-end">Total bobot evaluasi: {{ $total_bobot }}%</span>
+                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'subcpmks']) }}" class="btn btn-sm btn-success mt-1"><i class="bi bi-upload"></i> Import banyak SubCPMK</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <div class="float-end">
+                                <span class="h4">Total bobot evaluasi: {{ $total_bobot }}%</span>
+                                <br>
+                                <small class="text-primary">bobot akan otomatis dihitung jika sudah set Tagihan Tugas</small>
+                            </div>
                         </div>
                     </div>
                     <div class="row">

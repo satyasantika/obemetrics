@@ -16,7 +16,7 @@
                     {{-- Mata Kuliah --}}
                     Mata Kuliah pada program studi ini:
                     {{-- mata kuliah yang ditampilkan adalah mata kuliah yang diampu oleh dosen tersebut pada kurikulum yang terkait dengan program studi ini. --}}
-                    @foreach (auth()->user()->joinMkUsers as $joinMkUser)
+                    @foreach (auth()->user()->joinMkUsers->unique('kurikulum_id') as $joinMkUser)
                         @if ($joinMkUser->kurikulum->prodi_id == $joinProdiUser->prodi->id)
                         <div class="row">
                             <div class="col">
@@ -30,7 +30,10 @@
                                 @foreach (auth()->user()->joinMkUsers->pluck('mk')->where('kurikulum_id',$joinMkUser->kurikulum->id) as $mk)
                                     <hr>
                                     <li>
-                                        {{ $mk->kodemk }} {{ $mk->nama }}
+                                        {{ $mk->kode }} {{ $mk->nama }}
+                                        <span class="ms-2">
+                                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'joinprodiusers']) }}" class="btn btn-sm btn-secondary mt-1"><i class="bi bi-upload"></i> Dosen Prodi</a>
+                                        </span>
                                         <br>
                                         @include('components.menu-mk',$mk)
                                     </li>

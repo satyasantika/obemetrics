@@ -120,4 +120,25 @@ Route::middleware('auth')->group(function () {
     Route::post('setting/import/kontrakmks/commit', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'commitKontrakMk'])->name('setting.import.kontrakmks.commit');
     Route::get('setting/import/kontrakmks/template', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'downloadTemplate'])->name('setting.import.kontrakmks.template');
     Route::post('setting/import/kontrakmks/clear', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'clearPreview'])->name('setting.import.kontrakmks.clear');
+
+    // Bulk Upload Data Kurikulum (Tugas 1-8)
+    Route::get('setting/import/kurikulum-master/{kurikulum}', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'form'])->name('setting.import.kurikulum-master');
+    Route::post('setting/import/kurikulum-master/{kurikulum}', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'import'])->name('setting.import.kurikulum-master.upload');
+    Route::post('setting/import/kurikulum-master/{kurikulum}/commit', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'commit'])->name('setting.import.kurikulum-master.commit');
+    Route::get('setting/import/kurikulum-master/{kurikulum}/template', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'template'])->name('setting.import.kurikulum-master.template');
+    Route::post('setting/import/kurikulum-master/{kurikulum}/clear', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'clear'])->name('setting.import.kurikulum-master.clear');
+
+    // Bulk Upload Data MK (Tugas 9-13)
+    Route::get('setting/import/mk-master/{mk}', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'form'])->name('setting.import.mk-master');
+    Route::post('setting/import/mk-master/{mk}', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'import'])->name('setting.import.mk-master.upload');
+    Route::post('setting/import/mk-master/{mk}/commit', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'commit'])->name('setting.import.mk-master.commit');
+    Route::get('setting/import/mk-master/{mk}/template', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'template'])->name('setting.import.mk-master.template');
+    Route::post('setting/import/mk-master/{mk}/clear', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'clear'])->name('setting.import.mk-master.clear');
+
+    // Bulk Upload Data Admin
+    Route::get('setting/import/admin-master', [App\Http\Controllers\Bulk\ImportAdminMasterController::class, 'form'])->name('setting.import.admin-master');
+    Route::post('setting/import/admin-master', [App\Http\Controllers\Bulk\ImportAdminMasterController::class, 'import'])->name('setting.import.admin-master.upload');
+    Route::post('setting/import/admin-master/commit', [App\Http\Controllers\Bulk\ImportAdminMasterController::class, 'commit'])->name('setting.import.admin-master.commit');
+    Route::get('setting/import/admin-master/template', [App\Http\Controllers\Bulk\ImportAdminMasterController::class, 'template'])->name('setting.import.admin-master.template');
+    Route::post('setting/import/admin-master/clear', [App\Http\Controllers\Bulk\ImportAdminMasterController::class, 'clear'])->name('setting.import.admin-master.clear');
 });

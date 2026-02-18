@@ -22,9 +22,8 @@ class PenugasanController extends Controller
     public function index(Mk $mk)
     {
         $evaluasis = Evaluasi::all();
-        $penugasans = $mk->penugasans()->orderBy('kode')->get();
-        $joinCplCpmks = JoinCplCpmk::where('mk_id', $mk->id)->get();
-        $subcpmks = $joinCplCpmks->pluck('subcpmks')->flatten()->unique('id')->values();
+        $penugasans = $mk->penugasans->sortBy('kode');
+        $subcpmks = $mk->joinCplCpmks->pluck('subcpmks')->flatten()->unique('id')->values();
 
         return view('obe.penugasan', compact('mk', 'evaluasis', 'penugasans', 'subcpmks'));
     }

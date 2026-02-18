@@ -45,6 +45,7 @@
                                 @php
                                     $kelasSlug = \Illuminate\Support\Str::slug($kelas, '-');
                                     $kelasPaneId = 'kelas-' . ($kelasSlug !== '' ? $kelasSlug : 'tanpa-kelas');
+                                    $kelasLabel = $kelas === '__SEMUA_KELAS__' ? 'Semua Kelas' : 'Kelas ' . $kelas;
                                 @endphp
                                 <li class="nav-item" role="presentation">
                                     <button
@@ -56,7 +57,7 @@
                                         role="tab"
                                         aria-controls="{{ $kelasPaneId }}"
                                         aria-selected="{{ $kelas === $defaultKelas ? 'true' : 'false' }}">
-                                        Kelas {{ $kelas }}
+                                        {{ $kelasLabel }}
                                     </button>
                                 </li>
                             @endforeach
@@ -67,6 +68,7 @@
                                 @php
                                     $kelasSlug = \Illuminate\Support\Str::slug($kelas, '-');
                                     $kelasPaneId = 'kelas-' . ($kelasSlug !== '' ? $kelasSlug : 'tanpa-kelas');
+                                    $kelasLabel = $kelas === '__SEMUA_KELAS__' ? 'Semua Kelas' : 'kelas ' . $kelas;
                                 @endphp
                                 <div
                                     class="tab-pane fade {{ $kelas === $defaultKelas ? 'show active' : '' }}"
@@ -74,7 +76,7 @@
                                     role="tabpanel"
                                     aria-labelledby="{{ $kelasPaneId }}-tab">
                                     <div class="card mb-3">
-                                        <div class="card-header"><strong>Evaluasi Ketercapaian CPL kelas {{ $kelas }}</strong></div>
+                                        <div class="card-header"><strong>Evaluasi Ketercapaian CPL {{ $kelasLabel }}</strong></div>
                                         <div class="card-body">
                                             <div class="table-responsive nilai-matrix-wrapper">
                                                 <table class="table table-bordered table-striped nilai-matrix-table mb-0">
@@ -132,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const cplRows = @json($cplRows);
     const gradeOrder = @json($gradeOrder);
     const achievementData = @json($achievementData);
-    const componentsData = @json($componentsData);
+    const componentsData = @json($componentsDataByCpl);
     const gradeDistributionData = @json($gradeDistributionData);
 
     const escapeHtml = function (text) {

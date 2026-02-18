@@ -33,6 +33,7 @@
                     <div class="row">
                         <div class="col">
                             <a href="{{ route('mks.penugasans.create',$mk) }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Tambah Tugas</a>
+                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'penugasans']) }}" class="btn btn-sm btn-success mt-1 float-end"><i class="bi bi-upload"></i> Import Banyak Tagihan</a>
                         </div>
                     </div>
 

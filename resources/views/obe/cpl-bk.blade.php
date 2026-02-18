@@ -15,24 +15,23 @@
                     @include('layouts.alert')
 
                     {{-- identitas kurikulum --}}
-                    <div class="row">
-                        <div class="col-md-3">Nama Kurikulum</div>
-                        <div class="col"><strong>{{ $kurikulum->nama }}</strong></div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-3">Program Studi</div>
-                        <div class="col"><strong>{{ $kurikulum->prodi->jenjang }} {{ $kurikulum->prodi->nama }}</strong></div>
-                    </div>
+                    @include('components.identitas-kurikulum',['kurikulum' => $kurikulum])
                     <hr>
-                    @include('layouts.menu-kurikulum',$kurikulum)
+                    {{-- menu kurikulum --}}
+                    @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
                     <hr>
+                    <div class="row mb-2">
+                        <div class="col">
+                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_cpl_bks']) }}" class="btn btn-success btn-sm float-end me-1"><i class="bi bi-upload"></i> Import Interaksi CPL >< BK</a>
+                        </div>
+                    </div>
 
                     <div class="row">
                         <div class="col">
                             <table class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th></th>
+                                        <th>CPL >< BK</th>
                                         @forelse ($bks as $bk)
                                             <th>
                                                 <span data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $bk->nama }}">
@@ -86,7 +85,7 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="2"><span class="bg-warning text-dark p-2">
+                                        <td colspan="{{ 2+$bks->count() }}"><span class="bg-warning text-dark p-2">
                                             Belum ada data CPL untuk kurikulum ini.</span>
                                         </td>
                                     </tr>

@@ -15,24 +15,15 @@
                     @include('layouts.alert')
 
                     {{-- identitas kurikulum --}}
-                    <div class="row">
-                        <div class="col-md-3">Nama Kurikulum</div>
-                        <div class="col"><strong>{{ $kurikulum->nama }}</strong></div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-3">Program Studi</div>
-                        <div class="col"><strong>{{ $kurikulum->prodi->jenjang }} {{ $kurikulum->prodi->nama }}</strong></div>
-                    </div>
+                    @include('components.identitas-kurikulum',['kurikulum' => $kurikulum])
                     <hr>
-                    <div class="row">
-                        <div class="col">
-                            @include('layouts.menu-kurikulum',$kurikulum)
-                        </div>
-                    </div>
+                    {{-- menu kurikulum --}}
+                    @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
                     <hr>
                     <div class="row mb-2">
                         <div class="col">
                             <a href="{{ route('kurikulums.bks.create',$kurikulum) }}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Tambah Bahan Kajian</a>
+                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'bks']) }}" class="btn btn-sm btn-success mt-1 float-end"><i class="bi bi-upload"></i> Upload Banyak BK</a>
                         </div>
                     </div>
 

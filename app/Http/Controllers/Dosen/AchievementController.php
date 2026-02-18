@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Dosen;
 
 use App\Http\Controllers\Controller;
 use App\Models\Mk;
-use App\Models\Semester;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -22,7 +21,7 @@ class AchievementController extends Controller
 
     private function buildNilaiPageData(Mk $mk): array
     {
-        $semesters = Semester::query()->orderBy('kode')->get();
+        $semesters = $mk->kontrakMks()->with('semester')->get()->pluck('semester')->unique('id')->sortBy('kode');
         $activeSemester = $semesters->firstWhere('status_aktif', true) ?? $semesters->first();
         $defaultSemesterId = $activeSemester?->id;
 
@@ -44,8 +43,12 @@ class AchievementController extends Controller
             ->sort()
             ->values();
 
+        if ($kelasList->isNotEmpty()) {
+            $kelasList = collect(['__SEMUA_KELAS__'])->merge($kelasList)->values();
+        }
+
         $gradeOrder = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D', 'E'];
-        $targetKelulusan = 60;
+        $targetKelulusan = $mk->kurikulum->target_capaian_lulusan;
 
         $penugasanCplMapQuery = DB::table('join_subcpmk_penugasans as jsp')
             ->join('subcpmks as s', 's.id', '=', 'jsp.subcpmk_id')
@@ -86,34 +89,79 @@ class AchievementController extends Controller
             ->groupBy('kelas_key', 'km.semester_id', 'pcm.cpl_id')
             ->get();
 
+        $achievementRowsAllClass = DB::table('kontrak_mks as km')
+            ->join('nilais as n', function ($join) {
+                $join->on('n.mk_id', '=', 'km.mk_id')
+                    ->on('n.mahasiswa_id', '=', 'km.mahasiswa_id')
+                    ->on('n.semester_id', '=', 'km.semester_id');
+            })
+            ->joinSub($penugasanCplMapQuery, 'pcm', function ($join) {
+                $join->on('pcm.penugasan_id', '=', 'n.penugasan_id');
+            })
+            ->where('km.mk_id', $mk->id)
+            ->whereNotNull('km.mahasiswa_id')
+            ->whereNotNull('km.semester_id')
+            ->selectRaw('km.semester_id, pcm.cpl_id, AVG(n.nilai) as avg_capaian')
+            ->groupBy('km.semester_id', 'pcm.cpl_id')
+            ->get();
+
         $achievementData = [];
         foreach ($achievementRows as $row) {
             $achievementData[$row->kelas_key][$row->semester_id][$row->cpl_id] = round((float) $row->avg_capaian, 2);
         }
+        foreach ($achievementRowsAllClass as $row) {
+            $achievementData['__SEMUA_KELAS__'][$row->semester_id][$row->cpl_id] = round((float) $row->avg_capaian, 2);
+        }
 
         $componentRows = DB::table('penugasans as p')
             ->join('evaluasis as e', 'e.id', '=', 'p.evaluasi_id')
-            ->joinSub($penugasanCplMapQuery, 'pcm', function ($join) {
-                $join->on('pcm.penugasan_id', '=', 'p.id');
+            ->join('join_subcpmk_penugasans as jsp', function ($join) {
+                $join->on('jsp.penugasan_id', '=', 'p.id');
             })
+            ->join('subcpmks as s', 's.id', '=', 'jsp.subcpmk_id')
+            ->join('join_cpl_cpmks as jcc', 'jcc.id', '=', 's.join_cpl_cpmk_id')
+            ->join('join_cpl_bks as jcb', 'jcb.id', '=', 'jcc.join_cpl_bk_id')
+            ->join('cpls as c', 'c.id', '=', 'jcb.cpl_id')
             ->where('p.mk_id', $mk->id)
-            ->whereNotNull('e.workcloud')
-            ->where('e.workcloud', '!=', '')
-            ->selectRaw('p.semester_id, pcm.cpl_id, e.workcloud, COALESCE(SUM(p.bobot),0) as total_bobot')
-            ->groupBy('p.semester_id', 'pcm.cpl_id', 'e.workcloud')
-            ->orderBy('e.workcloud')
+            ->selectRaw("COALESCE(p.semester_id, jsp.semester_id) as semester_id, c.id as cpl_id, COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), '')) as workcloud, COALESCE(SUM(COALESCE(jsp.bobot,0) * COALESCE(p.bobot,0)),0) as total_bobot")
+            ->whereNotNull(DB::raw("COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), ''))"))
+            ->groupBy(DB::raw('COALESCE(p.semester_id, jsp.semester_id)'), 'c.id', DB::raw("COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), ''))"))
+            ->orderBy(DB::raw("COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), ''))"))
             ->get();
 
-        $componentsData = [];
+        $componentsDataByCpl = [];
         foreach ($componentRows as $row) {
-            $semesterKey = $row->semester_id ?: 'all';
-            if (!isset($componentsData[$semesterKey][$row->cpl_id])) {
-                $componentsData[$semesterKey][$row->cpl_id] = [];
+            $semesterKey = (string) ($row->semester_id ?? 'all');
+
+            if (!isset($componentsDataByCpl[$semesterKey][$row->cpl_id])) {
+                $componentsDataByCpl[$semesterKey][$row->cpl_id] = [];
             }
-            $componentsData[$semesterKey][$row->cpl_id][] = [
+            $componentsDataByCpl[$semesterKey][$row->cpl_id][] = [
                 'workcloud' => $row->workcloud,
-                'bobot' => round((float) $row->total_bobot, 2),
+                'bobot' => round((float) $row->total_bobot/100, 2),
             ];
+        }
+
+        $componentsDataByCpl['all'] = [];
+        foreach ($componentRows as $row) {
+            if (!isset($componentsDataByCpl['all'][$row->cpl_id])) {
+                $componentsDataByCpl['all'][$row->cpl_id] = [];
+            }
+
+            $existingIndex = collect($componentsDataByCpl['all'][$row->cpl_id])
+                ->search(fn ($item) => ($item['workcloud'] ?? null) === $row->workcloud);
+
+            if ($existingIndex === false) {
+                $componentsDataByCpl['all'][$row->cpl_id][] = [
+                    'workcloud' => $row->workcloud,
+                    'bobot' => round((float) $row->total_bobot, 2),
+                ];
+            } else {
+                $componentsDataByCpl['all'][$row->cpl_id][$existingIndex]['bobot'] = round(
+                    (float) $componentsDataByCpl['all'][$row->cpl_id][$existingIndex]['bobot'] + (float) $row->total_bobot,
+                    2
+                );
+            }
         }
 
         $totalStudentRows = DB::table('kontrak_mks as km')
@@ -124,9 +172,20 @@ class AchievementController extends Controller
             ->groupBy('kelas_key', 'km.semester_id')
             ->get();
 
+        $totalStudentRowsAllClass = DB::table('kontrak_mks as km')
+            ->where('km.mk_id', $mk->id)
+            ->whereNotNull('km.mahasiswa_id')
+            ->whereNotNull('km.semester_id')
+            ->selectRaw('km.semester_id, COUNT(*) as total_mahasiswa')
+            ->groupBy('km.semester_id')
+            ->get();
+
         $totalsByClassSemester = [];
         foreach ($totalStudentRows as $row) {
             $totalsByClassSemester[$row->kelas_key][$row->semester_id] = (int) $row->total_mahasiswa;
+        }
+        foreach ($totalStudentRowsAllClass as $row) {
+            $totalsByClassSemester['__SEMUA_KELAS__'][$row->semester_id] = (int) $row->total_mahasiswa;
         }
 
         $gradeCountRows = DB::table('kontrak_mks as km')
@@ -137,6 +196,16 @@ class AchievementController extends Controller
             ->whereIn('km.nilai_huruf', $gradeOrder)
             ->selectRaw("COALESCE(NULLIF(TRIM(km.kelas), ''), 'Tanpa Kelas') as kelas_key, km.semester_id, km.nilai_huruf, COUNT(*) as jumlah")
             ->groupBy('kelas_key', 'km.semester_id', 'km.nilai_huruf')
+            ->get();
+
+        $gradeCountRowsAllClass = DB::table('kontrak_mks as km')
+            ->where('km.mk_id', $mk->id)
+            ->whereNotNull('km.mahasiswa_id')
+            ->whereNotNull('km.semester_id')
+            ->whereNotNull('km.nilai_huruf')
+            ->whereIn('km.nilai_huruf', $gradeOrder)
+            ->selectRaw('km.semester_id, km.nilai_huruf, COUNT(*) as jumlah')
+            ->groupBy('km.semester_id', 'km.nilai_huruf')
             ->get();
 
         $gradeDistributionData = [];
@@ -161,6 +230,14 @@ class AchievementController extends Controller
             }
         }
 
+        foreach ($gradeCountRowsAllClass as $row) {
+            $semesterId = (string) $row->semester_id;
+            $grade = (string) $row->nilai_huruf;
+            if (isset($gradeDistributionData['__SEMUA_KELAS__'][$semesterId]['counts'][$grade])) {
+                $gradeDistributionData['__SEMUA_KELAS__'][$semesterId]['counts'][$grade] = (int) $row->jumlah;
+            }
+        }
+
         return compact(
             'mk',
             'semesters',
@@ -170,7 +247,7 @@ class AchievementController extends Controller
             'gradeOrder',
             'cplRows',
             'achievementData',
-            'componentsData',
+            'componentsDataByCpl',
             'gradeDistributionData'
         );
     }

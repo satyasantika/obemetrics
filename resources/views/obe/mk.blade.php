@@ -15,21 +15,16 @@
                     @include('layouts.alert')
 
                     {{-- identitas kurikulum --}}
-                    <div class="row">
-                        <div class="col-md-3">Nama Kurikulum</div>
-                        <div class="col"><strong>{{ $kurikulum->nama }}</strong></div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-3">Program Studi</div>
-                        <div class="col"><strong>{{ $kurikulum->prodi->jenjang }} {{ $kurikulum->prodi->nama }}</strong></div>
-                    </div>
+                    @include('components.identitas-kurikulum',['kurikulum' => $kurikulum])
                     <hr>
-                    @include('layouts.menu-kurikulum',$kurikulum)
+                    {{-- menu kurikulum --}}
+                    @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
                     <hr>
                     <div class="row mb-2">
                         <div class="col">
                             <a href="{{ route('kurikulums.mks.create',$kurikulum) }}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Tambah Mata Kuliah</a>
-                            <a href="{{ route('setting.import.joinmkusers',$kurikulum) }}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Tambahkan User ke Mata Kuliah</a>
+                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'joinmkusers']) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-upload"></i> Import Dosen Pengampu</a>
+                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'mks']) }}" class="btn btn-success btn-sm float-end me-1"><i class="bi bi-upload"></i> Upload Banyak MK</a>
                         </div>
                     </div>
 
@@ -55,7 +50,7 @@
                                             </a>
                                         </td>
                                         <td style="text-align: justify">
-                                            {{ $mk->kodemk }} - {{ $mk->nama }}
+                                            {{ $mk->kode }} - {{ $mk->nama }}
                                             <br>
                                             <strong>{{ $mk->sks }} SKS</strong>
                                             (T: {{ $mk->sks_teori }}, P: {{ $mk->sks_praktik }}, L: {{ $mk->sks_lapangan }})
@@ -78,7 +73,7 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="2"><span class="bg-warning text-dark p-2">
+                                        <td colspan="3"><span class="bg-warning text-dark p-2">
                                             Belum ada data Mata Kuliah untuk kurikulum ini.</span>
                                         </td>
                                     </tr>

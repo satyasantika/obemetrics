@@ -86,7 +86,7 @@ class ImportJoinMkUserController extends Controller
                 // Check semester
                 $semester = Semester::where('kode', $kodeSemester)->first();
                 // Check mk
-                $mk = Mk::where('kodemk', $kodeMk)->first();
+                $mk = Mk::where('kode', $kodeMk)->first();
                 // Check dosen (user dengan nidn)
                 $dosen = User::where('nidn', $nidn)->first();
 

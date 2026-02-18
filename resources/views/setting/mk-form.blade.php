@@ -39,8 +39,8 @@
             </div>
             {{-- kode kurikulum --}}
             <div class="col">
-                <label for="kodemk" class="form-label"><strong>Kode</strong> Mata Kuliah <span class="text-danger">(*)</span></label>
-                <input type="text" placeholder="" value="{{ $mk->kodemk }}" name="kodemk" class="form-control" id="kodemk">
+                <label for="kode" class="form-label"><strong>Kode</strong> Mata Kuliah <span class="text-danger">(*)</span></label>
+                <input type="text" placeholder="" value="{{ $mk->kode }}" name="kode" class="form-control" id="kode">
             </div>
         </div>
         {{-- nama --}}
@@ -90,7 +90,7 @@
     @csrf
     @method('DELETE')
     <hr>
-    <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus  {{ $mk->kodemk }}: {{ $mk->nama }}?');">
+    <button type="submit" for="delete-form" class="btn btn-outline-danger btn-sm float-end" onclick="return confirm('Yakin akan menghapus  {{ $mk->kode }}: {{ $mk->nama }}?');">
         <i class="bi bi-trash"></i>
     </button>
 </form>

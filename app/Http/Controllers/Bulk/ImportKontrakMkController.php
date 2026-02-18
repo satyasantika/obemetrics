@@ -96,7 +96,7 @@ class ImportKontrakMkController extends Controller
                 // Check mahasiswa
                 $mahasiswa = Mahasiswa::where('nim', $nim)->first();
                 // Check mk
-                $mk = Mk::where('kodemk', $kodeMk)->first();
+                $mk = Mk::where('kode', $kodeMk)->first();
                 // Check dosen (user dengan nidn)
                 $dosen = User::where('nidn', $nidn)->first();
 

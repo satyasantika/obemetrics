@@ -15,9 +15,9 @@
     <div class="card-body">
         {{-- kode UNSIL --}}
         <div class="row mb-3 bg-secondary text-white p-2">
-            <label for="kode_unsil" class="col-md-4 col-form-label text-md-end">Kode Prodi (lokal)</label>
+            <label for="kode_prodi" class="col-md-4 col-form-label text-md-end">Kode Prodi (lokal)</label>
             <div class="col-md-8">
-                <input type="text" placeholder="" value="{{ $prodi->kode_unsil }}" name="kode_unsil" class="form-control" id="kode_unsil" required autofocus>
+                <input type="text" placeholder="" value="{{ $prodi->kode_prodi }}" name="kode_prodi" class="form-control" id="kode_prodi" required autofocus>
             </div>
         </div>
         {{-- nama --}}
@@ -58,9 +58,9 @@
         </div>
         {{-- kode Prodi --}}
         <div class="row mb-3">
-            <label for="kode_prodi" class="col-md-4 col-form-label text-md-end">Kode Prodi di PDDIKTI</label>
+            <label for="kode_pddikti" class="col-md-4 col-form-label text-md-end">Kode Prodi di PDDIKTI</label>
             <div class="col-md-8">
-                <input type="text" placeholder="" value="{{ $prodi->kode_prodi }}" name="kode_prodi" class="form-control" id="kode_prodi" >
+                <input type="text" placeholder="" value="{{ $prodi->kode_pddikti }}" name="kode_pddikti" class="form-control" id="kode_pddikti" >
             </div>
         </div>
         {{-- visi_misi --}}

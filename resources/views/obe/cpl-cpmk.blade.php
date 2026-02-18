@@ -20,7 +20,11 @@
                     {{-- menu mata kuliah --}}
                     @include('components.menu-mk',$mk)
                     <hr>
-
+                    <div class="row mb-2">
+                        <div class="col">
+                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'join_cpl_cpmks']) }}" class="btn btn-sm btn-success mt-1 float-end"><i class="bi bi-upload"></i> Import Interaksi CPL-CPMK</a>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col">
                             <table class="table table-bordered table-striped">

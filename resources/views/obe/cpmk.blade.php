@@ -20,6 +20,12 @@
                     {{-- menu mata kuliah --}}
                     @include('components.menu-mk',$mk)
                     <hr>
+                    <div class="row mb-2">
+                        <div class="col">
+                            <a href="{{ route('mks.cpmks.create',$mk) }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Tambah CPMK</a>
+                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'cpmks']) }}" class="btn btn-sm btn-success mt-1 float-end"><i class="bi bi-upload"></i> Tambah Banyak CPMK</a>
+                        </div>
+                    </div>
 
                     <div class="row">
                         <div class="col">
@@ -47,11 +53,6 @@
                                 @endforelse
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <a href="{{ route('mks.cpmks.create',$mk) }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Tambah CPMK</a>
                         </div>
                     </div>
                 </div>

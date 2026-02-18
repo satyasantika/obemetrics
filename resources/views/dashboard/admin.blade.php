@@ -49,6 +49,9 @@
                 @can('read bulk-import joinprodiusers')
                 <a href="{{ route('setting.import.joinprodiusers') }}" class="btn btn-sm btn-secondary mt-1"><i class="bi bi-upload"></i> Dosen Prodi</a>
                 @endcan
+                <a href="{{ route('setting.import.admin-master', ['target' => 'prodis']) }}" class="btn btn-sm btn-success mt-1"><i class="bi bi-upload"></i> Master Prodi</a>
+                <a href="{{ route('setting.import.admin-master', ['target' => 'users']) }}" class="btn btn-sm btn-success mt-1"><i class="bi bi-upload"></i> Master User</a>
+                <a href="{{ route('setting.import.admin-master', ['target' => 'joinprodiusers']) }}" class="btn btn-sm btn-success mt-1"><i class="bi bi-upload"></i> Master Dosen Prodi</a>
                 @can('read bulk-import joinmkusers')
                 <a href="{{ route('setting.import.joinmkusers') }}" class="btn btn-sm btn-secondary mt-1"><i class="bi bi-upload"></i> Dosen Pengampu</a>
                 @endcan

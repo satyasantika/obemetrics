@@ -25,7 +25,7 @@
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
                                     <br>
-                                    @include('layouts.menu-kurikulum',$kurikulum)
+                                    @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
                                 </li>
                             </div>
                         </div>

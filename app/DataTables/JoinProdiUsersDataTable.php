@@ -7,8 +7,6 @@ use App\Models\JoinProdiUser;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\EloquentDataTable;
-use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
@@ -36,10 +34,14 @@ class JoinProdiUsersDataTable extends DataTable
                 $role = User::find($row->user_id)->getRoleNames();
                 return $role->join(', ');
             })
-            ->editColumn('user_id', function($row) {
-                return $row->user->name;
+            ->addColumn('nama_user', function($row) {
+                return $row->user->name ?? '';
             })
-            ->rawColumns(['action','username'])
+            ->filterColumn('nama_user', function($query, $keyword) {
+                $query->where('users.name', 'like', "%{$keyword}%");
+            })
+            ->orderColumn('nama_user', 'users.name $1')
+            ->rawColumns(['action','nama_user'])
             ->setRowId('id');
     }
 
@@ -48,8 +50,15 @@ class JoinProdiUsersDataTable extends DataTable
      */
     public function query(JoinProdiUser $model): QueryBuilder
     {
-        return $model->where('prodi_id',$this->prodi_id)->newQuery();
-        // return $model->newQuery();
+        $table = $model->getTable();
+
+        return $model->newQuery()->where($table . '.prodi_id', $this->prodi_id)
+            ->leftJoin('users', $table . '.user_id', '=', 'users.id')
+            ->select([
+                $table . '.*',
+                'users.name as user_name'
+            ])
+            ->with(['user']);
     }
 
     /**
@@ -70,16 +79,16 @@ class JoinProdiUsersDataTable extends DataTable
                     ->buttons([
                         // Button::make('add'),
                         Button::make([
-                                        'text'   => '<i class="bi bi-plus-circle"></i> Tambah User Prodi',
+                                        'text'   => '<i class="bi bi-plus-circle"></i> User',
                                         'className' => 'btn btn-success',
                                         'action' => 'function(e, dt, node, config){ window.location.href = "'.route('prodis.joinprodiusers.create',$this->prodi_id).'"; }',
                                     ]),
                         Button::make('reset'),
                         Button::make('reload'),
                         Button::make([
-                                        'text'   => '<i class="bi bi-upload"></i> Import Banyak User Prodi',
+                                        'text'   => '<i class="bi bi-upload"></i> Banyak User',
                                         'className' => 'btn btn-success',
-                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('setting.import.joinprodiusers',$this->prodi_id).'"; }',
+                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('setting.import.admin-master', ['target' => 'joinprodiusers']).'"; }',
                                     ]),
                                 ]);
     }
@@ -90,11 +99,12 @@ class JoinProdiUsersDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            // Column::make('prodi_id'),
-            Column::make('user_id')->title('nama user'),
+            Column::computed('nama_user')
+                ->title('Nama User')
+                ->searchable(true)
+                ->orderable(true),
             Column::make('role'),
             Column::make('status')->title('peran di prodi'),
-            // Column::make('updated_at'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

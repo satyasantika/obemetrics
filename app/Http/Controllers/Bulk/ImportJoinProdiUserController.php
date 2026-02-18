@@ -82,7 +82,7 @@ class ImportJoinProdiUserController extends Controller
                 $status = trim((string) ($row[$headerMap['status']] ?? ''));
 
                 // Check prodi
-                $prodi = Prodi::where('kode_unsil', $kodeProdi)->first();
+                $prodi = Prodi::where('kode_prodi', $kodeProdi)->first();
                 // Check dosen (user dengan nidn)
                 $dosen = User::where('nidn', $nidn)->first();
 

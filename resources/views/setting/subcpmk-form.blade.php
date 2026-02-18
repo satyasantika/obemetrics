@@ -155,20 +155,15 @@
         {{-- indikator --}}
         <div class="row mb-3">
             <div class="col">
-                <label for="indikator" class="form-label">Indikator <span class="text-danger">(*)</span></label>
+                <label for="indikator" class="form-label">Indikator dari SubCPMK <span class="text-danger">(*)</span></label>
                 <textarea name="indikator" rows="3" class="form-control" id="indikator" required>{{ $subcpmk->indikator }}</textarea>
             </div>
         </div>
+        {{-- evaluasi --}}
         <div class="row mb-3">
-            {{-- evaluasi --}}
-            <div class="col-md-8">
-                <label for="evaluasi" class="form-label">Evaluasi <span class="text-danger">(*)</span></label>
+            <div class="col">
+                <label for="evaluasi" class="form-label">Deskripsi Rencana Evaluasi dari SubCPMK <span class="text-danger">(*)</span></label>
                 <textarea name="evaluasi" rows="3" class="form-control" id="evaluasi" required>{{ $subcpmk->evaluasi }}</textarea>
-            </div>
-            {{-- bobot --}}
-            <div class="col-md-4">
-                <label for="bobot" class="form-label">Bobot (%) <span class="text-danger">(*)</span></label>
-                <input type="text" placeholder="" value="{{ $subcpmk->bobot }}" name="bobot" class="form-control" id="bobot" required>
             </div>
         </div>
         <hr>

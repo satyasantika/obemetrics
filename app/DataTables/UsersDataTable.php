@@ -46,6 +46,9 @@ class UsersDataTable extends DataTable
                     </form>';
                 return $activationbutton;
             })
+            ->addColumn('roles', function($row){
+                return $row->roles->pluck('name')->join(', ');
+            })
             ->editColumn('updated_at', function($row) {
                 return $row->updated_at->format('Y-m-d H:i:s');
             })
@@ -83,7 +86,7 @@ class UsersDataTable extends DataTable
                         Button::make([
                                         'text'   => '<i class="bi bi-upload"></i> Import',
                                         'className' => 'btn btn-success',
-                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('setting.import.users').'"; }',
+                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('setting.import.admin-master', ['target' => 'users']).'"; }',
                                     ]),
                                 ]);
     }
@@ -97,7 +100,8 @@ class UsersDataTable extends DataTable
             Column::make('name'),
             Column::make('username'),
             Column::make('nidn'),
-            Column::make('updated_at'),
+            Column::make('roles'),
+            // Column::make('updated_at'),
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false)

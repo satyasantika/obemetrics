@@ -14,13 +14,13 @@ return new class extends Migration
         // identitas program studi
         Schema::create('prodis', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->string('kode_unsil')->nullable();
+            $table->string('kode_prodi')->nullable();
             $table->string('nama')->nullable();
             $table->string('singkat')->nullable();
             $table->string('mapel')->nullable();
             $table->string('pt')->nullable();
             $table->string('fakultas')->nullable();
-            $table->string('kode_prodi')->nullable();
+            $table->string('kode_pddikti')->nullable();
             $table->text('visi_misi')->nullable();
             $table->string('jenjang')->nullable();
             $table->string('gelar_lulusan')->nullable();
@@ -70,6 +70,7 @@ return new class extends Migration
         // profil lulusan
         Schema::create('profils', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
+            $table->string('kode')->nullable();
             $table->string('nama')->nullable();
             $table->text('deskripsi')->nullable();
             $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
@@ -122,7 +123,7 @@ return new class extends Migration
         // mata kuliah
         Schema::create('mks', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->string('kodemk')->nullable();
+            $table->string('kode')->nullable();
             $table->string('nama')->nullable();
             $table->integer('semester')->default(0);
             $table->integer('sks')->default(0);
@@ -212,6 +213,7 @@ return new class extends Migration
             $table->foreignUuid('subcpmk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->foreignUuid('penugasan_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->double('bobot')->nullable()->default(100);
             $table->timestamps();
         });

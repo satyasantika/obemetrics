@@ -20,7 +20,11 @@
                     {{-- menu mata kuliah --}}
                     @include('components.menu-mk',$mk)
                     <hr>
-
+                    <div class="row">
+                        <div class="col">
+                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'join_subcpmk_penugasans']) }}" class="btn btn-sm btn-success mb-2 float-end"><i class="bi bi-upload"></i> Import banyak SubCPMK untuk Penugasan</a>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col">
                             <table class="table table-bordered table-striped">
