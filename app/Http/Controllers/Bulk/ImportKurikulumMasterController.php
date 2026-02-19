@@ -150,7 +150,7 @@ class ImportKurikulumMasterController extends Controller
                     continue;
                 }
 
-                $previewRows[] = $normalizedRow;
+                $previewRows[] = $this->decoratePreviewRow($target, $normalizedRow, $kurikulum, $request->semester_id);
             }
 
             if (empty($previewRows)) {
@@ -213,6 +213,11 @@ class ImportKurikulumMasterController extends Controller
 
         foreach ($selectedIndexes as $idx) {
             if (!isset($rows[$idx])) {
+                continue;
+            }
+
+            if (($rows[$idx]['can_save'] ?? true) === false) {
+                $skipped[] = 'Baris ' . ($idx + 2) . ': ' . ($rows[$idx]['status_message'] ?? 'Data tidak valid.');
                 continue;
             }
 
@@ -552,6 +557,167 @@ class ImportKurikulumMasterController extends Controller
         }
 
         return $text;
+    }
+
+    private function decoratePreviewRow(string $target, array $row, Kurikulum $kurikulum, ?string $semesterId): array
+    {
+        if (!in_array($target, ['profils', 'profil_indikators', 'cpls', 'bks', 'mks', 'joinmkusers'], true)) {
+            return $row;
+        }
+
+        $status = [
+            'exists' => false,
+            'can_save' => true,
+            'status_message' => null,
+        ];
+
+        if ($target === 'profils') {
+            $kode = trim((string) ($row['kode'] ?? ''));
+            $nama = trim((string) ($row['nama'] ?? ''));
+
+            $query = Profil::query()->where('kurikulum_id', $kurikulum->id);
+            if ($kode !== '') {
+                $query->where('kode', $kode);
+            } else {
+                $query->where('nama', $nama);
+            }
+
+            $status['exists'] = $query->exists();
+
+            return array_merge($row, $status);
+        }
+
+        if ($target === 'profil_indikators') {
+            $nama = trim((string) ($row['nama'] ?? ''));
+            if ($nama === '') {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Nama indikator wajib diisi',
+                ]);
+            }
+
+            $profil = $this->findProfilByRow($kurikulum, $row);
+            if (!$profil) {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Profil tidak ditemukan',
+                ]);
+            }
+
+            $status['exists'] = ProfilIndikator::query()
+                ->where('profil_id', $profil->id)
+                ->where('nama', $nama)
+                ->exists();
+
+            return array_merge($row, $status);
+        }
+
+        if ($target === 'cpls') {
+            $kode = trim((string) ($row['kode'] ?? ''));
+            if ($kode === '') {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Kode CPL wajib diisi',
+                ]);
+            }
+
+            $status['exists'] = Cpl::query()
+                ->where('kurikulum_id', $kurikulum->id)
+                ->where('kode', $kode)
+                ->exists();
+
+            return array_merge($row, $status);
+        }
+
+        if ($target === 'mks') {
+            $kodeMk = trim((string) ($row['kode'] ?? ''));
+            if ($kodeMk === '') {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Kode MK wajib diisi',
+                ]);
+            }
+
+            $status['exists'] = Mk::query()
+                ->where('kurikulum_id', $kurikulum->id)
+                ->where('kode', $kodeMk)
+                ->exists();
+
+            return array_merge($row, $status);
+        }
+
+        if ($target === 'joinmkusers') {
+            $kodeSemester = trim((string) ($row['kode_semester'] ?? ''));
+            $kodeMk = trim((string) ($row['kode_mk'] ?? ''));
+            $nidn = trim((string) ($row['nidn'] ?? ''));
+
+            if ($kodeSemester === '' || $kodeMk === '' || $nidn === '') {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Kode semester, kode MK, dan NIDN wajib diisi',
+                ]);
+            }
+
+            $semester = Semester::query()->where('kode', $kodeSemester)->first();
+            if (!$semester) {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Semester tidak ditemukan: ' . $kodeSemester,
+                ]);
+            }
+
+            $mk = Mk::query()
+                ->where('kurikulum_id', $kurikulum->id)
+                ->where('kode', $kodeMk)
+                ->first();
+            if (!$mk) {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'MK tidak ditemukan: ' . $kodeMk,
+                ]);
+            }
+
+            $user = User::query()->where('nidn', $nidn)->first();
+            if (!$user) {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Dosen tidak ditemukan: ' . $nidn,
+                ]);
+            }
+
+            $status['exists'] = JoinMkUser::query()
+                ->where('semester_id', $semester->id)
+                ->where('mk_id', $mk->id)
+                ->where('kurikulum_id', $kurikulum->id)
+                ->where('user_id', $user->id)
+                ->exists();
+
+            return array_merge($row, $status);
+        }
+
+        $kodeBk = trim((string) ($row['kode'] ?? ''));
+        if ($kodeBk === '') {
+            return array_merge($row, [
+                'exists' => false,
+                'can_save' => false,
+                'status_message' => 'Kode BK wajib diisi',
+            ]);
+        }
+
+        $status['exists'] = Bk::query()
+            ->where('kurikulum_id', $kurikulum->id)
+            ->where('kode', $kodeBk)
+            ->exists();
+
+        return array_merge($row, $status);
     }
 
     private function resolveTarget(?string $target): string

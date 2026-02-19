@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header">
                     Bulk Import Data {{ $targets[$target]['label'] ?? 'N/A' }}
-                    <a href="{{ route('kurikulums.'.$target.'.index',$kurikulum) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
+                    <a href="{{ $target=='joinmkusers' ? $returnUrl : route('kurikulums.'.$target.'.index',$kurikulum) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                 </div>
 
                 <div class="card-body">
@@ -79,6 +79,8 @@
 
                         @php
                             $columns = $targets[$target]['columns'] ?? [];
+                            $statusTargets = ['profils', 'profil_indikators', 'cpls', 'bks', 'mks', 'joinmkusers'];
+                            $showStatus = in_array($target, $statusTargets, true);
                         @endphp
 
                         <form action="{{ route('setting.import.kurikulum-master.commit', $kurikulum->id) }}" method="POST">
@@ -91,6 +93,9 @@
                                     <thead>
                                         <tr>
                                             <th style="width:40px;">Pilih</th>
+                                            @if ($showStatus)
+                                                <th>Status</th>
+                                            @endif
                                             @foreach ($columns as $column)
                                                 <th>{{ $column }}</th>
                                             @endforeach
@@ -98,8 +103,37 @@
                                     </thead>
                                     <tbody>
                                         @foreach ($preview['rows'] as $index => $row)
-                                            <tr>
-                                                <td><input type="checkbox" class="form-check-input row-check" name="selected[]" value="{{ $index }}" checked></td>
+                                            @php
+                                                $hasError = $showStatus && (($row['can_save'] ?? true) === false);
+                                                $isExists = $showStatus && (($row['exists'] ?? false) === true);
+                                                $rowClass = $hasError ? 'table-danger' : ($isExists ? 'table-warning' : '');
+                                            @endphp
+                                            <tr class="{{ $rowClass }}">
+                                                <td>
+                                                    <input
+                                                        type="checkbox"
+                                                        class="form-check-input row-check"
+                                                        name="selected[]"
+                                                        value="{{ $index }}"
+                                                        @if ($showStatus)
+                                                            @checked((($row['can_save'] ?? true) === true) && (($row['exists'] ?? false) === false))
+                                                            @disabled(($row['can_save'] ?? true) === false)
+                                                        @else
+                                                            checked
+                                                        @endif
+                                                    >
+                                                </td>
+                                                @if ($showStatus)
+                                                    <td>
+                                                        @if (($row['can_save'] ?? true) === false)
+                                                            <span class="badge bg-danger">{{ $row['status_message'] ?? 'Data tidak valid' }}</span>
+                                                        @elseif (($row['exists'] ?? false) === true)
+                                                            <span class="badge bg-warning text-dark">Sudah ada</span>
+                                                        @else
+                                                            <span class="badge bg-success">Baru</span>
+                                                        @endif
+                                                    </td>
+                                                @endif
                                                 @foreach ($columns as $column)
                                                     <td>{{ $row[$column] ?? '' }}</td>
                                                 @endforeach
@@ -124,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const targetSelect = document.getElementById('target');
     const downloadTemplate = document.getElementById('download-template');
     const selectAll = document.getElementById('select-all');
-    const rowChecks = document.querySelectorAll('.row-check');
+    const rowChecks = document.querySelectorAll('.row-check:not([disabled])');
 
     function updateTemplateLink() {
         if (!targetSelect || !downloadTemplate) {

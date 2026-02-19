@@ -137,7 +137,7 @@ class ImportMkMasterController extends Controller
                     continue;
                 }
 
-                $previewRows[] = $normalizedRow;
+                $previewRows[] = $this->decoratePreviewRow($target, $normalizedRow, $mk, $request->semester_id);
             }
 
             if (empty($previewRows)) {
@@ -203,6 +203,11 @@ class ImportMkMasterController extends Controller
 
         foreach ($selectedIndexes as $idx) {
             if (!isset($rows[$idx])) {
+                continue;
+            }
+
+            if (($rows[$idx]['can_save'] ?? true) === false) {
+                $skipped[] = 'Baris ' . ($idx + 2) . ': ' . ($rows[$idx]['status_message'] ?? 'Data tidak valid.');
                 continue;
             }
 
@@ -559,6 +564,135 @@ class ImportMkMasterController extends Controller
         }
 
         return $text;
+    }
+
+    private function decoratePreviewRow(string $target, array $row, Mk $mk, ?string $semesterId): array
+    {
+        if (!in_array($target, ['cpmks', 'subcpmks', 'penugasans'], true)) {
+            return $row;
+        }
+
+        $status = [
+            'exists' => false,
+            'can_save' => true,
+            'status_message' => null,
+        ];
+
+        if ($target === 'cpmks') {
+            $kode = trim((string) ($row['kode'] ?? ''));
+            if ($kode === '') {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Kode CPMK wajib diisi',
+                ]);
+            }
+
+            $status['exists'] = Cpmk::query()
+                ->where('mk_id', $mk->id)
+                ->where('kode', $kode)
+                ->exists();
+
+            return array_merge($row, $status);
+        }
+
+        if ($target === 'subcpmks') {
+            $kode = trim((string) ($row['kode'] ?? ''));
+            $kodeCpl = trim((string) ($row['kode_cpl'] ?? ''));
+            if ($kode === '' || $kodeCpl === '' || empty($semesterId)) {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Kode SubCPMK, kode CPL, dan semester wajib valid',
+                ]);
+            }
+
+            $cpl = Cpl::query()
+                ->where('kurikulum_id', $mk->kurikulum_id)
+                ->where('kode', $kodeCpl)
+                ->first();
+            if (!$cpl) {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'CPL tidak ditemukan: ' . $kodeCpl,
+                ]);
+            }
+
+            $joinCplBkIds = JoinCplBk::query()
+                ->where('kurikulum_id', $mk->kurikulum_id)
+                ->where('cpl_id', $cpl->id)
+                ->pluck('id');
+            if ($joinCplBkIds->isEmpty()) {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Relasi CPL >< BK tidak ditemukan',
+                ]);
+            }
+
+            $joinCplCpmkQuery = JoinCplCpmk::query()
+                ->where('mk_id', $mk->id)
+                ->whereIn('join_cpl_bk_id', $joinCplBkIds);
+
+            $kodeCpmk = trim((string) ($row['kode_cpmk'] ?? ''));
+            $namaCpmk = trim((string) ($row['nama_cpmk'] ?? ''));
+            if ($kodeCpmk !== '') {
+                $cpmk = Cpmk::query()->where('mk_id', $mk->id)->where('kode', $kodeCpmk)->first();
+                if ($cpmk) {
+                    $joinCplCpmkQuery->where('cpmk_id', $cpmk->id);
+                }
+            } elseif ($namaCpmk !== '') {
+                $cpmk = Cpmk::query()->where('mk_id', $mk->id)->where('nama', $namaCpmk)->first();
+                if ($cpmk) {
+                    $joinCplCpmkQuery->where('cpmk_id', $cpmk->id);
+                }
+            }
+
+            $joinCplCpmk = $joinCplCpmkQuery->first();
+            if (!$joinCplCpmk) {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Join CPL CPMK tidak ditemukan',
+                ]);
+            }
+
+            $status['exists'] = Subcpmk::query()
+                ->where('join_cpl_cpmk_id', $joinCplCpmk->id)
+                ->where('semester_id', $semesterId)
+                ->where('kode', $kode)
+                ->exists();
+
+            return array_merge($row, $status);
+        }
+
+        $kode = trim((string) ($row['kode'] ?? ''));
+        $kodeEvaluasi = trim((string) ($row['kode_evaluasi'] ?? ''));
+        if ($kode === '' || $kodeEvaluasi === '' || empty($semesterId)) {
+            return array_merge($row, [
+                'exists' => false,
+                'can_save' => false,
+                'status_message' => 'Kode penugasan, kode evaluasi, dan semester wajib valid',
+            ]);
+        }
+
+        $evaluasiExists = Evaluasi::query()->where('kode', $kodeEvaluasi)->exists();
+        if (!$evaluasiExists) {
+            return array_merge($row, [
+                'exists' => false,
+                'can_save' => false,
+                'status_message' => 'Evaluasi tidak ditemukan: ' . $kodeEvaluasi,
+            ]);
+        }
+
+        $status['exists'] = Penugasan::query()
+            ->where('mk_id', $mk->id)
+            ->where('semester_id', $semesterId)
+            ->where('kode', $kode)
+            ->exists();
+
+        return array_merge($row, $status);
     }
 
     private function resolveTarget(?string $target): string
