@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dosen;
 
 use App\Http\Controllers\Controller;
+use App\Models\Evaluasi;
 use App\Models\Mk;
 use App\Models\Nilai;
 use Illuminate\Http\Request;
@@ -48,8 +49,13 @@ class WorkcloudController extends Controller
             return $normalized === $kelas;
         })->values();
 
+        $kelasRowsAll = $kelasRows;
+
         if ($semesterId !== null && $semesterId !== '') {
             $kelasRows = $kelasRows->where('semester_id', (int) $semesterId)->values();
+            if ($kelasRows->isEmpty()) {
+                $kelasRows = $kelasRowsAll;
+            }
         }
 
         $workcloudColumnsCount = max(1, $workcloudMetas->count());
@@ -104,7 +110,7 @@ class WorkcloudController extends Controller
                 if ($nilaiAngka !== null) {
                     $sheet->setCellValue('C' . $currentRow, round((float) $nilaiAngka, 2));
                 } else {
-                    $sheet->setCellValue('C' . $currentRow, '-');
+                    $sheet->setCellValue('C' . $currentRow, 0);
                 }
                 $sheet->setCellValue('D' . $currentRow, $kontrakMk->nilai_huruf ?? '-');
 
@@ -114,11 +120,11 @@ class WorkcloudController extends Controller
                         $column = Coordinate::stringFromColumnIndex($columnIndex);
                         $key = $kontrakMk->mahasiswa_id . '_' . $kontrakMk->semester_id . '_' . $workcloud;
                         $avgObj = $avgByWorkcloud[$key] ?? null;
-                        $sheet->setCellValue($column . $currentRow, $avgObj ? round((float) $avgObj->avg_nilai, 2) : '-');
+                        $sheet->setCellValue($column . $currentRow, $avgObj ? round((float) $avgObj->avg_nilai, 2) : 0);
                         $columnIndex++;
                     }
                 } else {
-                    $sheet->setCellValue('E' . $currentRow, '-');
+                    $sheet->setCellValue('E' . $currentRow, 0);
                 }
 
                 $currentRow++;
@@ -127,8 +133,8 @@ class WorkcloudController extends Controller
             $kelasAvgNilaiAngka = $kelasRows->whereNotNull('nilai_angka')->average('nilai_angka');
             $sheet->mergeCells('A' . $currentRow . ':B' . $currentRow);
             $sheet->setCellValue('A' . $currentRow, 'RATA-RATA KELAS');
-            $sheet->setCellValue('C' . $currentRow, $kelasAvgNilaiAngka !== null ? round((float) $kelasAvgNilaiAngka, 2) : '-');
-            $sheet->setCellValue('D' . $currentRow, '-');
+            $sheet->setCellValue('C' . $currentRow, $kelasAvgNilaiAngka !== null ? round((float) $kelasAvgNilaiAngka, 2) : 0);
+            $sheet->setCellValue('D' . $currentRow, '');
 
             if ($workclouds->isNotEmpty()) {
                 $columnIndex = 5;
@@ -142,15 +148,15 @@ class WorkcloudController extends Controller
 
                     $kelasWorkcloudAvg = $kelasWorkcloudValues->count() > 0 ? $kelasWorkcloudValues->average() : null;
                     $column = Coordinate::stringFromColumnIndex($columnIndex);
-                    $sheet->setCellValue($column . $currentRow, $kelasWorkcloudAvg !== null ? round((float) $kelasWorkcloudAvg, 2) : '-');
+                    $sheet->setCellValue($column . $currentRow, $kelasWorkcloudAvg !== null ? round((float) $kelasWorkcloudAvg, 2) : 0);
                     $columnIndex++;
                 }
             } else {
-                $sheet->setCellValue('E' . $currentRow, '-');
+                $sheet->setCellValue('E' . $currentRow, 0);
             }
         } else {
             $sheet->mergeCells('A4:' . $lastColumn . '4');
-            $sheet->setCellValue('A4', 'Tidak ada data mahasiswa pada filter yang dipilih.');
+            $sheet->setCellValue('A4', 'Belum ada data mahasiswa pada kelas ini.');
             $currentRow = 4;
         }
 
@@ -220,23 +226,39 @@ class WorkcloudController extends Controller
         $mahasiswaIds = $kontrakMks->pluck('mahasiswa_id')->filter()->unique()->values();
         $semesterIds = $kontrakMks->pluck('semester_id')->filter()->unique()->values();
 
-        $workcloudKeyExpr = "COALESCE(NULLIF(TRIM(evaluasis.workcloud), ''), NULLIF(TRIM(evaluasis.kategori), ''), NULLIF(TRIM(evaluasis.kode), ''))";
+        $requiredWorkcloudOrder = collect([
+            'Aktivitas Partisipatif',
+            'Hasil Proyek/Studi Kasus',
+            'Tugas',
+            'Quiz',
+            'UTS',
+            'UAS',
+        ]);
 
-        $workclouds = $mk->penugasans()
-            ->join('evaluasis', 'penugasans.evaluasi_id', '=', 'evaluasis.id')
-            ->selectRaw($workcloudKeyExpr . ' as workcloud_key')
-            ->whereNotNull(DB::raw($workcloudKeyExpr))
-            ->groupBy(DB::raw($workcloudKeyExpr))
-            ->orderBy('workcloud_key')
-            ->pluck('workcloud_key')
+        $uniqueWorkclouds = Evaluasi::query()
+            ->whereNotNull('workcloud')
+            ->where('workcloud', '!=', '')
+            ->select('workcloud')
+            ->distinct()
+            ->pluck('workcloud')
+            ->map(fn ($item) => trim((string) $item))
+            ->filter(fn ($item) => $item !== '')
             ->values();
+
+        $otherWorkclouds = $uniqueWorkclouds
+            ->reject(fn ($name) => $requiredWorkcloudOrder->contains($name))
+            ->sort()
+            ->values();
+
+        $workclouds = $requiredWorkcloudOrder->concat($otherWorkclouds)->values();
 
         $bobotByWorkcloud = $mk->penugasans()
             ->join('evaluasis', 'penugasans.evaluasi_id', '=', 'evaluasis.id')
-            ->selectRaw($workcloudKeyExpr . ' as workcloud_key, COALESCE(SUM(penugasans.bobot),0) as total_bobot')
-            ->whereNotNull(DB::raw($workcloudKeyExpr))
-            ->groupBy(DB::raw($workcloudKeyExpr))
-            ->pluck('total_bobot', 'workcloud_key')
+            ->whereNotNull('evaluasis.workcloud')
+            ->where('evaluasis.workcloud', '!=', '')
+            ->selectRaw('evaluasis.workcloud, COALESCE(SUM(penugasans.bobot),0) as total_bobot')
+            ->groupBy('evaluasis.workcloud')
+            ->pluck('total_bobot', 'workcloud')
             ->all();
 
         $cplsByWorkcloud = DB::table('penugasans')
@@ -250,8 +272,9 @@ class WorkcloudController extends Controller
             ->leftJoin('join_cpl_bks', 'join_cpl_bks.id', '=', 'join_cpl_cpmks.join_cpl_bk_id')
             ->leftJoin('cpls', 'cpls.id', '=', 'join_cpl_bks.cpl_id')
             ->where('penugasans.mk_id', $mk->id)
-            ->whereNotNull(DB::raw($workcloudKeyExpr))
-            ->selectRaw($workcloudKeyExpr . ' as workcloud, cpls.kode')
+            ->whereNotNull('evaluasis.workcloud')
+            ->where('evaluasis.workcloud', '!=', '')
+            ->select('evaluasis.workcloud', 'cpls.kode')
             ->get()
             ->groupBy('workcloud')
             ->map(function ($items) {
@@ -281,24 +304,36 @@ class WorkcloudController extends Controller
             ->where('nilais.mk_id', $mk->id)
             ->whereIn('nilais.mahasiswa_id', $mahasiswaIds)
             ->whereIn('nilais.semester_id', $semesterIds)
-            ->whereNotNull(DB::raw($workcloudKeyExpr))
-            ->selectRaw('nilais.mahasiswa_id, nilais.semester_id, ' . $workcloudKeyExpr . ' as workcloud_key, AVG(nilais.nilai) as avg_nilai')
-            ->groupBy('nilais.mahasiswa_id', 'nilais.semester_id', DB::raw($workcloudKeyExpr))
+            ->whereNotNull('evaluasis.workcloud')
+            ->where('evaluasis.workcloud', '!=', '')
+            ->selectRaw('nilais.mahasiswa_id, nilais.semester_id, evaluasis.workcloud, SUM(COALESCE(nilais.nilai,0) * COALESCE(penugasans.bobot,0)) / NULLIF(SUM(COALESCE(penugasans.bobot,0)),0) as avg_nilai')
+            ->groupBy('nilais.mahasiswa_id', 'nilais.semester_id', 'evaluasis.workcloud')
             ->get()
             ->keyBy(function ($item) {
-                return $item->mahasiswa_id . '_' . $item->semester_id . '_' . $item->workcloud_key;
+                return $item->mahasiswa_id . '_' . $item->semester_id . '_' . $item->workcloud;
             })
             ->all();
 
         $classAvgByWorkcloud = Nilai::query()
             ->join('penugasans', 'nilais.penugasan_id', '=', 'penugasans.id')
+            ->join('kontrak_mks', function ($join) {
+                $join->on('kontrak_mks.mk_id', '=', 'nilais.mk_id')
+                    ->on('kontrak_mks.mahasiswa_id', '=', 'nilais.mahasiswa_id')
+                    ->on('kontrak_mks.semester_id', '=', 'nilais.semester_id');
+            })
             ->join('evaluasis', 'penugasans.evaluasi_id', '=', 'evaluasis.id')
             ->where('nilais.mk_id', $mk->id)
             ->whereIn('nilais.semester_id', $semesterIds)
-            ->whereNotNull(DB::raw($workcloudKeyExpr))
-            ->selectRaw($workcloudKeyExpr . ' as workcloud_key, AVG(nilais.nilai) as avg_nilai')
-            ->groupBy(DB::raw($workcloudKeyExpr))
-            ->pluck('avg_nilai', 'workcloud_key')
+            ->whereNotNull('evaluasis.workcloud')
+            ->where('evaluasis.workcloud', '!=', '')
+            ->selectRaw("COALESCE(NULLIF(TRIM(kontrak_mks.kelas), ''), 'Tanpa Kelas') as kelas_key, evaluasis.workcloud, SUM(COALESCE(nilais.nilai,0) * COALESCE(penugasans.bobot,0)) / NULLIF(SUM(COALESCE(penugasans.bobot,0)),0) as avg_nilai")
+            ->groupBy('kelas_key', 'evaluasis.workcloud')
+            ->get()
+            ->mapWithKeys(function ($row) {
+                $kelasKey = (string) $row->kelas_key;
+                $workcloudKey = (string) $row->workcloud;
+                return [$kelasKey . '_' . $workcloudKey => (float) ($row->avg_nilai ?? 0)];
+            })
             ->all();
 
         return compact('mk', 'semesters', 'penugasans', 'kontrakMks', 'workclouds', 'workcloudMetas', 'avgByWorkcloud', 'classAvgByWorkcloud');

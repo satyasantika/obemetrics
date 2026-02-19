@@ -40,27 +40,7 @@
                 @can('read kontrakmks')
                 <a href="{{ route('kontrakmks.index') }}" class="btn btn-sm btn-primary mt-1"><i class="bi bi-file-earmark-text"></i> Kontrak Mata Kuliah</a>
                 @endcan
-                <hr>
 
-                Import Bulk Data:<br>
-                @can('read bulk-import users')
-                <a href="{{ route('setting.import.users') }}" class="btn btn-sm btn-secondary mt-1"><i class="bi bi-upload"></i> User</a>
-                @endcan
-                @can('read bulk-import joinprodiusers')
-                <a href="{{ route('setting.import.joinprodiusers') }}" class="btn btn-sm btn-secondary mt-1"><i class="bi bi-upload"></i> Dosen Prodi</a>
-                @endcan
-                <a href="{{ route('setting.import.admin-master', ['target' => 'prodis']) }}" class="btn btn-sm btn-success mt-1"><i class="bi bi-upload"></i> Master Prodi</a>
-                <a href="{{ route('setting.import.admin-master', ['target' => 'users']) }}" class="btn btn-sm btn-success mt-1"><i class="bi bi-upload"></i> Master User</a>
-                <a href="{{ route('setting.import.admin-master', ['target' => 'joinprodiusers']) }}" class="btn btn-sm btn-success mt-1"><i class="bi bi-upload"></i> Master Dosen Prodi</a>
-                @can('read bulk-import joinmkusers')
-                <a href="{{ route('setting.import.joinmkusers') }}" class="btn btn-sm btn-secondary mt-1"><i class="bi bi-upload"></i> Dosen Pengampu</a>
-                @endcan
-                @can('read bulk-import mahasiswas')
-                <a href="{{ route('setting.import.mahasiswas') }}" class="btn btn-sm btn-secondary mt-1"><i class="bi bi-upload"></i> Mahasiswa</a>
-                @endcan
-                @can('read bulk-import kontrakmks')
-                <a href="{{ route('setting.import.kontrakmks') }}" class="btn btn-sm btn-secondary mt-1"><i class="bi bi-upload"></i> Kontrak Mata Kuliah</a>
-                @endcan
             </div>
         </div>
     </div>

@@ -6,7 +6,7 @@
         <div class="col-md-7">
             <div class="card">
                 <div class="card-header">
-                    Import Data Nilai Tugas
+                    Import Data Nilai Tugas ({{ $kelasLabel ?? 'Semua Kelas' }})
                     <a href="{{ route('mks.nilais.index', [$mk->id]) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali ke Penilaian</a>
                 </div>
 
@@ -21,9 +21,26 @@
                         <div class="col-md-3">Program Studi</div>
                         <div class="col"><strong>{{ $mk->kurikulum->prodi->jenjang }} {{ $mk->kurikulum->prodi->nama }}</strong></div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-3">Cakupan Import</div>
+                        <div class="col"><strong>{{ $kelasLabel ?? 'Semua Kelas' }}</strong></div>
+                    </div>
 
-                    <form action="{{ route('setting.import.nilais', [$mk->id]) }}" method="POST" enctype="multipart/form-data" class="mt-3">
+                    @php
+                        $kelasQuery = [];
+                        if (!empty($kelasFilter)) {
+                            $kelasQuery['kelas'] = $kelasFilter;
+                        } elseif (($kelasFilter ?? null) === null) {
+                            $kelasQuery['kelas'] = '__SEMUA_KELAS__';
+                        }
+                        $templateSuffix = !empty($kelasFilter)
+                            ? '-' . \Illuminate\Support\Str::slug($kelasFilter, '-')
+                            : '-semua-kelas';
+                    @endphp
+
+                    <form action="{{ route('setting.import.nilais', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST" enctype="multipart/form-data" class="mt-3">
                         @csrf
+                        <input type="hidden" name="kelas" value="{{ $kelasFilter ?? '__SEMUA_KELAS__' }}">
                         <div class="row mt-3">
                             <div class="col-md-3 text-end">
                                 File Upload <span class="text-danger">*</span>
@@ -31,7 +48,7 @@
                             <div class="col">
                                 <input type="file" name="file" class="form-control" accept=".csv,.xlsx,.ods" required>
                                 <small class="text-muted d-block mt-1">
-                                    Unduh template: <a href="{{ route('setting.import.nilais.template', [$mk->id]) }}">template-import-nilai-{{ \Illuminate\Support\Str::slug($mk->kode ?? 'mk', '-') }}.xlsx</a>
+                                    Unduh template: <a href="{{ route('setting.import.nilais.template', array_merge(['mk' => $mk->id], $kelasQuery)) }}">template-import-nilai-{{ \Illuminate\Support\Str::slug($mk->kode ?? 'mk', '-') }}{{ $templateSuffix }}.xlsx</a>
                                 </small>
                             </div>
                         </div>
@@ -56,8 +73,9 @@
             <div class="card mt-3">
                 <div class="card-header">
                     <span class="h5">Preview Nilai @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>
-                    <form action="{{ route('setting.import.nilais.clear', [$mk->id]) }}" method="POST" class="float-end" style="display: inline;">
+                    <form action="{{ route('setting.import.nilais.clear', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST" class="float-end" style="display: inline;">
                         @csrf
+                        <input type="hidden" name="kelas" value="{{ $kelasFilter ?? '__SEMUA_KELAS__' }}">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus preview data?');">
                             <i class="bi bi-x-circle"></i> Kosongkan Preview
                         </button>
@@ -69,8 +87,9 @@
                         <label for="select-all" class="form-check-label">Pilih semua baris valid</label>
                     </div>
 
-                    <form action="{{ route('setting.import.nilais.commit', [$mk->id]) }}" method="POST">
+                    <form action="{{ route('setting.import.nilais.commit', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST">
                         @csrf
+                        <input type="hidden" name="kelas" value="{{ $kelasFilter ?? '__SEMUA_KELAS__' }}">
                         <div class="table-responsive">
                             <table class="table table-bordered" id="preview-table">
                                 <thead>

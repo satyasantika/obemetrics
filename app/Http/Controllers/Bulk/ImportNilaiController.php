@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ImportNilaiController extends Controller
@@ -23,22 +24,27 @@ class ImportNilaiController extends Controller
 
     public function importNilaiForm(Mk $mk)
     {
+        $kelasFilter = $this->resolveKelasScope(request());
         $penugasans = $mk->penugasans()->orderBy('kode')->get();
-        $preview = session($this->previewSessionKey($mk), []);
+        $preview = session($this->previewSessionKey($mk, $kelasFilter), []);
 
-        return view('setting.bulk-import.nilai', compact('mk', 'penugasans', 'preview'));
+        $kelasLabel = $kelasFilter === null ? 'Semua Kelas' : 'Kelas ' . $kelasFilter;
+
+        return view('setting.bulk-import.nilai', compact('mk', 'penugasans', 'preview', 'kelasFilter', 'kelasLabel'));
     }
 
     public function importNilai(Mk $mk, Request $request)
     {
         try {
+            $kelasFilter = $this->resolveKelasScope($request);
+
             $request->validate([
                 'file' => 'required|mimes:xlsx,csv,ods',
             ]);
 
             $penugasans = $mk->penugasans()->orderBy('kode')->get();
             if ($penugasans->isEmpty()) {
-                return to_route('setting.import.nilais', $mk->id)
+                return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                     ->with('error', 'Belum ada penugasan pada mata kuliah ini.');
             }
 
@@ -53,7 +59,7 @@ class ImportNilaiController extends Controller
             $namaCol = array_search('nama mahasiswa', $normalizedHeader, true);
 
             if ($nimCol === false) {
-                return to_route('setting.import.nilais', $mk->id)
+                return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                     ->with('error', 'Header wajib memiliki kolom "nim".');
             }
 
@@ -69,14 +75,20 @@ class ImportNilaiController extends Controller
             }
 
             if (!empty($missingHeaders)) {
-                return to_route('setting.import.nilais', $mk->id)
+                return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                     ->with('error', 'Header penugasan belum lengkap. Kolom yang belum ada: ' . implode(', ', $missingHeaders));
             }
 
-            $kontrakByNim = $mk->kontrakMks()
+            $kontrakQuery = $mk->kontrakMks()
                 ->with(['mahasiswa', 'semester'])
                 ->whereNotNull('mahasiswa_id')
-                ->whereNotNull('semester_id')
+                ->whereNotNull('semester_id');
+
+            if ($kelasFilter !== null) {
+                $kontrakQuery->whereRaw("COALESCE(NULLIF(TRIM(kelas), ''), 'Tanpa Kelas') = ?", [$kelasFilter]);
+            }
+
+            $kontrakByNim = $kontrakQuery
                 ->get()
                 ->filter(fn ($kontrak) => $kontrak->mahasiswa !== null)
                 ->keyBy(fn ($kontrak) => Str::lower(trim((string) $kontrak->mahasiswa->nim)));
@@ -144,37 +156,39 @@ class ImportNilaiController extends Controller
             }
 
             if (empty($previewRows)) {
-                return to_route('setting.import.nilais', $mk->id)
+                return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                     ->with('error', 'Tidak ada data valid di file yang diunggah.');
             }
 
             session([
-                $this->previewSessionKey($mk) => [
+                $this->previewSessionKey($mk, $kelasFilter) => [
                     'rows' => $previewRows,
                     'filename' => $request->file('file')->getClientOriginalName(),
                 ],
             ]);
 
-            return to_route('setting.import.nilais', $mk->id)
+            return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                 ->with('success', 'Data nilai berhasil dibaca. Pilih baris yang ingin disimpan.');
         } catch (\Throwable $exception) {
-            return to_route('setting.import.nilais', $mk->id)
+            return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                 ->with('error', 'Terjadi kesalahan saat membaca file: ' . $exception->getMessage());
         }
     }
 
     public function commitNilai(Mk $mk, Request $request)
     {
+        $kelasFilter = $this->resolveKelasScope($request);
+
         $request->validate([
             'selected' => 'array',
             'selected.*' => 'integer',
         ]);
 
-        $preview = session($this->previewSessionKey($mk), []);
+        $preview = session($this->previewSessionKey($mk, $kelasFilter), []);
         $rows = $preview['rows'] ?? [];
 
         if (empty($rows)) {
-            return to_route('setting.import.nilais', $mk->id)
+            return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                 ->with('error', 'Tidak ada preview import untuk diproses.');
         }
 
@@ -217,17 +231,19 @@ class ImportNilaiController extends Controller
             $this->syncKontrakMkScore($mk, $row['mahasiswa_id'], $row['semester_id']);
         }
 
-        session()->forget($this->previewSessionKey($mk));
+        session()->forget($this->previewSessionKey($mk, $kelasFilter));
 
-        return to_route('setting.import.nilais', $mk->id)
+        return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
             ->with('success', "{$savedRows} baris diproses, {$savedScores} nilai berhasil disimpan.");
     }
 
-    public function downloadTemplate(Mk $mk)
+    public function downloadTemplate(Mk $mk, Request $request)
     {
+        $kelasFilter = $this->resolveKelasScope($request);
+
         $penugasans = $mk->penugasans()->orderBy('kode')->get();
         if ($penugasans->isEmpty()) {
-            return to_route('setting.import.nilais', $mk->id)
+            return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                 ->with('error', 'Tidak bisa membuat template karena belum ada penugasan.');
         }
 
@@ -247,22 +263,53 @@ class ImportNilaiController extends Controller
             $column++;
         }
 
-        $sampleKontrakMks = $mk->kontrakMks()
+        $kontrakQuery = $mk->kontrakMks()
             ->with('mahasiswa')
-            ->whereNotNull('mahasiswa_id')
+            ->whereNotNull('mahasiswa_id');
+
+        if ($kelasFilter !== null) {
+            $kontrakQuery->whereRaw("COALESCE(NULLIF(TRIM(kelas), ''), 'Tanpa Kelas') = ?", [$kelasFilter]);
+        }
+
+        $sampleKontrakMks = $kontrakQuery
             ->get()
             ->sortBy('mahasiswa.nama');
+
+        $mahasiswaIds = $sampleKontrakMks->pluck('mahasiswa_id')->filter()->unique()->values();
+        $semesterIds = $sampleKontrakMks->pluck('semester_id')->filter()->unique()->values();
+        $penugasanIds = $penugasans->pluck('id')->values();
+
+        $nilaisByKey = $mk->nilais()
+            ->whereIn('mahasiswa_id', $mahasiswaIds)
+            ->whereIn('semester_id', $semesterIds)
+            ->whereIn('penugasan_id', $penugasanIds)
+            ->get(['mahasiswa_id', 'semester_id', 'penugasan_id', 'nilai'])
+            ->keyBy(fn ($nilai) => $nilai->mahasiswa_id . '_' . $nilai->semester_id . '_' . $nilai->penugasan_id)
+            ->all();
 
         $rowNum = 2;
         foreach ($sampleKontrakMks as $kontrakMk) {
             $sheet->setCellValue('A' . $rowNum, $kontrakMk->mahasiswa?->nim ?? '');
             $sheet->setCellValue('B' . $rowNum, $kontrakMk->mahasiswa?->nama ?? '');
+
+            $columnIndex = 3;
+            foreach ($penugasans as $penugasan) {
+                $nilaiKey = $kontrakMk->mahasiswa_id . '_' . $kontrakMk->semester_id . '_' . $penugasan->id;
+                $nilaiObj = $nilaisByKey[$nilaiKey] ?? null;
+                $sheet->setCellValue(
+                    Coordinate::stringFromColumnIndex($columnIndex) . $rowNum,
+                    $nilaiObj?->nilai ?? null
+                );
+                $columnIndex++;
+            }
+
             $rowNum++;
         }
 
         $writer = new Xlsx($spreadsheet);
         $safeKode = Str::slug((string) ($mk->kode ?? 'mk'), '-');
-        $fileName = 'template-import-nilai-' . $safeKode . '.xlsx';
+        $safeKelas = $kelasFilter !== null ? Str::slug($kelasFilter, '-') : 'semua-kelas';
+        $fileName = 'template-import-nilai-' . $safeKode . '-' . ($safeKelas !== '' ? $safeKelas : 'tanpa-kelas') . '.xlsx';
 
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
@@ -273,15 +320,27 @@ class ImportNilaiController extends Controller
 
     public function clearPreview(Mk $mk)
     {
-        session()->forget($this->previewSessionKey($mk));
+        $kelasFilter = $this->resolveKelasScope(request());
+        session()->forget($this->previewSessionKey($mk, $kelasFilter));
 
-        return to_route('setting.import.nilais', $mk->id)
+        return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => request()->query('kelas', request()->input('kelas'))])
             ->with('success', 'Preview import nilai berhasil dikosongkan.');
     }
 
-    private function previewSessionKey(Mk $mk): string
+    private function previewSessionKey(Mk $mk, ?string $kelasFilter): string
     {
-        return 'import_nilai_preview_' . $mk->id;
+        $kelasKey = $kelasFilter === null ? 'all' : Str::slug($kelasFilter, '-');
+        return 'import_nilai_preview_' . $mk->id . '_' . ($kelasKey !== '' ? $kelasKey : 'tanpa-kelas');
+    }
+
+    private function resolveKelasScope(Request $request): ?string
+    {
+        $kelas = trim((string) $request->query('kelas', $request->input('kelas', '')));
+        if ($kelas === '' || $kelas === '__SEMUA_KELAS__') {
+            return null;
+        }
+
+        return $kelas;
     }
 
     private function syncKontrakMkScore(Mk $mk, string $mahasiswaId, string $semesterId): void

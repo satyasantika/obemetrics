@@ -20,17 +20,20 @@
                         <div class="col-md-3">Semester</div>
                         <div class="col">
                             @php
-                                $semesterOptions = $kontrakMks
-                                    ->map(fn ($item) => $item->semester)
+                                $semesterOptions = $mk->kontrakMks()
+                                    ->whereNotNull('semester_id')
+                                    ->with('semester')
+                                    ->get()
+                                    ->pluck('semester')
                                     ->filter()
                                     ->unique('id')
-                                    ->sortBy('kode')
+                                    ->sortByDesc('status_aktif')
+                                    ->sortByDesc('kode')
                                     ->values();
                             @endphp
-                            <select id="semester-filter" class="form-control form-control-sm" style="max-width: 320px;">
-                                <option value="">Semua Semester</option>
+                            <select id="semester-filter" name="semester_id" class="form-control form-control-sm" style="max-width: 320px;">
                                 @foreach ($semesterOptions as $semester)
-                                    <option value="{{ $semester->id }}">{{ $semester->kode }} - {{ $semester->nama }}</option>
+                                    <option value="{{ $semester->id }}" @selected($semester->status_aktif)>{{ $semester->kode }} - {{ $semester->nama }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -39,120 +42,170 @@
                     {{-- menu mata kuliah --}}
                     @include('components.menu-mk',$mk)
                     <hr>
+                    @php
+                        $sortedKontrakMks = collect($kontrakMks)
+                            ->sortBy(fn ($item) => \Illuminate\Support\Str::lower((string) ($item->mahasiswa->nama ?? '')))
+                            ->values();
 
-                    <div class="mb-3">
-                        <a href="{{ route('setting.import.nilais', [$mk->id]) }}" class="btn btn-secondary btn-sm">
-                            <i class="bi bi-upload"></i> Import Nilai
-                        </a>
-                    </div>
+                        $kelasGroups = $sortedKontrakMks
+                            ->groupBy(function ($item) {
+                                $kelas = trim((string) ($item->kelas ?? ''));
+                                return $kelas !== '' ? $kelas : 'Tanpa Kelas';
+                            })
+                            ->sortKeys();
 
-                    <div class="row">
-                        <div class="col">
-                            <div class="table-responsive nilai-matrix-wrapper">
-                            <table class="table table-bordered table-striped nilai-matrix-table mb-0">
-                                <thead>
-                                    <tr>
-                                        <th class="sticky-col">Mahasiswa</th>
-                                        @forelse ($penugasans as $penugasan)
-                                            <th>
-                                                <span class="fs-3">{{ $penugasan->bobot }}%</span>
-                                                <span title="{{ $penugasan->nama }}">
-                                                    {{ $penugasan->kode }}
-                                                </span>
-                                                <br>
-                                                <small class="text-muted">
-                                                    {{ $penugasan->nama }}
-                                                </small>
-                                                @php
-                                                    $cpl = $penugasan->joinSubcpmkPenugasans->pluck('subcpmk.joinCplCpmk.joinCplBk.Cpl.kode')
-                                                                    ->flatten()
-                                                                    ->filter()
-                                                                    ->unique()
-                                                                    ->sort()
-                                                                    ->values()
-                                                                    ->whenEmpty(fn () => collect(['-']))
-                                                                    ->implode(', ');
-                                                @endphp
-                                                <span class="fs-6">({{ $cpl }})</span>
-                                            </th>
-                                        @empty
-                                            <th>Belum ada penugasan</th>
-                                        @endforelse
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                @if ($kontrakMks->isNotEmpty())
-                                @foreach ($kontrakMks as $kontrakMk)
-                                    <tr class="matriks-row" data-semester-id="{{ $kontrakMk->semester_id }}" style="vertical-align: text-top;">
-                                        <td class="sticky-col">
-                                            <small class="text-muted">{{ $kontrakMk->mahasiswa->nim }}</small><br>
-                                            {{ $kontrakMk->mahasiswa->nama }}
-                                            <br>
-                                            <small class="text-muted">
-                                                Nilai: {{ round($kontrakMk->nilai_angka, 2) ?? '-' }} ({{ $kontrakMk->nilai_huruf ?? '-' }})
-                                            </small>
-                                        </td>
-                                        @forelse ($penugasans as $penugasan)
-                                            <td>
-                                                @php
-                                                    $key = $kontrakMk->mahasiswa_id . '_' . $penugasan->id . '_' . $kontrakMk->semester_id;
-                                                    $nilaiObj = $nilaisByKey[$key] ?? null;
-                                                @endphp
-                                                <form
-                                                    action="{{ route('mks.nilais.live-update', [$mk->id]) }}"
-                                                    method="POST"
-                                                    class="live-nilai-form">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <input type="hidden" name="penugasan_id" value="{{ $penugasan->id }}">
-                                                    <input type="hidden" name="mahasiswa_id" value="{{ $kontrakMk->mahasiswa_id }}">
-                                                    <input type="hidden" name="mk_id" value="{{ $mk->id }}">
-                                                    <input type="hidden" name="semester_id" value="{{ $kontrakMk->semester_id }}">
-                                                    <div class="d-flex align-items-center gap-1">
-                                                        <input
-                                                            type="number"
-                                                            name="nilai"
-                                                            class="form-control form-control-sm"
-                                                            min="0"
-                                                            max="100"
-                                                            step="0.01"
-                                                            placeholder="0-100"
-                                                            value="{{ $nilaiObj->nilai ?? '' }}"
-                                                        >
-                                                        <span class="save-status small text-muted"></span>
-                                                    </div>
-                                                </form>
-                                            </td>
-                                        @empty
-                                            <td><span class="text-muted">-</span></td>
-                                        @endforelse
-                                    </tr>
-                                @endforeach
-                                <tr>
-                                    <td>Rata-rata Kelas</td>
-                                    @forelse ($penugasans as $penugasan)
-                                        <td>{{ round($penugasan->nilais->average('nilai'), 2) }}</td>
-                                    @empty
-                                        <td><span class="text-muted">-</span></td>
-                                    @endforelse
-                                </tr>
-                                <tr id="matrix-empty-row" style="display:none;">
-                                    <td colspan="{{ max(2, $penugasans->count() + 1) }}"><span class="bg-warning text-dark p-2">
-                                        Tidak ada data mahasiswa pada semester yang dipilih.</span>
-                                    </td>
-                                </tr>
-                                @else
-                                <tr>
-                                    <td colspan="{{ max(2, $penugasans->count() + 1) }}"><span class="bg-warning text-dark p-2">
-                                        Belum ada data kontrak mahasiswa untuk Mata Kuliah ini.</span>
-                                    </td>
-                                </tr>
-                                @endif
-                                </tbody>
-                            </table>
-                            </div>
+                        $kelasGroups = collect(['__SEMUA_KELAS__' => $sortedKontrakMks])->merge($kelasGroups);
+                        $defaultKelas = $kelasGroups->keys()->first();
+                    @endphp
+
+                    @if ($sortedKontrakMks->isNotEmpty())
+                        <ul class="nav nav-tabs" id="kelasTab" role="tablist">
+                            @foreach ($kelasGroups as $kelasKey => $kelasRows)
+                                @php
+                                    $kelasSlug = \Illuminate\Support\Str::slug($kelasKey, '-');
+                                    $kelasPaneId = 'kelas-' . ($kelasSlug !== '' ? $kelasSlug : 'tanpa-kelas');
+                                    $kelasLabel = $kelasKey === '__SEMUA_KELAS__' ? 'Semua Kelas' : 'Kelas ' . $kelasKey;
+                                @endphp
+                                <li class="nav-item" role="presentation">
+                                    <button
+                                        class="nav-link {{ $kelasKey === $defaultKelas ? 'active' : '' }}"
+                                        id="{{ $kelasPaneId }}-tab"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#{{ $kelasPaneId }}"
+                                        type="button"
+                                        role="tab"
+                                        aria-controls="{{ $kelasPaneId }}"
+                                        aria-selected="{{ $kelasKey === $defaultKelas ? 'true' : 'false' }}">
+                                        {{ $kelasLabel }}
+                                    </button>
+                                </li>
+                            @endforeach
+                        </ul>
+
+                        <div class="tab-content pt-3" id="kelasTabContent">
+                            @foreach ($kelasGroups as $kelasKey => $kelasRows)
+                                @php
+                                    $kelasSlug = \Illuminate\Support\Str::slug($kelasKey, '-');
+                                    $kelasPaneId = 'kelas-' . ($kelasSlug !== '' ? $kelasSlug : 'tanpa-kelas');
+                                    $kelasLabel = $kelasKey === '__SEMUA_KELAS__' ? 'Semua Kelas' : 'Kelas ' . $kelasKey;
+                                    $kelasQuery = ['kelas' => $kelasKey];
+                                @endphp
+                                <div
+                                    class="tab-pane fade {{ $kelasKey === $defaultKelas ? 'show active' : '' }}"
+                                    id="{{ $kelasPaneId }}"
+                                    role="tabpanel"
+                                    aria-labelledby="{{ $kelasPaneId }}-tab">
+
+                                    <div class="mb-3">
+                                        <a href="{{ route('setting.import.nilais', array_merge(['mk' => $mk->id], $kelasQuery)) }}" class="btn btn-secondary btn-sm">
+                                            <i class="bi bi-upload"></i> Import Nilai {{ $kelasLabel }}
+                                        </a>
+                                    </div>
+
+                                    <div class="table-responsive nilai-matrix-wrapper">
+                                        <table class="table table-bordered table-striped nilai-matrix-table mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th class="sticky-col">Mahasiswa</th>
+                                                    @forelse ($penugasans as $penugasan)
+                                                        <th>
+                                                            <span class="fs-3">{{ $penugasan->bobot }}%</span>
+                                                            <span title="{{ $penugasan->nama }}">{{ $penugasan->kode }}</span>
+                                                            <br>
+                                                            <small class="text-muted">{{ $penugasan->nama }}</small>
+                                                            @php
+                                                                $cpl = $penugasan->joinSubcpmkPenugasans->pluck('subcpmk.joinCplCpmk.joinCplBk.Cpl.kode')
+                                                                                ->flatten()
+                                                                                ->filter()
+                                                                                ->unique()
+                                                                                ->sort()
+                                                                                ->values()
+                                                                                ->whenEmpty(fn () => collect(['-']))
+                                                                                ->implode(', ');
+                                                            @endphp
+                                                            <span class="fs-6">({{ $cpl }})</span>
+                                                        </th>
+                                                    @empty
+                                                        <th>Belum ada penugasan</th>
+                                                    @endforelse
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                            @foreach ($kelasRows as $kontrakMk)
+                                                <tr class="matriks-row" data-semester-id="{{ $kontrakMk->semester_id }}" style="vertical-align: text-top;">
+                                                    <td class="sticky-col">
+                                                        <small class="text-muted">{{ $kontrakMk->mahasiswa->nim }}</small><br>
+                                                        {{ $kontrakMk->mahasiswa->nama }}
+                                                        <br>
+                                                        <small class="text-muted">
+                                                            Nilai: {{ $kontrakMk->nilai_angka !== null ? round((float) $kontrakMk->nilai_angka, 2) : '-' }} ({{ $kontrakMk->nilai_huruf ?? '-' }})
+                                                        </small>
+                                                    </td>
+                                                    @forelse ($penugasans as $penugasan)
+                                                        <td>
+                                                            @php
+                                                                $key = $kontrakMk->mahasiswa_id . '_' . $penugasan->id . '_' . $kontrakMk->semester_id;
+                                                                $nilaiObj = $nilaisByKey[$key] ?? null;
+                                                            @endphp
+                                                            <form
+                                                                action="{{ route('mks.nilais.live-update', [$mk->id]) }}"
+                                                                method="POST"
+                                                                class="live-nilai-form">
+                                                                @csrf
+                                                                @method('PUT')
+                                                                <input type="hidden" name="penugasan_id" value="{{ $penugasan->id }}">
+                                                                <input type="hidden" name="mahasiswa_id" value="{{ $kontrakMk->mahasiswa_id }}">
+                                                                <input type="hidden" name="mk_id" value="{{ $mk->id }}">
+                                                                <input type="hidden" name="semester_id" value="{{ $kontrakMk->semester_id }}">
+                                                                <div class="d-flex align-items-center gap-1">
+                                                                    <input
+                                                                        type="number"
+                                                                        name="nilai"
+                                                                        class="form-control form-control-sm"
+                                                                        min="0"
+                                                                        max="100"
+                                                                        step="0.01"
+                                                                        placeholder="0-100"
+                                                                        value="{{ $nilaiObj->nilai ?? '' }}"
+                                                                    >
+                                                                    <span class="save-status small text-muted"></span>
+                                                                </div>
+                                                            </form>
+                                                        </td>
+                                                    @empty
+                                                        <td><span class="text-muted">-</span></td>
+                                                    @endforelse
+                                                </tr>
+                                            @endforeach
+                                            <tr>
+                                                <td>Rata-rata Kelas</td>
+                                                @forelse ($penugasans as $penugasan)
+                                                    @php
+                                                        $kelasNilaiValues = $kelasRows->map(function ($row) use ($penugasan, $nilaisByKey) {
+                                                            $avgKey = $row->mahasiswa_id . '_' . $penugasan->id . '_' . $row->semester_id;
+                                                            return isset($nilaisByKey[$avgKey]) ? (float) ($nilaisByKey[$avgKey]->nilai ?? 0) : null;
+                                                        })->filter(fn ($item) => $item !== null);
+                                                        $kelasAvg = $kelasNilaiValues->count() > 0 ? round((float) $kelasNilaiValues->average(), 2) : 0;
+                                                    @endphp
+                                                    <td>{{ $kelasAvg }}</td>
+                                                @empty
+                                                    <td><span class="text-muted">-</span></td>
+                                                @endforelse
+                                            </tr>
+                                            <tr class="matrix-empty-row" style="display:none;">
+                                                <td colspan="{{ max(2, $penugasans->count() + 1) }}"><span class="bg-warning text-dark p-2">
+                                                    Tidak ada data mahasiswa pada semester yang dipilih.</span>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
-                    </div>
+                    @else
+                        <div class="alert alert-warning mb-0">Belum ada data kontrak mahasiswa untuk Mata Kuliah ini.</div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -164,8 +217,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const forms = document.querySelectorAll('.live-nilai-form');
     const semesterFilter = document.getElementById('semester-filter');
-    const matrixRows = document.querySelectorAll('.matriks-row');
-    const matrixEmptyRow = document.getElementById('matrix-empty-row');
+    const matrixTables = document.querySelectorAll('.nilai-matrix-table');
 
     forms.forEach(function (form) {
         const input = form.querySelector('input[name="nilai"]');
@@ -215,24 +267,29 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    if (semesterFilter && matrixRows.length > 0) {
+    if (semesterFilter && matrixTables.length > 0) {
         const applySemesterFilter = function () {
             const selectedSemesterId = semesterFilter.value;
-            let visibleCount = 0;
 
-            matrixRows.forEach(function (row) {
-                const rowSemesterId = row.getAttribute('data-semester-id');
-                const isVisible = !selectedSemesterId || selectedSemesterId === rowSemesterId;
+            matrixTables.forEach(function (table) {
+                const matrixRows = table.querySelectorAll('.matriks-row');
+                const matrixEmptyRow = table.querySelector('.matrix-empty-row');
+                let visibleCount = 0;
 
-                row.style.display = isVisible ? '' : 'none';
-                if (isVisible) {
-                    visibleCount++;
+                matrixRows.forEach(function (row) {
+                    const rowSemesterId = row.getAttribute('data-semester-id');
+                    const isVisible = !selectedSemesterId || selectedSemesterId === rowSemesterId;
+
+                    row.style.display = isVisible ? '' : 'none';
+                    if (isVisible) {
+                        visibleCount++;
+                    }
+                });
+
+                if (matrixEmptyRow) {
+                    matrixEmptyRow.style.display = visibleCount === 0 ? '' : 'none';
                 }
             });
-
-            if (matrixEmptyRow) {
-                matrixEmptyRow.style.display = visibleCount === 0 ? '' : 'none';
-            }
         };
 
         semesterFilter.addEventListener('change', applySemesterFilter);

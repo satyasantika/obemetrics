@@ -183,41 +183,55 @@ class UserSeeder extends Seeder
         $evaluasi_uts = Evaluasi::create([
             'kode'=>'uts',
             'kategori'=>'Pengetahuan/Kognitif',
+            'workcloud'=>'UTS',
             'nama'=>'Ujian Tengah Semester (UTS)',
         ]);
         $evaluasi_uas = Evaluasi::create([
             'kode'=>'uas',
             'kategori'=>'Pengetahuan/Kognitif',
+            'workcloud'=>'UAS',
             'nama'=>'Ujian Akhir Semester (UAS)',
         ]);
         $evaluasi_kuis = Evaluasi::create([
             'kode'=>'kuis',
             'kategori'=>'Pengetahuan/Kognitif',
+            'workcloud'=>'Kuis',
             'nama'=>'Kuis',
         ]);
         $evaluasi_tugas = Evaluasi::create([
             'kode'=>'tugas',
             'kategori'=>'Pengetahuan/Kognitif',
+            'workcloud'=>'Tugas',
             'nama'=>'Tugas',
         ]);
         $evaluasi_proyek_individu = Evaluasi::create([
             'kode'=>'proyek_individu',
             'kategori'=>'Hasil Proyek',
+            'workcloud'=>'Hasil Proyek/Studi Kasus',
             'nama'=>'Hasil Proyek Individu',
         ]);
         $evaluasi_proyek_kelompok = Evaluasi::create([
             'kode'=>'proyek_kelompok',
             'kategori'=>'Hasil Proyek',
+            'workcloud'=>'Hasil Proyek/Studi Kasus',
             'nama'=>'Hasil Proyek Kelompok',
+        ]);
+        $evaluasi_studi_kasus = Evaluasi::create([
+            'kode'=>'studi_kasus',
+            'kategori'=>'Studi Kasus',
+            'workcloud'=>'Hasil Proyek/Studi Kasus',
+            'nama'=>'Studi Kasus',
         ]);
         $evaluasi_partisipasi_individu = Evaluasi::create([
             'kode'=>'partisipasi_individu',
             'kategori'=>'Aktivitas Partisipatif',
+            'workcloud'=>'Aktivitas Partisipatif',
             'nama'=>'Partisipasi Individu',
         ]);
         $evaluasi_partisipasi_kelompok = Evaluasi::create([
             'kode'=>'partisipasi_kelompok',
             'kategori'=>'Aktivitas Partisipatif',
+            'workcloud'=>'Aktivitas Partisipatif',
             'nama'=>'Partisipasi Kelompok',
         ]);
         // // data kurikulum

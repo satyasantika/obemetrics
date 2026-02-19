@@ -30,6 +30,8 @@
                     @include('components.menu-mk',$mk)
                     <hr>
                     @php
+                        $defaultSemesterIdForExport = collect($semesters)->firstWhere('status_aktif', true)?->id
+                            ?? collect($semesters)->first()?->id;
                         $kelasGroups = $kontrakMks
                             ->groupBy(function ($item) {
                                 return trim((string) ($item->kelas ?? '')) !== '' ? trim((string) $item->kelas) : 'Tanpa Kelas';
@@ -76,8 +78,14 @@
                                 role="tabpanel"
                                 aria-labelledby="{{ $kelasPaneId }}-tab">
                                 <div class="d-flex justify-content-end mb-2">
+                                    @php
+                                        $exportQuery = ['kelas' => $kelas];
+                                        if ($defaultSemesterIdForExport) {
+                                            $exportQuery['semester_id'] = $defaultSemesterIdForExport;
+                                        }
+                                    @endphp
                                     <a
-                                        href="#"
+                                        href="{{ route('mks.workclouds.export-kelas', $mk->id) . '?' . http_build_query($exportQuery) }}"
                                         class="btn btn-success btn-sm btn-export-kelas"
                                         data-base-url="{{ route('mks.workclouds.export-kelas', $mk->id) }}"
                                         data-kelas="{{ $kelas }}">
@@ -142,10 +150,10 @@
                                                                 $key = $kontrakMk->mahasiswa_id . '_' . $kontrakMk->semester_id . '_' . $workcloud;
                                                                 $avgObj = $avgByWorkcloud[$key] ?? null;
                                                             @endphp
-                                                            {{ $avgObj ? number_format((float) $avgObj->avg_nilai, 2) : '-' }}
+                                                            {{ $avgObj ? number_format((float) $avgObj->avg_nilai, 2) : '0.00' }}
                                                         </td>
                                                     @empty
-                                                        <td class="text-center"><span class="text-muted">-</span></td>
+                                                        <td class="text-center"><span class="text-muted">0.00</span></td>
                                                     @endforelse
                                                 </tr>
                                             @endforeach
@@ -156,17 +164,12 @@
                                                 <td class="text-center"></td>
                                                 @forelse ($workclouds as $workcloud)
                                                     @php
-                                                        $kelasWorkcloudValues = $kelasRows->map(function ($row) use ($workcloud, $avgByWorkcloud) {
-                                                            $rowKey = $row->mahasiswa_id . '_' . $row->semester_id . '_' . $workcloud;
-                                                            return isset($avgByWorkcloud[$rowKey]) ? (float) $avgByWorkcloud[$rowKey]->avg_nilai : null;
-                                                        })->filter(function ($item) {
-                                                            return $item !== null;
-                                                        });
-                                                        $kelasWorkcloudAvg = $kelasWorkcloudValues->count() > 0 ? $kelasWorkcloudValues->average() : null;
+                                                        $aggKey = $kelas . '_' . $workcloud;
+                                                        $kelasWorkcloudAvg = $classAvgByWorkcloud[$aggKey] ?? null;
                                                     @endphp
-                                                    <td class="text-center">{{ $kelasWorkcloudAvg !== null ? number_format((float) $kelasWorkcloudAvg, 2) : '-' }}</td>
+                                                    <td class="text-center">{{ $kelasWorkcloudAvg !== null ? number_format((float) $kelasWorkcloudAvg, 2) : '0.00' }}</td>
                                                 @empty
-                                                    <td class="text-center"><span class="text-muted">-</span></td>
+                                                    <td class="text-center"><span class="text-muted">0.00</span></td>
                                                 @endforelse
                                             </tr>
                                             <tr class="matrix-empty-row" style="display:none;">
@@ -240,6 +243,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         visibleCount++;
                     }
                 });
+
+                if (selectedSemesterId && visibleCount === 0) {
+                    matrixRows.forEach(function (row) {
+                        row.style.display = '';
+                    });
+                    visibleCount = matrixRows.length;
+                }
 
                 if (matrixEmptyRow) {
                     matrixEmptyRow.style.display = visibleCount === 0 ? '' : 'none';
