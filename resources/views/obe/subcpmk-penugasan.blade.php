@@ -36,6 +36,15 @@
                         </div>
                     </div>
                     <div class="row">
+                        <div class="col bg-warning text-dark p-2 mb-2">
+                            Bagian ini digunakan untuk mengaitkan SubCPMK dengan penugasan (tugas) yang ada pada mata kuliah ini.<br>
+                            Pada kondisi tertentu, satu penugasan bisa terkait dengan lebih dari satu SubCPMK, dan satu SubCPMK bisa terkait dengan lebih dari satu penugasan.<br>
+                            Silakan isi bobot (tanpa %) dan tekan Enter pada pasangan isian SubCPMK Penugasan. Pastikan tampil keterangan <span class="badge bg-success text-white">Terkait</span><br>
+                            Untuk menghapus keterkaitan, kosongkan nilai bobot dan tekan Enter.<br>
+                            Bobot total untuk setiap penugasan harus 100%. (perhatikan keterangan di setiap penugasan)
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col">
                             <table class="table table-bordered table-striped">
                                 <thead>
@@ -56,7 +65,7 @@
                                 @forelse ($penugasans as $penugasan)
                                     <tr style="vertical-align: text-top;">
                                         <td>
-                                            {{ $penugasan->kode }}:<br>
+                                            <strong>{{ $penugasan->kode }}:</strong><br>
                                             {{ $penugasan->nama }}
                                             <br>
                                             @php
@@ -82,8 +91,8 @@
                                                     <input type="hidden" name="mk_id" value="{{ $mk->id }}">
                                                     <input type="hidden" name="semester_id" value="{{ $selectedSemesterId }}">
                                                     <div class="mb-1">
-                                                        <span class="badge {{ $linkedObj ? 'bg-success' : 'bg-secondary' }} link-status-badge">
-                                                            {{ $linkedObj ? 'Terkait' : 'Belum terkait' }}
+                                                        <span class="badge {{ $linkedObj ? 'bg-success' : 'bg-white text-dark' }} link-status-badge">
+                                                            {{ $linkedObj ? 'Terkait' : 'x' }}
                                                         </span>
                                                     </div>
                                                     <div class="d-flex align-items-center gap-1">
