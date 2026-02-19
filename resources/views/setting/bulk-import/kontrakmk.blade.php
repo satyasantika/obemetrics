@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header">
                     Import Data Kontrak Mata Kuliah
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
+                    <a href="{{ route('kontrakmks.index') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                     @stack('header')
                 </div>
 

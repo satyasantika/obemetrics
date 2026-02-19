@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header">
                     Import Data Mahasiswa
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
+                    <a href="{{ route('mahasiswas.index') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                     @stack('header')
                 </div>
 
@@ -154,22 +154,22 @@ document.addEventListener('DOMContentLoaded', function () {
             const prodiId = prodiSelect.value;
             const selectedOption = prodiSelect.options[prodiSelect.selectedIndex];
             const kodeProdi = selectedOption.getAttribute('data-kode');
-            
+
             let url = '{{ route("setting.import.mahasiswas.template") }}';
             let fileName = 'template-import-mahasiswa';
-            
+
             if (prodiId) {
                 url += '?prodi_id=' + prodiId;
                 if (kodeProdi) {
                     fileName += '-' + kodeProdi;
                 }
             }
-            
+
             fileName += '.xlsx';
             downloadTemplate.href = url;
             downloadTemplate.textContent = fileName;
         }
-        
+
         prodiSelect.addEventListener('change', updateTemplateLink);
         updateTemplateLink(); // Initial update
     }

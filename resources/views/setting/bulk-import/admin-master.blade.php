@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header">
                     Bulk Import Data {{ $targets[$target]['label'] ?? 'N/A' }}
-                    <a href="{{ $returnUrl }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
+                    <a href="{{ $target=='joinprodiusers' ? $returnUrl : route($target.'.index') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                 </div>
 
                 <div class="card-body">
