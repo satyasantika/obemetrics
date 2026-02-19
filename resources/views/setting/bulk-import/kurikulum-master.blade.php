@@ -7,11 +7,11 @@
             <div class="card">
                 <div class="card-header">
                     Bulk Import Data {{ $targets[$target]['label'] ?? 'N/A' }}
-                    <a href="{{ $target=='joinmkusers' ? $returnUrl : route('kurikulums.'.$target.'.index',$kurikulum) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
+                    <a href="{{ $returnUrl }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                 </div>
 
                 <div class="card-body">
-                    @include('layouts.alert')
+                    {{-- @include('layouts.alert') --}}
 
                     <div class="row mb-2">
                         <div class="col-md-3 text-end">Kurikulum</div>
@@ -46,7 +46,14 @@
                         <div class="row mt-3">
                             <div class="col-md-3"></div>
                             <div class="col">
-                                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-upload"></i> Upload &amp; Preview</button>
+                                @php
+                                    $directSaveTargets = ['join_profil_cpls', 'join_cpl_bks', 'join_bk_mks'];
+                                    $isDirectSaveTarget = in_array($target, $directSaveTargets, true);
+                                @endphp
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-upload"></i>
+                                    {{ $isDirectSaveTarget ? 'Upload & Simpan Langsung' : 'Upload & Preview' }}
+                                </button>
                             </div>
                         </div>
                         <span class="text-danger">(*) Wajib diisi.</span>
@@ -58,7 +65,7 @@
 
     <div class="row justify-content-center">
         <div class="col">
-            @if (!empty($preview['rows']))
+            @if (!in_array($target, ['join_profil_cpls', 'join_cpl_bks', 'join_bk_mks'], true) && !empty($preview['rows']))
                 <div class="card mt-3">
                     <div class="card-header">
                         <span class="h5">Preview @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>

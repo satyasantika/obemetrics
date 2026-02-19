@@ -31,9 +31,6 @@
                                     <hr>
                                     <li>
                                         {{ $mk->kode }} {{ $mk->nama }}
-                                        <span class="ms-2">
-                                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'joinprodiusers']) }}" class="btn btn-sm btn-secondary mt-1"><i class="bi bi-upload"></i> Dosen Prodi</a>
-                                        </span>
                                         <br>
                                         @include('components.menu-mk',$mk)
                                     </li>

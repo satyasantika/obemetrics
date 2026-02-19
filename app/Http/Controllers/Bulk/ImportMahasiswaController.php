@@ -22,7 +22,8 @@ class ImportMahasiswaController extends Controller
     {
         $prodis = Prodi::all();
         $preview = session('import_mahasiswa_preview', []);
-        return view('setting.bulk-import.mahasiswa', compact('prodis', 'preview'));
+        $returnUrl = $this->resolveReturnUrl(request(), $preview);
+        return view('setting.bulk-import.mahasiswa', compact('prodis', 'preview', 'returnUrl'));
     }
 
     public function importMahasiswa(Request $request)
@@ -99,13 +100,15 @@ class ImportMahasiswaController extends Controller
                     'prodi_id' => $request->prodi_id,
                     'rows' => $previewRows,
                     'filename' => $file->getClientOriginalName(),
+                    'return_url' => $this->resolveReturnUrl($request),
                 ],
             ]);
 
             // Return view directly with all required data
             $prodis = Prodi::all();
             $preview = session('import_mahasiswa_preview', []);
-            return view('setting.bulk-import.mahasiswa', compact('prodis', 'preview'))
+            $returnUrl = $this->resolveReturnUrl($request, $preview);
+            return view('setting.bulk-import.mahasiswa', compact('prodis', 'preview', 'returnUrl'))
                             ->with('success', 'Data berhasil dibaca. Silakan pilih data yang akan disimpan.');
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat membaca file: ' . $e->getMessage());
@@ -152,7 +155,7 @@ class ImportMahasiswaController extends Controller
 
         session()->forget('import_mahasiswa_preview');
 
-        return redirect()->route('setting.import.mahasiswas')
+        return redirect()->to($this->resolveReturnUrl($request, $preview))
                         ->with('success', "{$savedCount} data mahasiswa berhasil disimpan.");
     }
 
@@ -209,5 +212,21 @@ class ImportMahasiswaController extends Controller
         session()->forget('import_mahasiswa_preview');
         return redirect()->route('setting.import.mahasiswas')
                         ->with('success', 'Data preview berhasil dihapus.');
+    }
+
+    private function resolveReturnUrl(Request $request, array $preview = []): string
+    {
+        $candidate = (string) $request->query('return_url', '');
+        if ($candidate === '') {
+            $candidate = (string) $request->input('return_url', '');
+        }
+        if ($candidate === '' && isset($preview['return_url'])) {
+            $candidate = (string) $preview['return_url'];
+        }
+        if ($candidate === '') {
+            $candidate = (string) url()->previous();
+        }
+
+        return $candidate !== '' ? $candidate : route('setting.import.mahasiswas');
     }
 }

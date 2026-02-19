@@ -112,6 +112,19 @@ class ImportMkMasterController extends Controller
                     ->with('success', "data SubCPMK telah diimport ke Penugasan.");
             }
 
+            if ($target === 'join_cpl_cpmks') {
+                $result = $this->saveJoinCplCpmkMatrix($rows, $mk);
+
+                $redirect = redirect()->to($this->resolveReturnUrl($request))
+                    ->with('success', "Interaksi CPL >< CPMK berhasil disimpan ({$result['linked']} aktif).");
+
+                if (($result['removed'] ?? 0) > 0) {
+                    $redirect->with('danger', "{$result['removed']} interaksi dibuang karena sel pada template dikosongkan.");
+                }
+
+                return $redirect;
+            }
+
             $headerMap = $this->buildHeaderMap($rows[1] ?? []);
             $missingHeaders = collect($meta['required'])
                 ->filter(fn ($column) => !array_key_exists($column, $headerMap))
@@ -226,11 +239,7 @@ class ImportMkMasterController extends Controller
             $message .= ' Beberapa baris dilewati: ' . implode(' | ', array_slice($skipped, 0, 5));
         }
 
-        return to_route('setting.import.mk-master', $this->withReturnUrl([
-            'mk' => $mk->id,
-            'target' => $target,
-            'semester_id' => $semesterId,
-        ], $request))
+        return redirect()->to($this->resolveReturnUrl($request))
             ->with('success', $message);
     }
 
@@ -300,6 +309,59 @@ class ImportMkMasterController extends Controller
             $writer = new Xlsx($spreadsheet);
             $waktu_download = now()->format('YmdHis');
             $fileName = 'import' . $waktu_download . '-subcpmk-penugasan-matrix-' . Str::slug((string) ($mk->kode ?? 'mk'), '-') . '.xlsx';
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        }
+
+        if ($target === 'join_cpl_cpmks') {
+            $joinCplBks = $mk->joinBkMks->pluck('bk.joinCplBks')->flatten()->unique('id')->values();
+            $cpmks = $mk->cpmks()->orderBy('kode')->get();
+
+            $linkedMap = JoinCplCpmk::query()
+                ->where('mk_id', $mk->id)
+                ->whereIn('join_cpl_bk_id', $joinCplBks->pluck('id'))
+                ->whereIn('cpmk_id', $cpmks->pluck('id'))
+                ->get()
+                ->keyBy(fn ($row) => $row->cpmk_id . '_' . $row->join_cpl_bk_id);
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $sheet->setCellValue('A1', '');
+            $sheet->getColumnDimension('A')->setWidth(36);
+
+            $columnIndex = 2;
+            foreach ($joinCplBks as $joinCplBk) {
+                $column = Coordinate::stringFromColumnIndex($columnIndex);
+                $sheet->setCellValue($column . '1', (string) ($joinCplBk->cpl->kode ?? ''));
+                $sheet->getStyle($column . '1')->getFont()->setBold(true);
+                $sheet->getColumnDimension($column)->setWidth(16);
+                $columnIndex++;
+            }
+
+            $rowIndex = 2;
+            foreach ($cpmks as $cpmk) {
+                $sheet->setCellValue('A' . $rowIndex, trim((string) ($cpmk->kode . "\n" . $cpmk->nama)));
+                $sheet->getStyle('A' . $rowIndex)->getAlignment()->setWrapText(true);
+
+                $columnIndex = 2;
+                foreach ($joinCplBks as $joinCplBk) {
+                    $column = Coordinate::stringFromColumnIndex($columnIndex);
+                    $isLinked = $linkedMap->has($cpmk->id . '_' . $joinCplBk->id);
+                    $sheet->setCellValue($column . $rowIndex, $isLinked ? 'V' : '');
+                    $columnIndex++;
+                }
+
+                $rowIndex++;
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $waktuDownload = now()->format('YmdHis');
+            $fileName = 'import' . $waktuDownload . '-interaksi-cpl-cpmk-' . Str::slug((string) ($mk->kode ?? 'mk'), '-') . '.xlsx';
 
             return response()->streamDownload(function () use ($writer) {
                 $writer->save('php://output');
@@ -814,5 +876,103 @@ class ImportMkMasterController extends Controller
         }
 
         return $previewRows;
+    }
+
+    private function saveJoinCplCpmkMatrix(array $rows, Mk $mk): array
+    {
+        $joinCplBks = $mk->joinBkMks->pluck('bk.joinCplBks')->flatten()->unique('id')->values();
+        if ($joinCplBks->isEmpty()) {
+            throw new \RuntimeException('Data relasi CPL >< BK belum tersedia untuk MK ini.');
+        }
+
+        $cpmks = $mk->cpmks()->orderBy('kode')->get();
+        if ($cpmks->isEmpty()) {
+            throw new \RuntimeException('Data CPMK belum tersedia untuk MK ini.');
+        }
+
+        $joinCplBkByColumn = [];
+        $columnIndex = 2;
+        foreach ($joinCplBks as $joinCplBk) {
+            $column = Coordinate::stringFromColumnIndex($columnIndex);
+            $joinCplBkByColumn[$column] = $joinCplBk;
+            $columnIndex++;
+        }
+
+        $desiredPairs = [];
+        $scopeCpmkIds = [];
+        $scopeJoinCplBkIds = $joinCplBks->pluck('id')->values()->all();
+
+        foreach ($rows as $rowIndex => $row) {
+            if ($rowIndex === 1) {
+                continue;
+            }
+
+            $cpmkCell = trim((string) ($row['A'] ?? ''));
+            if ($cpmkCell === '') {
+                continue;
+            }
+
+            $kodeCpmk = trim((string) Str::before($cpmkCell, "\n"));
+            $cpmk = Cpmk::query()->where('mk_id', $mk->id)->where('kode', $kodeCpmk)->first();
+            if (!$cpmk) {
+                throw new \RuntimeException('CPMK tidak ditemukan pada baris ' . $rowIndex . ': ' . $kodeCpmk);
+            }
+
+            $scopeCpmkIds[] = $cpmk->id;
+
+            foreach ($joinCplBkByColumn as $columnLetter => $joinCplBk) {
+                $raw = trim((string) ($row[$columnLetter] ?? ''));
+                if ($raw === '') {
+                    continue;
+                }
+
+                if (Str::upper($raw) !== 'V') {
+                    throw new \RuntimeException('Nilai tidak valid pada baris ' . $rowIndex . ', kolom ' . $columnLetter . '. Gunakan huruf V atau kosong.');
+                }
+
+                $desiredPairs[$cpmk->id . '_' . $joinCplBk->id] = [
+                    'mk_id' => $mk->id,
+                    'cpmk_id' => $cpmk->id,
+                    'join_cpl_bk_id' => $joinCplBk->id,
+                ];
+            }
+        }
+
+        $scopeCpmkIds = array_values(array_unique($scopeCpmkIds));
+        if (empty($scopeCpmkIds)) {
+            throw new \RuntimeException('Tidak ada baris CPMK pada template interaksi.');
+        }
+
+        $existingRows = JoinCplCpmk::query()
+            ->where('mk_id', $mk->id)
+            ->whereIn('cpmk_id', $scopeCpmkIds)
+            ->whereIn('join_cpl_bk_id', $scopeJoinCplBkIds)
+            ->get();
+
+        $desiredKeys = array_keys($desiredPairs);
+        $removed = 0;
+        foreach ($existingRows as $existingRow) {
+            $key = $existingRow->cpmk_id . '_' . $existingRow->join_cpl_bk_id;
+            if (!in_array($key, $desiredKeys, true)) {
+                $existingRow->delete();
+                $removed++;
+            }
+        }
+
+        foreach ($desiredPairs as $pair) {
+            JoinCplCpmk::updateOrCreate(
+                [
+                    'mk_id' => $pair['mk_id'],
+                    'cpmk_id' => $pair['cpmk_id'],
+                    'join_cpl_bk_id' => $pair['join_cpl_bk_id'],
+                ],
+                []
+            );
+        }
+
+        return [
+            'linked' => count($desiredPairs),
+            'removed' => $removed,
+        ];
     }
 }

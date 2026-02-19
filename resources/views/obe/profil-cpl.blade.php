@@ -3,7 +3,7 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col">
             <div class="card">
                 <div class="card-header">
                     {{-- header --}}
@@ -12,7 +12,7 @@
                     <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                 </div>
                 <div class="card-body">
-                    @include('layouts.alert')
+                    {{-- @include('layouts.alert') --}}
 
                     {{-- identitas kurikulum --}}
                     @include('components.identitas-kurikulum',['kurikulum' => $kurikulum])
@@ -22,7 +22,7 @@
                     <hr>
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_profil_cpls']) }}" class="btn btn-success btn-sm float-end me-1"><i class="bi bi-upload"></i> Import Interaksi Profil >< CPL</a>
+                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_profil_cpls', 'return_url' => request()->fullUrl()]) }}" class="btn btn-success btn-sm float-end me-1"><i class="bi bi-upload"></i> Import Interaksi Profil >< CPL</a>
                         </div>
                     </div>
 
@@ -31,11 +31,17 @@
                             <table class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th>CPL</th>
+                                        <th rowspan="2">CPL</th>
+                                        <th colspan="{{ $profils->count()+1 }}">PROFIL LULUSAN</th>
+                                    </tr>
+                                    <tr>
                                         @forelse ($profils as $profil)
-                                            <th>{{ $profil->nama }}</th>
+                                            <td>
+                                                <strong>{{ $profil->nama }}</strong><br>
+                                                <small>{{ $profil->deskripsi }}</small>
+                                            </td>
                                         @empty
-                                            <th></th>
+                                            <td></td>
                                         @endforelse
                                     </tr>
                                 </thead>
@@ -45,7 +51,7 @@
                                         <td>
                                             <strong>{{ $cpl->kode }}</strong>
                                             <br>
-                                            {{ $cpl->nama }}
+                                            <small>{{ $cpl->nama }}</small>
                                         </td>
                                         @forelse ($profils as $profil)
                                             <td>
@@ -97,6 +103,5 @@
         </div>
     </div>
 </div>
-
 
 @endsection

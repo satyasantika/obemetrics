@@ -6,7 +6,6 @@ use App\Models\KontrakMk;
 use App\Models\Mahasiswa;
 use App\Models\Mk;
 use App\Models\User;
-use App\Models\Prodi;
 use App\Models\Semester;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -26,7 +25,8 @@ class ImportKontrakMkController extends Controller
     {
         $semesters = Semester::all();
         $preview = session('import_kontrakmk_preview', []);
-        return view('setting.bulk-import.kontrakmk', compact('preview', 'semesters'));
+        $returnUrl = $this->resolveReturnUrl(request(), $preview);
+        return view('setting.bulk-import.kontrakmk', compact('preview', 'semesters', 'returnUrl'));
     }
 
     public function importKontrakMk(Request $request)
@@ -139,13 +139,15 @@ class ImportKontrakMkController extends Controller
                     'filename' => $file->getClientOriginalName(),
                     'semester_id' => $semesterId,
                     'semester_kode' => $semester->kode,
+                    'return_url' => $this->resolveReturnUrl($request),
                 ],
             ]);
 
             // Return view directly with all required data
             $preview = session('import_kontrakmk_preview', []);
             $semesters = Semester::all();
-            return view('setting.bulk-import.kontrakmk', compact('preview', 'semesters'))
+            $returnUrl = $this->resolveReturnUrl($request, $preview);
+            return view('setting.bulk-import.kontrakmk', compact('preview', 'semesters', 'returnUrl'))
                             ->with('success', 'Data berhasil dibaca. Silakan pilih data yang akan disimpan.');
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat membaca file: ' . $e->getMessage());
@@ -210,7 +212,7 @@ class ImportKontrakMkController extends Controller
             $message .= " {$errorCount} data gagal disimpan karena data mahasiswa/mk/dosen tidak ditemukan.";
         }
 
-        return redirect()->route('setting.import.kontrakmks')
+        return redirect()->to($this->resolveReturnUrl($request, $preview))
                         ->with('success', $message);
     }
 
@@ -261,5 +263,21 @@ class ImportKontrakMkController extends Controller
         session()->forget('import_kontrakmk_preview');
         return redirect()->route('setting.import.kontrakmks')
                         ->with('success', 'Data preview berhasil dihapus.');
+    }
+
+    private function resolveReturnUrl(Request $request, array $preview = []): string
+    {
+        $candidate = (string) $request->query('return_url', '');
+        if ($candidate === '') {
+            $candidate = (string) $request->input('return_url', '');
+        }
+        if ($candidate === '' && isset($preview['return_url'])) {
+            $candidate = (string) $preview['return_url'];
+        }
+        if ($candidate === '') {
+            $candidate = (string) url()->previous();
+        }
+
+        return $candidate !== '' ? $candidate : route('setting.import.kontrakmks');
     }
 }

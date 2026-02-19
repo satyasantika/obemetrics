@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Bulk;
 
 use App\Models\JoinProdiUser;
-use App\Models\Semester;
-use App\Models\Mk;
 use App\Models\User;
 use App\Models\Prodi;
 use Illuminate\Http\Request;
@@ -24,7 +22,8 @@ class ImportJoinProdiUserController extends Controller
     public function importJoinProdiUserForm()
     {
         $preview = session('import_joinprodiuser_preview', []);
-        return view('setting.bulk-import.joinprodiuser', compact('preview'));
+        $returnUrl = $this->resolveReturnUrl(request(), $preview);
+        return view('setting.bulk-import.joinprodiuser', compact('preview', 'returnUrl'));
     }
 
     public function importJoinProdiUser(Request $request)
@@ -118,12 +117,14 @@ class ImportJoinProdiUserController extends Controller
                 'import_joinprodiuser_preview' => [
                     'rows' => $previewRows,
                     'filename' => $file->getClientOriginalName(),
+                    'return_url' => $this->resolveReturnUrl($request),
                 ],
             ]);
 
             // Return view directly with all required data
             $preview = session('import_joinprodiuser_preview', []);
-            return view('setting.bulk-import.joinprodiuser', compact('preview'))
+            $returnUrl = $this->resolveReturnUrl($request, $preview);
+            return view('setting.bulk-import.joinprodiuser', compact('preview', 'returnUrl'))
                             ->with('success', 'Data berhasil dibaca. Silakan pilih data yang akan disimpan.');
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat membaca file: ' . $e->getMessage());
@@ -180,7 +181,7 @@ class ImportJoinProdiUserController extends Controller
             $message .= " {$errorCount} data gagal disimpan karena data prodi/dosen tidak ditemukan.";
         }
 
-        return redirect()->route('setting.import.joinprodiusers')
+        return redirect()->to($this->resolveReturnUrl($request, $preview))
                         ->with('success', $message);
     }
 
@@ -229,5 +230,21 @@ class ImportJoinProdiUserController extends Controller
         session()->forget('import_joinprodiuser_preview');
         return redirect()->route('setting.import.joinprodiusers')
                         ->with('success', 'Data preview berhasil dihapus.');
+    }
+
+    private function resolveReturnUrl(Request $request, array $preview = []): string
+    {
+        $candidate = (string) $request->query('return_url', '');
+        if ($candidate === '') {
+            $candidate = (string) $request->input('return_url', '');
+        }
+        if ($candidate === '' && isset($preview['return_url'])) {
+            $candidate = (string) $preview['return_url'];
+        }
+        if ($candidate === '') {
+            $candidate = (string) url()->previous();
+        }
+
+        return $candidate !== '' ? $candidate : route('setting.import.joinprodiusers');
     }
 }

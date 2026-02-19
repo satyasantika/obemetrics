@@ -25,12 +25,18 @@
             @method('PUT')
         @endif
         <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
-
         {{-- nama --}}
         <div class="row mb-3">
             <label for="nama" class="form-label">Nama Profil <span class="text-danger">(*)</span></label>
             <div class="col">
-                <input type="text" placeholder="" value="{{ $profil->nama }}" name="nama" class="form-control" id="nama" required autofocus>
+                <input type="text" placeholder="" value="{{ $profil->nama }}" name="nama" class="form-control" id="nama" required>
+            </div>
+        </div>
+        {{-- kode --}}
+        <div class="row mb-3">
+            <label for="kode" class="form-label">Kode Profil <span class="text-danger">(*)</span></label>
+            <div class="col">
+                <input type="text" placeholder="" value="{{ $profil->kode }}" name="kode" class="form-control" id="kode" required autofocus>
             </div>
         </div>
         {{-- deksripsi --}}

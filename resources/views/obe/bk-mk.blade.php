@@ -3,7 +3,7 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col">
             <div class="card">
                 <div class="card-header">
                     {{-- header --}}
@@ -22,7 +22,7 @@
                     <hr>
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_bk_mks']) }}" class="btn btn-success btn-sm float-end me-1"><i class="bi bi-upload"></i> Import Interaksi BK >< MK</a>
+                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_bk_mks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-success btn-sm float-end me-1"><i class="bi bi-upload"></i> Import Interaksi BK >< MK</a>
                         </div>
                     </div>
 
@@ -31,13 +31,16 @@
                             <table class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th>MK >< BK</th>
+                                        <th rowspan="2">MATA KULIAH</th>
+                                        <th colspan="{{ $bks->count()+1 }}">BAHAN KAJIAN</th>
+                                    <tr>
                                         @forelse ($bks as $bk)
-                                            <th>
-                                                <span data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $bk->nama }}">
+                                            <td>
+                                                <strong data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $bk->nama }}">
                                                     {{ $bk->kode }}
-                                                </span>
-                                            </th>
+                                                </strong><br>
+                                                <small>{{ $bk->nama }}</small>
+                                            </td>
                                         @empty
                                             <th></th>
                                         @endforelse

@@ -7,11 +7,11 @@
             <div class="card">
                 <div class="card-header">
                     Bulk Import Data {{ $targets[$target]['label'] ?? 'N/A' }}
-                    <a href="{{ route('mks.'.$target.'.index',$mk) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
+                    <a href="{{ $returnUrl }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                 </div>
 
                 <div class="card-body">
-                    @include('layouts.alert')
+                    {{-- @include('layouts.alert') --}}
 
                     <div class="row mb-2">
                         <div class="col-md-3 text-end">Mata Kuliah</div>
@@ -51,6 +51,8 @@
                                 <small class="text-muted">Isian Semester wajib diisi untuk import SubCPMK, Tagihan Tugas, dan Interaksi SubCPMK >< Tagihan.</small>
                                 @if ($target === 'join_subcpmk_penugasans')
                                     <small class="text-muted d-block">Template target ini berbentuk matriks (baris = penugasan, kolom = subCPMK). Cukup isi bobot pada sel.</small>
+                                @elseif ($target === 'join_cpl_cpmks')
+                                    <small class="text-muted d-block">Template target ini berbentuk matriks (baris = CPMK, kolom = CPL). Isi huruf V pada sel yang berinteraksi.</small>
                                 @endif
                             </div>
                         </div>
@@ -68,9 +70,13 @@
                         <div class="row mt-3">
                             <div class="col-md-3"></div>
                             <div class="col">
+                                @php
+                                    $directSaveTargets = ['join_subcpmk_penugasans', 'join_cpl_cpmks'];
+                                    $isDirectSaveTarget = in_array($target, $directSaveTargets, true);
+                                @endphp
                                 <button type="submit" class="btn btn-primary btn-sm">
                                     <i class="bi bi-upload"></i>
-                                    {{ $target === 'join_subcpmk_penugasans' ? 'Upload & Simpan Langsung' : 'Upload & Preview' }}
+                                    {{ $isDirectSaveTarget ? 'Upload & Simpan Langsung' : 'Upload & Preview' }}
                                 </button>
                             </div>
                         </div>
@@ -83,7 +89,7 @@
 
     <div class="row justify-content-center">
         <div class="col">
-            @if ($target !== 'join_subcpmk_penugasans' && !empty($preview['rows']))
+            @if (!in_array($target, ['join_subcpmk_penugasans', 'join_cpl_cpmks'], true) && !empty($preview['rows']))
                 <div class="card mt-3">
                     <div class="card-header">
                         <span class="h5">Preview @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>

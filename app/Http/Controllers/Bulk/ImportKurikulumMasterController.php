@@ -125,6 +125,29 @@ class ImportKurikulumMasterController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray(null, true, true, true);
 
+            if (in_array($target, ['join_profil_cpls', 'join_cpl_bks', 'join_bk_mks'], true)) {
+                $result = match ($target) {
+                    'join_profil_cpls' => $this->saveJoinProfilCplMatrix($rows, $kurikulum),
+                    'join_cpl_bks' => $this->saveJoinCplBkMatrix($rows, $kurikulum),
+                    'join_bk_mks' => $this->saveJoinBkMkMatrix($rows, $kurikulum),
+                };
+
+                $successLabel = match ($target) {
+                    'join_profil_cpls' => 'Interaksi Profil >< CPL',
+                    'join_cpl_bks' => 'Interaksi CPL >< BK',
+                    default => 'Interaksi BK >< MK',
+                };
+
+                $redirect = redirect()->to($this->resolveReturnUrl($request))
+                    ->with('success', $successLabel . " berhasil disimpan ({$result['linked']} aktif).");
+
+                if (($result['removed'] ?? 0) > 0) {
+                    $redirect->with('danger', "{$result['removed']} interaksi dibuang karena sel pada template dikosongkan.");
+                }
+
+                return $redirect;
+            }
+
             $headerMap = $this->buildHeaderMap($rows[1] ?? []);
             $missingHeaders = collect($meta['required'])
                 ->filter(fn ($column) => !array_key_exists($column, $headerMap))
@@ -236,10 +259,7 @@ class ImportKurikulumMasterController extends Controller
             $message .= ' Beberapa baris dilewati: ' . implode(' | ', array_slice($skipped, 0, 5));
         }
 
-        return to_route('setting.import.kurikulum-master', $this->withReturnUrl([
-            'kurikulum' => $kurikulum->id,
-            'target' => $target,
-        ], $request))
+        return redirect()->to($this->resolveReturnUrl($request))
             ->with('success', $message);
     }
 
@@ -247,6 +267,189 @@ class ImportKurikulumMasterController extends Controller
     {
         $target = $this->resolveTarget($request->query('target'));
         $meta = self::TARGETS[$target];
+
+        if ($target === 'join_profil_cpls') {
+            $profils = $kurikulum->profils()->orderBy('nama')->get();
+            $cpls = $kurikulum->cpls()->orderBy('kode')->get();
+
+            $linkedMap = JoinProfilCpl::query()
+                ->where('kurikulum_id', $kurikulum->id)
+                ->whereIn('profil_id', $profils->pluck('id'))
+                ->whereIn('cpl_id', $cpls->pluck('id'))
+                ->get()
+                ->keyBy(fn ($row) => $row->cpl_id . '_' . $row->profil_id);
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $sheet->setCellValue('A1', 'CPL');
+            $sheet->getStyle('A1')->getFont()->setBold(true);
+
+            $lastColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(1 + $profils->count());
+            $sheet->mergeCells('B1:' . $lastColumn . '1');
+            $sheet->setCellValue('B1', 'PROFIL LULUSAN');
+            $sheet->getStyle('B1')->getFont()->setBold(true);
+
+            $columnIndex = 2;
+            foreach ($profils as $profil) {
+                $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
+                $sheet->setCellValue($column . '2', trim((string) ($profil->nama . "\n" . ($profil->deskripsi ?? ''))));
+                $sheet->getStyle($column . '2')->getAlignment()->setWrapText(true);
+                $sheet->getStyle($column . '2')->getFont()->setBold(true);
+                $sheet->getColumnDimension($column)->setWidth(28);
+                $columnIndex++;
+            }
+
+            $sheet->getColumnDimension('A')->setWidth(36);
+
+            $rowIndex = 3;
+            foreach ($cpls as $cpl) {
+                $sheet->setCellValue('A' . $rowIndex, trim((string) ($cpl->kode . "\n" . $cpl->nama)));
+                $sheet->getStyle('A' . $rowIndex)->getAlignment()->setWrapText(true);
+
+                $columnIndex = 2;
+                foreach ($profils as $profil) {
+                    $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
+                    $isLinked = $linkedMap->has($cpl->id . '_' . $profil->id);
+                    $sheet->setCellValue($column . $rowIndex, $isLinked ? 'V' : '');
+                    $columnIndex++;
+                }
+
+                $rowIndex++;
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $waktuDownload = now()->format('YmdHis');
+            $fileName = 'import' . $waktuDownload . '-interaksi-profil-cpl-prodi-' . Str::slug((string) ($kurikulum->prodi->jenjang . '-' . $kurikulum->prodi->nama ?? 'kurikulum'), '-') . '.xlsx';
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        }
+
+        if ($target === 'join_cpl_bks') {
+            $bks = $kurikulum->bks()->orderBy('kode')->get();
+            $cpls = $kurikulum->cpls()->orderBy('kode')->get();
+
+            $linkedMap = JoinCplBk::query()
+                ->where('kurikulum_id', $kurikulum->id)
+                ->whereIn('bk_id', $bks->pluck('id'))
+                ->whereIn('cpl_id', $cpls->pluck('id'))
+                ->get()
+                ->keyBy(fn ($row) => $row->cpl_id . '_' . $row->bk_id);
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $sheet->setCellValue('A1', 'CAPAIAN PEMBELAJARAN LULUSAN');
+            $sheet->getStyle('A1')->getFont()->setBold(true);
+
+            $lastColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(1 + $bks->count());
+            $sheet->mergeCells('B1:' . $lastColumn . '1');
+            $sheet->setCellValue('B1', 'BAHAN KAJIAN');
+            $sheet->getStyle('B1')->getFont()->setBold(true);
+
+            $columnIndex = 2;
+            foreach ($bks as $bk) {
+                $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
+                $sheet->setCellValue($column . '2', trim((string) ($bk->kode . "\n" . $bk->nama)));
+                $sheet->getStyle($column . '2')->getAlignment()->setWrapText(true);
+                $sheet->getStyle($column . '2')->getFont()->setBold(true);
+                $sheet->getColumnDimension($column)->setWidth(20);
+                $columnIndex++;
+            }
+
+            $sheet->getColumnDimension('A')->setWidth(36);
+
+            $rowIndex = 3;
+            foreach ($cpls as $cpl) {
+                $sheet->setCellValue('A' . $rowIndex, trim((string) ($cpl->kode . "\n" . $cpl->nama)));
+                $sheet->getStyle('A' . $rowIndex)->getAlignment()->setWrapText(true);
+
+                $columnIndex = 2;
+                foreach ($bks as $bk) {
+                    $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
+                    $isLinked = $linkedMap->has($cpl->id . '_' . $bk->id);
+                    $sheet->setCellValue($column . $rowIndex, $isLinked ? 'V' : '');
+                    $columnIndex++;
+                }
+
+                $rowIndex++;
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $waktuDownload = now()->format('YmdHis');
+            $fileName = 'import' . $waktuDownload . '-interaksi-cpl-bk-prodi-' . Str::slug((string) ($kurikulum->prodi->jenjang . '-' . $kurikulum->prodi->nama ?? 'kurikulum'), '-') . '.xlsx';
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        }
+
+        if ($target === 'join_bk_mks') {
+            $bks = $kurikulum->bks()->orderBy('kode')->get();
+            $mks = $kurikulum->mks()->orderBy('kode')->get();
+
+            $linkedMap = JoinBkMk::query()
+                ->where('kurikulum_id', $kurikulum->id)
+                ->whereIn('bk_id', $bks->pluck('id'))
+                ->whereIn('mk_id', $mks->pluck('id'))
+                ->get()
+                ->keyBy(fn ($row) => $row->mk_id . '_' . $row->bk_id);
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $sheet->setCellValue('A1', 'MATA KULIAH');
+            $sheet->getStyle('A1')->getFont()->setBold(true);
+
+            $lastColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(1 + $bks->count());
+            $sheet->mergeCells('B1:' . $lastColumn . '1');
+            $sheet->setCellValue('B1', 'BAHAN KAJIAN');
+            $sheet->getStyle('B1')->getFont()->setBold(true);
+
+            $columnIndex = 2;
+            foreach ($bks as $bk) {
+                $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
+                $sheet->setCellValue($column . '2', trim((string) ($bk->kode . "\n" . $bk->nama)));
+                $sheet->getStyle($column . '2')->getAlignment()->setWrapText(true);
+                $sheet->getStyle($column . '2')->getFont()->setBold(true);
+                $sheet->getColumnDimension($column)->setWidth(20);
+                $columnIndex++;
+            }
+
+            $sheet->getColumnDimension('A')->setWidth(36);
+
+            $rowIndex = 3;
+            foreach ($mks as $mk) {
+                $sheet->setCellValue('A' . $rowIndex, trim((string) ($mk->kode . "\n" . $mk->nama)));
+                $sheet->getStyle('A' . $rowIndex)->getAlignment()->setWrapText(true);
+
+                $columnIndex = 2;
+                foreach ($bks as $bk) {
+                    $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
+                    $isLinked = $linkedMap->has($mk->id . '_' . $bk->id);
+                    $sheet->setCellValue($column . $rowIndex, $isLinked ? 'V' : '');
+                    $columnIndex++;
+                }
+
+                $rowIndex++;
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $waktuDownload = now()->format('YmdHis');
+            $fileName = 'import' . $waktuDownload . '-interaksi-bk-mk-prodi-' . Str::slug((string) ($kurikulum->prodi->jenjang . '-' . $kurikulum->prodi->nama ?? 'kurikulum'), '-') . '.xlsx';
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        }
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -777,5 +980,332 @@ class ImportKurikulumMasterController extends Controller
         }
 
         return null;
+    }
+
+    private function saveJoinProfilCplMatrix(array $rows, Kurikulum $kurikulum): array
+    {
+        $headerRow = $rows[2] ?? [];
+        $profilByColumn = [];
+
+        foreach ($headerRow as $columnLetter => $value) {
+            if ($columnLetter === 'A') {
+                continue;
+            }
+
+            $profilHeader = trim((string) ($value ?? ''));
+            if ($profilHeader === '') {
+                continue;
+            }
+
+            $profilName = trim((string) Str::before($profilHeader, "\n"));
+            $profil = Profil::query()
+                ->where('kurikulum_id', $kurikulum->id)
+                ->where('nama', $profilName)
+                ->first();
+
+            if (!$profil) {
+                throw new \RuntimeException('Profil tidak ditemukan pada header: ' . $profilName);
+            }
+
+            $profilByColumn[$columnLetter] = $profil;
+        }
+
+        if (empty($profilByColumn)) {
+            throw new \RuntimeException('Header profil tidak ditemukan pada template interaksi.');
+        }
+
+        $desiredPairs = [];
+        $scopeCplIds = [];
+        $scopeProfilIds = collect($profilByColumn)->pluck('id')->unique()->values()->all();
+
+        foreach ($rows as $rowIndex => $row) {
+            if ($rowIndex <= 2) {
+                continue;
+            }
+
+            $cplCell = trim((string) ($row['A'] ?? ''));
+            if ($cplCell === '') {
+                continue;
+            }
+
+            $kodeCpl = trim((string) Str::before($cplCell, "\n"));
+            if ($kodeCpl === '') {
+                continue;
+            }
+
+            $cpl = Cpl::query()
+                ->where('kurikulum_id', $kurikulum->id)
+                ->where('kode', $kodeCpl)
+                ->first();
+            if (!$cpl) {
+                throw new \RuntimeException('CPL tidak ditemukan pada baris ' . $rowIndex . ': ' . $kodeCpl);
+            }
+
+            $scopeCplIds[] = $cpl->id;
+
+            foreach ($profilByColumn as $columnLetter => $profil) {
+                $raw = trim((string) ($row[$columnLetter] ?? ''));
+                if ($raw === '') {
+                    continue;
+                }
+
+                if (Str::upper($raw) !== 'V') {
+                    throw new \RuntimeException('Nilai tidak valid pada baris ' . $rowIndex . ', kolom ' . $columnLetter . '. Gunakan huruf V atau kosong.');
+                }
+
+                $desiredPairs[$cpl->id . '_' . $profil->id] = [
+                    'kurikulum_id' => $kurikulum->id,
+                    'cpl_id' => $cpl->id,
+                    'profil_id' => $profil->id,
+                ];
+            }
+        }
+
+        $scopeCplIds = array_values(array_unique($scopeCplIds));
+        if (empty($scopeCplIds)) {
+            throw new \RuntimeException('Tidak ada baris CPL pada template interaksi.');
+        }
+
+        $existingRows = JoinProfilCpl::query()
+            ->where('kurikulum_id', $kurikulum->id)
+            ->whereIn('cpl_id', $scopeCplIds)
+            ->whereIn('profil_id', $scopeProfilIds)
+            ->get();
+
+        $desiredKeys = array_keys($desiredPairs);
+        $removed = 0;
+        foreach ($existingRows as $existingRow) {
+            $key = $existingRow->cpl_id . '_' . $existingRow->profil_id;
+            if (!in_array($key, $desiredKeys, true)) {
+                $existingRow->delete();
+                $removed++;
+            }
+        }
+
+        foreach ($desiredPairs as $pair) {
+            JoinProfilCpl::updateOrCreate(
+                [
+                    'kurikulum_id' => $pair['kurikulum_id'],
+                    'profil_id' => $pair['profil_id'],
+                    'cpl_id' => $pair['cpl_id'],
+                ],
+                []
+            );
+        }
+
+        return [
+            'linked' => count($desiredPairs),
+            'removed' => $removed,
+        ];
+    }
+
+    private function saveJoinCplBkMatrix(array $rows, Kurikulum $kurikulum): array
+    {
+        $headerRow = $rows[2] ?? [];
+        $bkByColumn = [];
+
+        foreach ($headerRow as $columnLetter => $value) {
+            if ($columnLetter === 'A') {
+                continue;
+            }
+
+            $header = trim((string) ($value ?? ''));
+            if ($header === '') {
+                continue;
+            }
+
+            $kodeBk = trim((string) Str::before($header, "\n"));
+            $bk = Bk::query()->where('kurikulum_id', $kurikulum->id)->where('kode', $kodeBk)->first();
+            if (!$bk) {
+                throw new \RuntimeException('BK tidak ditemukan pada header: ' . $kodeBk);
+            }
+
+            $bkByColumn[$columnLetter] = $bk;
+        }
+
+        if (empty($bkByColumn)) {
+            throw new \RuntimeException('Header BK tidak ditemukan pada template interaksi.');
+        }
+
+        $desiredPairs = [];
+        $scopeCplIds = [];
+        $scopeBkIds = collect($bkByColumn)->pluck('id')->unique()->values()->all();
+
+        foreach ($rows as $rowIndex => $row) {
+            if ($rowIndex <= 2) {
+                continue;
+            }
+
+            $cplCell = trim((string) ($row['A'] ?? ''));
+            if ($cplCell === '') {
+                continue;
+            }
+
+            $kodeCpl = trim((string) Str::before($cplCell, "\n"));
+            $cpl = Cpl::query()->where('kurikulum_id', $kurikulum->id)->where('kode', $kodeCpl)->first();
+            if (!$cpl) {
+                throw new \RuntimeException('CPL tidak ditemukan pada baris ' . $rowIndex . ': ' . $kodeCpl);
+            }
+
+            $scopeCplIds[] = $cpl->id;
+
+            foreach ($bkByColumn as $columnLetter => $bk) {
+                $raw = trim((string) ($row[$columnLetter] ?? ''));
+                if ($raw === '') {
+                    continue;
+                }
+                if (Str::upper($raw) !== 'V') {
+                    throw new \RuntimeException('Nilai tidak valid pada baris ' . $rowIndex . ', kolom ' . $columnLetter . '. Gunakan huruf V atau kosong.');
+                }
+
+                $desiredPairs[$cpl->id . '_' . $bk->id] = [
+                    'kurikulum_id' => $kurikulum->id,
+                    'cpl_id' => $cpl->id,
+                    'bk_id' => $bk->id,
+                ];
+            }
+        }
+
+        $scopeCplIds = array_values(array_unique($scopeCplIds));
+        if (empty($scopeCplIds)) {
+            throw new \RuntimeException('Tidak ada baris CPL pada template interaksi.');
+        }
+
+        $existingRows = JoinCplBk::query()
+            ->where('kurikulum_id', $kurikulum->id)
+            ->whereIn('cpl_id', $scopeCplIds)
+            ->whereIn('bk_id', $scopeBkIds)
+            ->get();
+
+        $desiredKeys = array_keys($desiredPairs);
+        $removed = 0;
+        foreach ($existingRows as $existingRow) {
+            $key = $existingRow->cpl_id . '_' . $existingRow->bk_id;
+            if (!in_array($key, $desiredKeys, true)) {
+                $existingRow->delete();
+                $removed++;
+            }
+        }
+
+        foreach ($desiredPairs as $pair) {
+            JoinCplBk::updateOrCreate(
+                [
+                    'kurikulum_id' => $pair['kurikulum_id'],
+                    'cpl_id' => $pair['cpl_id'],
+                    'bk_id' => $pair['bk_id'],
+                ],
+                []
+            );
+        }
+
+        return [
+            'linked' => count($desiredPairs),
+            'removed' => $removed,
+        ];
+    }
+
+    private function saveJoinBkMkMatrix(array $rows, Kurikulum $kurikulum): array
+    {
+        $headerRow = $rows[2] ?? [];
+        $bkByColumn = [];
+
+        foreach ($headerRow as $columnLetter => $value) {
+            if ($columnLetter === 'A') {
+                continue;
+            }
+
+            $header = trim((string) ($value ?? ''));
+            if ($header === '') {
+                continue;
+            }
+
+            $kodeBk = trim((string) Str::before($header, "\n"));
+            $bk = Bk::query()->where('kurikulum_id', $kurikulum->id)->where('kode', $kodeBk)->first();
+            if (!$bk) {
+                throw new \RuntimeException('BK tidak ditemukan pada header: ' . $kodeBk);
+            }
+
+            $bkByColumn[$columnLetter] = $bk;
+        }
+
+        if (empty($bkByColumn)) {
+            throw new \RuntimeException('Header BK tidak ditemukan pada template interaksi.');
+        }
+
+        $desiredPairs = [];
+        $scopeMkIds = [];
+        $scopeBkIds = collect($bkByColumn)->pluck('id')->unique()->values()->all();
+
+        foreach ($rows as $rowIndex => $row) {
+            if ($rowIndex <= 2) {
+                continue;
+            }
+
+            $mkCell = trim((string) ($row['A'] ?? ''));
+            if ($mkCell === '') {
+                continue;
+            }
+
+            $kodeMk = trim((string) Str::before($mkCell, "\n"));
+            $mk = Mk::query()->where('kurikulum_id', $kurikulum->id)->where('kode', $kodeMk)->first();
+            if (!$mk) {
+                throw new \RuntimeException('MK tidak ditemukan pada baris ' . $rowIndex . ': ' . $kodeMk);
+            }
+
+            $scopeMkIds[] = $mk->id;
+
+            foreach ($bkByColumn as $columnLetter => $bk) {
+                $raw = trim((string) ($row[$columnLetter] ?? ''));
+                if ($raw === '') {
+                    continue;
+                }
+                if (Str::upper($raw) !== 'V') {
+                    throw new \RuntimeException('Nilai tidak valid pada baris ' . $rowIndex . ', kolom ' . $columnLetter . '. Gunakan huruf V atau kosong.');
+                }
+
+                $desiredPairs[$mk->id . '_' . $bk->id] = [
+                    'kurikulum_id' => $kurikulum->id,
+                    'mk_id' => $mk->id,
+                    'bk_id' => $bk->id,
+                ];
+            }
+        }
+
+        $scopeMkIds = array_values(array_unique($scopeMkIds));
+        if (empty($scopeMkIds)) {
+            throw new \RuntimeException('Tidak ada baris MK pada template interaksi.');
+        }
+
+        $existingRows = JoinBkMk::query()
+            ->where('kurikulum_id', $kurikulum->id)
+            ->whereIn('mk_id', $scopeMkIds)
+            ->whereIn('bk_id', $scopeBkIds)
+            ->get();
+
+        $desiredKeys = array_keys($desiredPairs);
+        $removed = 0;
+        foreach ($existingRows as $existingRow) {
+            $key = $existingRow->mk_id . '_' . $existingRow->bk_id;
+            if (!in_array($key, $desiredKeys, true)) {
+                $existingRow->delete();
+                $removed++;
+            }
+        }
+
+        foreach ($desiredPairs as $pair) {
+            JoinBkMk::updateOrCreate(
+                [
+                    'kurikulum_id' => $pair['kurikulum_id'],
+                    'mk_id' => $pair['mk_id'],
+                    'bk_id' => $pair['bk_id'],
+                ],
+                []
+            );
+        }
+
+        return [
+            'linked' => count($desiredPairs),
+            'removed' => $removed,
+        ];
     }
 }

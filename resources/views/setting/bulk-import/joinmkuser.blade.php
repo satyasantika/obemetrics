@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header">
                     Import Data User untuk Mata Kuliah
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
+                    <a href="{{ $returnUrl ?? route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                     @stack('header')
                 </div>
 
@@ -15,6 +15,7 @@
                     @include('layouts.alert')
                     <form action="{{ route('setting.import.joinmkusers') }}" method="POST" enctype="multipart/form-data">
                         @csrf
+                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('home') }}">
                         <div class="row mt-3">
                             <div class="col">
                                 <label for="file" class="form-label">File Upload <span class="text-danger">*</span></label>
@@ -49,6 +50,7 @@
                     <span class="h5">Preview Data Join MK User @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>
                     <form action="{{ route('setting.import.joinmkusers.clear') }}" method="POST" class="float-end" style="display: inline;">
                         @csrf
+                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('home') }}">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus preview data?');">
                             <i class="bi bi-x-circle"></i> Kosongkan Preview
                         </button>
@@ -63,6 +65,7 @@
                     </div>
                     <form action="{{ route('setting.import.joinmkusers.commit') }}" method="POST">
                         @csrf
+                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('home') }}">
                         <div class="table-responsive">
                             <table class="table table-bordered" id="preview-table">
                                 <thead>

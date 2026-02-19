@@ -30,7 +30,9 @@ class ImportNilaiController extends Controller
 
         $kelasLabel = $kelasFilter === null ? 'Semua Kelas' : 'Kelas ' . $kelasFilter;
 
-        return view('setting.bulk-import.nilai', compact('mk', 'penugasans', 'preview', 'kelasFilter', 'kelasLabel'));
+        $returnUrl = $this->resolveReturnUrl(request(), $preview);
+
+        return view('setting.bulk-import.nilai', compact('mk', 'penugasans', 'preview', 'kelasFilter', 'kelasLabel', 'returnUrl'));
     }
 
     public function importNilai(Mk $mk, Request $request)
@@ -164,6 +166,7 @@ class ImportNilaiController extends Controller
                 $this->previewSessionKey($mk, $kelasFilter) => [
                     'rows' => $previewRows,
                     'filename' => $request->file('file')->getClientOriginalName(),
+                    'return_url' => $this->resolveReturnUrl($request),
                 ],
             ]);
 
@@ -233,7 +236,7 @@ class ImportNilaiController extends Controller
 
         session()->forget($this->previewSessionKey($mk, $kelasFilter));
 
-        return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
+        return redirect()->to($this->resolveReturnUrl($request, $preview))
             ->with('success', "{$savedRows} baris diproses, {$savedScores} nilai berhasil disimpan.");
     }
 
@@ -341,6 +344,22 @@ class ImportNilaiController extends Controller
         }
 
         return $kelas;
+    }
+
+    private function resolveReturnUrl(Request $request, array $preview = []): string
+    {
+        $candidate = (string) $request->query('return_url', '');
+        if ($candidate === '') {
+            $candidate = (string) $request->input('return_url', '');
+        }
+        if ($candidate === '' && isset($preview['return_url'])) {
+            $candidate = (string) $preview['return_url'];
+        }
+        if ($candidate === '') {
+            $candidate = (string) url()->previous();
+        }
+
+        return $candidate !== '' ? $candidate : route('mks.nilais.index', [$request->route('mk')]);
     }
 
     private function syncKontrakMkScore(Mk $mk, string $mahasiswaId, string $semesterId): void

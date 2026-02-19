@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header">
                     Import Data Mahasiswa
-                    <a href="{{ route('mahasiswas.index') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
+                    <a href="{{ $returnUrl ?? route('mahasiswas.index') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                     @stack('header')
                 </div>
 
@@ -18,6 +18,7 @@
                     @endphp
                     <form action="{{ route('setting.import.mahasiswas') }}" method="POST" enctype="multipart/form-data">
                         @csrf
+                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mahasiswas.index') }}">
                         {{-- identitas kurikulum --}}
                         <div class="row">
                             <div class="col-md-3 text-end">Program Studi <span class="text-danger">*</span></div>
@@ -70,6 +71,7 @@
                     <span class="h5">Preview Data Mahasiswa @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>
                     <form action="{{ route('setting.import.mahasiswas.clear') }}" method="POST" class="float-end" style="display: inline;">
                         @csrf
+                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mahasiswas.index') }}">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus preview data?');">
                             <i class="bi bi-x-circle"></i> Kosongkan Preview
                         </button>
@@ -85,6 +87,7 @@
                     <form action="{{ route('setting.import.mahasiswas.commit') }}" method="POST">
                         @csrf
                         <input type="hidden" name="prodi_id" value="{{ $preview['prodi_id'] }}">
+                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mahasiswas.index') }}">
                         <div class="table-responsive">
                             <table class="table table-bordered" id="preview-table">
                                 <thead>

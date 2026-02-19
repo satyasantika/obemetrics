@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header">
                     Import Data Nilai Tugas ({{ $kelasLabel ?? 'Semua Kelas' }})
-                    <a href="{{ route('mks.nilais.index', [$mk->id]) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali ke Penilaian</a>
+                    <a href="{{ $returnUrl ?? route('mks.nilais.index', [$mk->id]) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali ke Penilaian</a>
                 </div>
 
                 <div class="card-body">
@@ -41,6 +41,7 @@
                     <form action="{{ route('setting.import.nilais', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST" enctype="multipart/form-data" class="mt-3">
                         @csrf
                         <input type="hidden" name="kelas" value="{{ $kelasFilter ?? '__SEMUA_KELAS__' }}">
+                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mks.nilais.index', [$mk->id]) }}">
                         <div class="row mt-3">
                             <div class="col-md-3 text-end">
                                 File Upload <span class="text-danger">*</span>
@@ -76,6 +77,7 @@
                     <form action="{{ route('setting.import.nilais.clear', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST" class="float-end" style="display: inline;">
                         @csrf
                         <input type="hidden" name="kelas" value="{{ $kelasFilter ?? '__SEMUA_KELAS__' }}">
+                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mks.nilais.index', [$mk->id]) }}">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus preview data?');">
                             <i class="bi bi-x-circle"></i> Kosongkan Preview
                         </button>
@@ -90,6 +92,7 @@
                     <form action="{{ route('setting.import.nilais.commit', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST">
                         @csrf
                         <input type="hidden" name="kelas" value="{{ $kelasFilter ?? '__SEMUA_KELAS__' }}">
+                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mks.nilais.index', [$mk->id]) }}">
                         <div class="table-responsive">
                             <table class="table table-bordered" id="preview-table">
                                 <thead>

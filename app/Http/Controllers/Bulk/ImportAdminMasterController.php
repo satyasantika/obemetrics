@@ -154,9 +154,7 @@ class ImportAdminMasterController extends Controller
             $message .= ' Beberapa baris dilewati: ' . implode(' | ', array_slice($skipped, 0, 5));
         }
 
-        return to_route('setting.import.admin-master', $this->withReturnUrl([
-            'target' => $target,
-        ], $request))
+        return redirect()->to($this->resolveReturnUrl($request))
             ->with('success', $message);
     }
 

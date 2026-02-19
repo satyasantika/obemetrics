@@ -16,6 +16,28 @@
 
                     {{-- identitas mata kuliah --}}
                     @include('components.identitas-mk', $mk)
+                    <div class="row">
+                        <div class="col-md-3">Semester</div>
+                        <div class="col">
+                            @php
+                                $semesterOptions = $mk->kontrakMks()
+                                    ->whereNotNull('semester_id')
+                                    ->with('semester')
+                                    ->get()
+                                    ->pluck('semester')
+                                    ->filter()
+                                    ->unique('id')
+                                    ->sortByDesc('status_aktif')
+                                    ->sortByDesc('kode')
+                                    ->values();
+                            @endphp
+                            <select id="semester-filter" name="semester_id" class="form-control form-control-sm" style="max-width: 320px;">
+                                @foreach ($semesterOptions as $semester)
+                                    <option value="{{ $semester->id }}" @selected($semester->status_aktif)>{{ $semester->kode }} - {{ $semester->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
                     <hr>
                     {{-- menu mata kuliah --}}
                     @include('components.menu-mk',$mk)
