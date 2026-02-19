@@ -83,7 +83,7 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="2"><span class="bg-warning text-dark p-2">
+                                        <td colspan="{{ $joincplbks->count()+1 }}"><span class="bg-warning text-dark p-2">
                                             Belum ada data CPMK untuk Mata Kuliah ini.</span>
                                         </td>
                                     </tr>

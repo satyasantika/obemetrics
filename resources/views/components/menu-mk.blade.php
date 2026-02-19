@@ -14,10 +14,10 @@
     <i class="bi bi-link-45deg"></i> Set SubCPMK >< Tugas
 </a>
 <a href="{{ route('mks.nilais.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
-    <i class="bi bi-clipboard-check"></i> Penilaian Tugas
+    <i class="bi bi-clipboard-check"></i> Pengisian Nilai
 </a>
 <a href="{{ route('mks.workclouds.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
-    <i class="bi bi-cloud-upload"></i> Workcloud Utama
+    <i class="bi bi-cloud-upload"></i> Portofolio Penilaian
 </a>
 <a href="{{ route('mks.achievements.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
     <i class="bi bi-graph-up"></i> Evaluasi Ketercapaian CPL

@@ -44,7 +44,8 @@
                     <hr>
                     <div class="row">
                         <div class="col">
-                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'subcpmks']) }}" class="btn btn-sm btn-success mt-1"><i class="bi bi-upload"></i> Import banyak SubCPMK</a>
+                            <a href="{{ route('mks.subcpmks.create',$mk) }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Tambah Sub CPMK</a>
+                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'subcpmks']) }}" class="btn btn-sm btn-success"><i class="bi bi-upload"></i> Import banyak SubCPMK</a>
                         </div>
                     </div>
                     <div class="row">
@@ -134,11 +135,6 @@
                                         </td>
                                     </tr>
                                 @endforelse
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <a href="{{ route('mks.subcpmks.create',$mk) }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Tambah Sub CPMK</a>
                         </div>
                     </div>
                 </div>
