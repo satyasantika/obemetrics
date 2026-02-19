@@ -37,11 +37,13 @@ class ImportAdminMasterController extends Controller
     {
         $target = $this->resolveTarget($request->query('target'));
         $preview = session($this->previewSessionKey($target), []);
+        $returnUrl = $this->resolveReturnUrl($request);
 
         return view('setting.bulk-import.admin-master', [
             'targets' => self::TARGETS,
             'target' => $target,
             'preview' => $preview,
+            'returnUrl' => $returnUrl,
         ]);
     }
 
@@ -100,7 +102,9 @@ class ImportAdminMasterController extends Controller
                 ],
             ]);
 
-            return to_route('setting.import.admin-master', ['target' => $target])
+            return to_route('setting.import.admin-master', $this->withReturnUrl([
+                'target' => $target,
+            ], $request))
                 ->with('success', 'Data berhasil dibaca. Silakan pilih data yang akan diproses.');
         } catch (\Throwable $e) {
             return back()->with('error', 'Gagal membaca file: ' . $e->getMessage());
@@ -120,7 +124,9 @@ class ImportAdminMasterController extends Controller
         $rows = $preview['rows'] ?? [];
 
         if (empty($rows)) {
-            return to_route('setting.import.admin-master', ['target' => $target])
+            return to_route('setting.import.admin-master', $this->withReturnUrl([
+                'target' => $target,
+            ], $request))
                 ->with('error', 'Tidak ada data preview untuk diproses.');
         }
 
@@ -148,7 +154,9 @@ class ImportAdminMasterController extends Controller
             $message .= ' Beberapa baris dilewati: ' . implode(' | ', array_slice($skipped, 0, 5));
         }
 
-        return to_route('setting.import.admin-master', ['target' => $target])
+        return to_route('setting.import.admin-master', $this->withReturnUrl([
+            'target' => $target,
+        ], $request))
             ->with('success', $message);
     }
 
@@ -184,7 +192,9 @@ class ImportAdminMasterController extends Controller
         $target = $this->resolveTarget($request->input('target'));
         session()->forget($this->previewSessionKey($target));
 
-        return to_route('setting.import.admin-master', ['target' => $target])
+        return to_route('setting.import.admin-master', $this->withReturnUrl([
+            'target' => $target,
+        ], $request))
             ->with('success', 'Preview berhasil dikosongkan.');
     }
 
@@ -306,5 +316,24 @@ class ImportAdminMasterController extends Controller
     private function previewSessionKey(string $target): string
     {
         return 'import_admin_master_' . $target;
+    }
+
+    private function resolveReturnUrl(Request $request): string
+    {
+        $candidate = (string) $request->query('return_url', '');
+        if ($candidate === '') {
+            $candidate = (string) $request->input('return_url', '');
+        }
+        if ($candidate === '') {
+            $candidate = (string) url()->previous();
+        }
+
+        return $candidate !== '' ? $candidate : route('home');
+    }
+
+    private function withReturnUrl(array $params, Request $request): array
+    {
+        $params['return_url'] = $this->resolveReturnUrl($request);
+        return $params;
     }
 }

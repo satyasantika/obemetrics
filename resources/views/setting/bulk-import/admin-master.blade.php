@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header">
                     Bulk Import Data {{ $targets[$target]['label'] ?? 'N/A' }}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
+                    <a href="{{ $returnUrl }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                 </div>
 
                 <div class="card-body">
@@ -16,6 +16,7 @@
                     <form action="{{ route('setting.import.admin-master.upload') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="target" id="target" value="{{ $target }}">
+                        <input type="hidden" name="return_url" value="{{ $returnUrl }}">
                         <div class="row mt-2">
                             <div class="col-md-3 text-end">Import Data <span class="text-danger">*</span></div>
                             <div class="col">
@@ -55,6 +56,7 @@
                         <form action="{{ route('setting.import.admin-master.clear') }}" method="POST" class="float-end" style="display:inline;">
                             @csrf
                             <input type="hidden" name="target" value="{{ $target }}">
+                            <input type="hidden" name="return_url" value="{{ $returnUrl }}">
                             <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus preview data?');">
                                 <i class="bi bi-x-circle"></i> Kosongkan Preview
                             </button>
@@ -73,6 +75,7 @@
                         <form action="{{ route('setting.import.admin-master.commit') }}" method="POST">
                             @csrf
                             <input type="hidden" name="target" value="{{ $target }}">
+                            <input type="hidden" name="return_url" value="{{ $returnUrl }}">
 
                             <div class="table-responsive">
                                 <table class="table table-bordered" id="preview-table">

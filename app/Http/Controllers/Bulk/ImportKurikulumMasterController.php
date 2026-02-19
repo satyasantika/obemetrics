@@ -93,6 +93,7 @@ class ImportKurikulumMasterController extends Controller
         $target = $this->resolveTarget($request->query('target'));
         $preview = session($this->previewSessionKey($kurikulum, $target), []);
         $semesters = Semester::query()->orderBy('kode')->get();
+        $returnUrl = $this->resolveReturnUrl($request);
 
         return view('setting.bulk-import.kurikulum-master', [
             'kurikulum' => $kurikulum,
@@ -100,6 +101,7 @@ class ImportKurikulumMasterController extends Controller
             'target' => $target,
             'preview' => $preview,
             'semesters' => $semesters,
+            'returnUrl' => $returnUrl,
         ]);
     }
 
@@ -164,7 +166,10 @@ class ImportKurikulumMasterController extends Controller
                 ],
             ]);
 
-            return to_route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => $target])
+            return to_route('setting.import.kurikulum-master', $this->withReturnUrl([
+                'kurikulum' => $kurikulum->id,
+                'target' => $target,
+            ], $request))
                 ->with('success', 'Data berhasil dibaca. Silakan pilih data yang akan diproses.');
         } catch (\Throwable $e) {
             return back()->with('error', 'Gagal membaca file: ' . $e->getMessage());
@@ -187,12 +192,18 @@ class ImportKurikulumMasterController extends Controller
         $semesterId = $request->input('semester_id') ?: ($preview['semester_id'] ?? null);
 
         if (empty($rows)) {
-            return to_route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => $target])
+            return to_route('setting.import.kurikulum-master', $this->withReturnUrl([
+                'kurikulum' => $kurikulum->id,
+                'target' => $target,
+            ], $request))
                 ->with('error', 'Tidak ada data preview untuk diproses.');
         }
 
         if (!empty($meta['requires_semester']) && empty($semesterId)) {
-            return to_route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => $target])
+            return to_route('setting.import.kurikulum-master', $this->withReturnUrl([
+                'kurikulum' => $kurikulum->id,
+                'target' => $target,
+            ], $request))
                 ->with('error', 'Semester wajib dipilih untuk target import ini.');
         }
 
@@ -220,7 +231,10 @@ class ImportKurikulumMasterController extends Controller
             $message .= ' Beberapa baris dilewati: ' . implode(' | ', array_slice($skipped, 0, 5));
         }
 
-        return to_route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => $target])
+        return to_route('setting.import.kurikulum-master', $this->withReturnUrl([
+            'kurikulum' => $kurikulum->id,
+            'target' => $target,
+        ], $request))
             ->with('success', $message);
     }
 
@@ -256,7 +270,10 @@ class ImportKurikulumMasterController extends Controller
         $target = $this->resolveTarget($request->input('target'));
         session()->forget($this->previewSessionKey($kurikulum, $target));
 
-        return to_route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => $target])
+        return to_route('setting.import.kurikulum-master', $this->withReturnUrl([
+            'kurikulum' => $kurikulum->id,
+            'target' => $target,
+        ], $request))
             ->with('success', 'Preview berhasil dikosongkan.');
     }
 
@@ -542,6 +559,25 @@ class ImportKurikulumMasterController extends Controller
         return array_key_exists((string) $target, self::TARGETS)
             ? (string) $target
             : array_key_first(self::TARGETS);
+    }
+
+    private function resolveReturnUrl(Request $request): string
+    {
+        $candidate = (string) $request->query('return_url', '');
+        if ($candidate === '') {
+            $candidate = (string) $request->input('return_url', '');
+        }
+        if ($candidate === '') {
+            $candidate = (string) url()->previous();
+        }
+
+        return $candidate !== '' ? $candidate : route('home');
+    }
+
+    private function withReturnUrl(array $params, Request $request): array
+    {
+        $params['return_url'] = $this->resolveReturnUrl($request);
+        return $params;
     }
 
     private function previewSessionKey(Kurikulum $kurikulum, string $target): string

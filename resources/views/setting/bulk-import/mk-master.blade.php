@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-header">
                     Bulk Import Data {{ $targets[$target]['label'] ?? 'N/A' }}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
+                    <a href="{{ $returnUrl }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                 </div>
 
                 <div class="card-body">
@@ -23,12 +23,13 @@
                     </div>
 
                     @php
-                        $selectedSemesterId = old('semester_id') ?? ($preview['semester_id'] ?? '');
+                        $selectedSemesterId = old('semester_id') ?? request('semester_id') ?? ($preview['semester_id'] ?? '');
                     @endphp
 
                     <form action="{{ route('setting.import.mk-master.upload', $mk->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="target" id="target" value="{{ $target }}">
+                        <input type="hidden" name="return_url" value="{{ $returnUrl }}">
                         <div class="row mt-2">
                             <div class="col-md-3 text-end">Import Data <span class="text-danger">*</span></div>
                             <div class="col">
@@ -48,6 +49,9 @@
                                     @endforeach
                                 </select>
                                 <small class="text-muted">Isian Semester wajib diisi untuk import SubCPMK, Tagihan Tugas, dan Interaksi SubCPMK >< Tagihan.</small>
+                                @if ($target === 'join_subcpmk_penugasans')
+                                    <small class="text-muted d-block">Template target ini berbentuk matriks (baris = penugasan, kolom = subCPMK). Cukup isi bobot pada sel.</small>
+                                @endif
                             </div>
                         </div>
 
@@ -64,7 +68,10 @@
                         <div class="row mt-3">
                             <div class="col-md-3"></div>
                             <div class="col">
-                                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-upload"></i> Upload &amp; Preview</button>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-upload"></i>
+                                    {{ $target === 'join_subcpmk_penugasans' ? 'Upload & Simpan Langsung' : 'Upload & Preview' }}
+                                </button>
                             </div>
                         </div>
                         <span class="text-danger">(*) Wajib diisi.</span>
@@ -76,13 +83,14 @@
 
     <div class="row justify-content-center">
         <div class="col">
-            @if (!empty($preview['rows']))
+            @if ($target !== 'join_subcpmk_penugasans' && !empty($preview['rows']))
                 <div class="card mt-3">
                     <div class="card-header">
                         <span class="h5">Preview @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>
                         <form action="{{ route('setting.import.mk-master.clear', $mk->id) }}" method="POST" class="float-end" style="display:inline;">
                             @csrf
                             <input type="hidden" name="target" value="{{ $target }}">
+                            <input type="hidden" name="return_url" value="{{ $returnUrl }}">
                             <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus preview data?');">
                                 <i class="bi bi-x-circle"></i> Kosongkan Preview
                             </button>
@@ -102,6 +110,7 @@
                             @csrf
                             <input type="hidden" name="target" value="{{ $target }}">
                             <input type="hidden" name="semester_id" value="{{ $preview['semester_id'] ?? '' }}">
+                            <input type="hidden" name="return_url" value="{{ $returnUrl }}">
 
                             <div class="table-responsive">
                                 <table class="table table-bordered" id="preview-table">
@@ -139,6 +148,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const targetSelect = document.getElementById('target');
+    const semesterSelect = document.getElementById('semester_id');
     const downloadTemplate = document.getElementById('download-template');
     const selectAll = document.getElementById('select-all');
     const rowChecks = document.querySelectorAll('.row-check');
@@ -150,7 +160,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const target = targetSelect.value || '';
         const base = '{{ route("setting.import.mk-master.template", $mk->id) }}';
-        const url = base + '?target=' + encodeURIComponent(target);
+        const params = new URLSearchParams();
+        params.set('target', target);
+        if (semesterSelect && semesterSelect.value) {
+            params.set('semester_id', semesterSelect.value);
+        }
+        const url = base + '?' + params.toString();
         const label = '{{ $targets[$target]["label"] }}' || 'template';
         const mataKuliah = '{{ Str::slug((string) ($mk->kode . '-' . $mk->nama ?? 'mata kuliah'), '-') }}';
         const fileName = 'import-' + label.toLowerCase().replace(/\s+/g, '-') + '-' + mataKuliah  + '.xlsx';
@@ -161,6 +176,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (targetSelect) {
         targetSelect.addEventListener('change', updateTemplateLink);
         updateTemplateLink();
+    }
+
+    if (semesterSelect) {
+        semesterSelect.addEventListener('change', updateTemplateLink);
     }
 
     if (selectAll) {

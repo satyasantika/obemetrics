@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ImportMkMasterController extends Controller
@@ -59,6 +60,7 @@ class ImportMkMasterController extends Controller
         $target = $this->resolveTarget($request->query('target'));
         $preview = session($this->previewSessionKey($mk, $target), []);
         $semesters = Semester::query()->orderBy('kode')->get();
+        $returnUrl = $this->resolveReturnUrl($request);
 
         return view('setting.bulk-import.mk-master', [
             'mk' => $mk,
@@ -66,6 +68,7 @@ class ImportMkMasterController extends Controller
             'target' => $target,
             'preview' => $preview,
             'semesters' => $semesters,
+            'returnUrl' => $returnUrl,
         ]);
     }
 
@@ -88,6 +91,26 @@ class ImportMkMasterController extends Controller
             $spreadsheet = IOFactory::load($request->file('file')->getPathname());
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray(null, true, true, true);
+
+            if ($target === 'join_subcpmk_penugasans') {
+                $this->assertSemester((string) $request->semester_id);
+                $previewRows = $this->parseJoinSubcpmkPenugasanMatrix($rows, $mk, (string) $request->semester_id);
+
+                if (empty($previewRows)) {
+                    return back()->with('error', 'Tidak ada bobot yang terisi pada template matriks.');
+                }
+
+                $saved = 0;
+                foreach ($previewRows as $row) {
+                    $this->persistRow($target, $row, $mk, (string) $request->semester_id);
+                    $saved++;
+                }
+
+                session()->forget($this->previewSessionKey($mk, $target));
+
+                return to_route('mks.joinsubcpmkpenugasans.index', ['mk' => $mk->id, 'semester_id' => $request->semester_id])
+                    ->with('success', "data SubCPMK telah diimport ke Penugasan.");
+            }
 
             $headerMap = $this->buildHeaderMap($rows[1] ?? []);
             $missingHeaders = collect($meta['required'])
@@ -130,7 +153,11 @@ class ImportMkMasterController extends Controller
                 ],
             ]);
 
-            return to_route('setting.import.mk-master', ['mk' => $mk->id, 'target' => $target])
+            return to_route('setting.import.mk-master', $this->withReturnUrl([
+                'mk' => $mk->id,
+                'target' => $target,
+                'semester_id' => $request->semester_id,
+            ], $request))
                 ->with('success', 'Data berhasil dibaca. Silakan pilih data yang akan diproses.');
         } catch (\Throwable $e) {
             return back()->with('error', 'Gagal membaca file: ' . $e->getMessage());
@@ -152,13 +179,21 @@ class ImportMkMasterController extends Controller
         $rows = $preview['rows'] ?? [];
 
         if (empty($rows)) {
-            return to_route('setting.import.mk-master', ['mk' => $mk->id, 'target' => $target])
+            return to_route('setting.import.mk-master', $this->withReturnUrl([
+                'mk' => $mk->id,
+                'target' => $target,
+                'semester_id' => $request->input('semester_id') ?: ($preview['semester_id'] ?? null),
+            ], $request))
                 ->with('error', 'Tidak ada data preview untuk diproses.');
         }
 
         $semesterId = $request->input('semester_id') ?: ($preview['semester_id'] ?? null);
         if (!empty($meta['requires_semester']) && empty($semesterId)) {
-            return to_route('setting.import.mk-master', ['mk' => $mk->id, 'target' => $target])
+            return to_route('setting.import.mk-master', $this->withReturnUrl([
+                'mk' => $mk->id,
+                'target' => $target,
+                'semester_id' => $semesterId,
+            ], $request))
                 ->with('error', 'Semester wajib dipilih untuk target import ini.');
         }
 
@@ -186,7 +221,11 @@ class ImportMkMasterController extends Controller
             $message .= ' Beberapa baris dilewati: ' . implode(' | ', array_slice($skipped, 0, 5));
         }
 
-        return to_route('setting.import.mk-master', ['mk' => $mk->id, 'target' => $target])
+        return to_route('setting.import.mk-master', $this->withReturnUrl([
+            'mk' => $mk->id,
+            'target' => $target,
+            'semester_id' => $semesterId,
+        ], $request))
             ->with('success', $message);
     }
 
@@ -194,6 +233,75 @@ class ImportMkMasterController extends Controller
     {
         $target = $this->resolveTarget($request->query('target'));
         $meta = self::TARGETS[$target];
+
+        if ($target === 'join_subcpmk_penugasans') {
+            $semesterId = (string) $request->query('semester_id', '');
+            $this->assertSemester($semesterId);
+
+            $subcpmks = Subcpmk::query()
+                ->where('semester_id', $semesterId)
+                ->whereHas('joinCplCpmk', function ($query) use ($mk) {
+                    $query->where('mk_id', $mk->id);
+                })
+                ->orderBy('kode')
+                ->get();
+
+            $penugasans = Penugasan::query()
+                ->where('mk_id', $mk->id)
+                ->where('semester_id', $semesterId)
+                ->orderBy('kode')
+                ->get();
+
+            $bobotMap = JoinSubcpmkPenugasan::query()
+                ->where('mk_id', $mk->id)
+                ->where('semester_id', $semesterId)
+                ->whereIn('subcpmk_id', $subcpmks->pluck('id'))
+                ->whereIn('penugasan_id', $penugasans->pluck('id'))
+                ->get()
+                ->keyBy(fn ($item) => $item->penugasan_id . '_' . $item->subcpmk_id);
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+
+            $sheet->setCellValue('A1', 'penugasan');
+            $sheet->getStyle('A1')->getFont()->setBold(true);
+
+            $columnIndex = 2;
+            foreach ($subcpmks as $subcpmk) {
+                $column = Coordinate::stringFromColumnIndex($columnIndex);
+                $sheet->setCellValue($column . '1', $subcpmk->kode);
+                $sheet->getStyle($column . '1')->getFont()->setBold(true);
+                $sheet->getColumnDimension($column)->setAutoSize(true);
+                $columnIndex++;
+            }
+            $sheet->getColumnDimension('A')->setWidth(36);
+
+            $rowIndex = 2;
+            foreach ($penugasans as $penugasan) {
+                $sheet->setCellValue('A' . $rowIndex, $penugasan->kode . ': ' . $penugasan->nama);
+
+                $columnIndex = 2;
+                foreach ($subcpmks as $subcpmk) {
+                    $column = Coordinate::stringFromColumnIndex($columnIndex);
+                    $key = $penugasan->id . '_' . $subcpmk->id;
+                    $bobot = $bobotMap[$key]->bobot ?? null;
+                    $sheet->setCellValue($column . $rowIndex, $bobot);
+                    $columnIndex++;
+                }
+
+                $rowIndex++;
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $waktu_download = now()->format('YmdHis');
+            $fileName = 'import' . $waktu_download . '-subcpmk-penugasan-matrix-' . Str::slug((string) ($mk->kode ?? 'mk'), '-') . '.xlsx';
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        }
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -222,7 +330,11 @@ class ImportMkMasterController extends Controller
         $target = $this->resolveTarget($request->input('target'));
         session()->forget($this->previewSessionKey($mk, $target));
 
-        return to_route('setting.import.mk-master', ['mk' => $mk->id, 'target' => $target])
+        return to_route('setting.import.mk-master', $this->withReturnUrl([
+            'mk' => $mk->id,
+            'target' => $target,
+            'semester_id' => $request->input('semester_id'),
+        ], $request))
             ->with('success', 'Preview berhasil dikosongkan.');
     }
 
@@ -387,8 +499,15 @@ class ImportMkMasterController extends Controller
                 }
 
                 JoinSubcpmkPenugasan::updateOrCreate(
-                    ['mk_id' => $mk->id, 'subcpmk_id' => $subcpmk->id, 'penugasan_id' => $penugasan->id],
-                    ['bobot' => $bobot]
+                    [
+                        'mk_id' => $mk->id,
+                        'semester_id' => $semesterId,
+                        'subcpmk_id' => $subcpmk->id,
+                        'penugasan_id' => $penugasan->id,
+                    ],
+                    [
+                        'bobot' => $bobot,
+                    ]
                 );
                 return;
         }
@@ -459,5 +578,107 @@ class ImportMkMasterController extends Controller
         if (empty($semesterId)) {
             throw new \RuntimeException('Semester wajib dipilih.');
         }
+    }
+
+    private function resolveReturnUrl(Request $request): string
+    {
+        $candidate = (string) $request->query('return_url', '');
+        if ($candidate === '') {
+            $candidate = (string) $request->input('return_url', '');
+        }
+        if ($candidate === '') {
+            $candidate = (string) url()->previous();
+        }
+
+        return $candidate !== '' ? $candidate : route('home');
+    }
+
+    private function withReturnUrl(array $params, Request $request): array
+    {
+        $params['return_url'] = $this->resolveReturnUrl($request);
+        return $params;
+    }
+
+    private function parseJoinSubcpmkPenugasanMatrix(array $rows, Mk $mk, string $semesterId): array
+    {
+        $headerRow = $rows[1] ?? [];
+        $subcpmkCodeByColumn = [];
+
+        foreach ($headerRow as $columnLetter => $value) {
+            if ($columnLetter === 'A') {
+                continue;
+            }
+
+            $kodeSubcpmk = trim((string) ($value ?? ''));
+            if ($kodeSubcpmk !== '') {
+                $subcpmkCodeByColumn[$columnLetter] = $kodeSubcpmk;
+            }
+        }
+
+        if (empty($subcpmkCodeByColumn)) {
+            throw new \RuntimeException('Header SubCPMK tidak ditemukan pada template matriks.');
+        }
+
+        $subcpmkByCode = Subcpmk::query()
+            ->where('semester_id', $semesterId)
+            ->whereHas('joinCplCpmk', function ($query) use ($mk) {
+                $query->where('mk_id', $mk->id);
+            })
+            ->whereIn('kode', array_values($subcpmkCodeByColumn))
+            ->get()
+            ->keyBy('kode');
+
+        $previewRows = [];
+        foreach ($rows as $rowIndex => $row) {
+            if ($rowIndex === 1) {
+                continue;
+            }
+
+            $penugasanLabel = trim((string) ($row['A'] ?? ''));
+            if ($penugasanLabel === '') {
+                continue;
+            }
+
+            $penugasanCode = trim((string) Str::before($penugasanLabel, ':'));
+            if ($penugasanCode === '') {
+                $penugasanCode = $penugasanLabel;
+            }
+
+            $penugasan = Penugasan::query()
+                ->where('mk_id', $mk->id)
+                ->where('semester_id', $semesterId)
+                ->where('kode', $penugasanCode)
+                ->first();
+
+            if (!$penugasan) {
+                continue;
+            }
+
+            foreach ($subcpmkCodeByColumn as $columnLetter => $kodeSubcpmk) {
+                $rawValue = trim((string) ($row[$columnLetter] ?? ''));
+                if ($rawValue === '') {
+                    continue;
+                }
+
+                if (!is_numeric($rawValue)) {
+                    throw new \RuntimeException('Nilai bobot bukan angka pada baris ' . $rowIndex . ', kolom ' . $columnLetter . '.');
+                }
+
+                $subcpmk = $subcpmkByCode[$kodeSubcpmk] ?? null;
+                if (!$subcpmk) {
+                    throw new \RuntimeException('SubCPMK tidak ditemukan: ' . $kodeSubcpmk);
+                }
+
+                $previewRows[] = [
+                    'kode_subcpmk' => $subcpmk->kode,
+                    'nama_subcpmk' => $subcpmk->nama,
+                    'kode_penugasan' => $penugasan->kode,
+                    'nama_penugasan' => $penugasan->nama,
+                    'bobot' => $rawValue,
+                ];
+            }
+        }
+
+        return $previewRows;
     }
 }
