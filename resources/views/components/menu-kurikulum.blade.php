@@ -19,3 +19,6 @@
 <a href="{{ route('kurikulums.joinbkmks.index',[$kurikulum->id]) }}" class="btn btn-sm btn-secondary mt-1">
     <i class="bi bi-gear"></i> Interaksi BK >< Mata Kuliah
 </a>
+<a href="{{ route('kurikulums.joincplmks.index',[$kurikulum->id]) }}" class="btn btn-sm btn-secondary mt-1">
+    <i class="bi bi-gear"></i> Pemetaan Rencana Asesmen CPL
+</a>

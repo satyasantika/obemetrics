@@ -23,4 +23,9 @@ class Bk extends Model
         return $this->hasMany(JoinCplBk::class);
     }
 
+    public function joinBkMks(): HasMany
+    {
+        return $this->hasMany(JoinBkMk::class);
+    }
+
 }
