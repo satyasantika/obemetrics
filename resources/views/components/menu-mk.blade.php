@@ -25,3 +25,6 @@
 <a href="{{ route('mks.ketercapaians.index',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
     <i class="bi bi-graph-up"></i> Evaluasi Ketercapaian CPL 2.0
 </a>
+<a href="{{ route('mks.spyderweb',[$mk->id]) }}" class="btn btn-sm btn-primary mt-1">
+    <i class="bi bi-graph-up"></i> Jaring Laba-laba Pencapaian Mahasiswa
+</a>

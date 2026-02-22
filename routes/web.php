@@ -62,7 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::get('kurikulums/{kurikulum}/rencana-asesmen', [App\Http\Controllers\Prodi\AsesmenCplController::class,'rencanaAsesmen'])->name('kurikulums.rencana-asesmen');
     Route::get('kurikulums/{kurikulum}/analisis-asesmen', [App\Http\Controllers\Prodi\AsesmenCplController::class,'analisisAsesmen'])->name('kurikulums.analisis-asesmen');
     Route::get('kurikulums/{kurikulum}/spyderweb-cpl', [App\Http\Controllers\Prodi\AsesmenCplController::class,'spyderwebCpl'])->name('kurikulums.spyderweb-cpl');
-    Route::get('kurikulums/{kurikulum}/laporan-mahasiswa', [App\Http\Controllers\Prodi\AsesmenCplController::class,'laporanMahasiswa'])->name('kurikulums.laporan-mahasiswa');
+    Route::get('kurikulums/{kurikulum}/laporan-kmahasiswa', [App\Http\Controllers\Prodi\AsesmenCplController::class,'laporanMahasiswa'])->name('kurikulums.laporan-mahasiswa');
     // Dosen >< MK
     Route::resource('mks.users', App\Http\Controllers\Prodi\JoinMkUserController::class)->only('index','update');
 
@@ -83,6 +83,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('mks.workclouds', App\Http\Controllers\Dosen\WorkcloudController::class)->only('index');
     Route::resource('mks.achievements', App\Http\Controllers\Dosen\AchievementController::class)->only('index');
     Route::resource('mks.ketercapaians', App\Http\Controllers\Dosen\KetercapaianController::class)->only('index');
+    Route::get('mks/{mk}/spyderweb', [App\Http\Controllers\Dosen\KetercapaianController::class, 'spyderWeb'])->name('mks.spyderweb');
 
     // Bulk Upload Nilai MK
     Route::get('setting/import/nilais/{mk}', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'importNilaiForm'])->name('setting.import.nilais');

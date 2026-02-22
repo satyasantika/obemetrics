@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Dosen;
 
 use App\Http\Controllers\Controller;
+use App\Models\KontrakMk;
 use App\Models\Mk;
+use App\Models\Nilai;
 use App\Models\Semester;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -18,6 +20,217 @@ class KetercapaianController extends Controller
     public function index(Mk $mk)
     {
         return view('obe.report.mk-ketercapaian', $this->buildNilaiPageData($mk));
+    }
+
+    public function spyderWeb(Mk $mk)
+    {
+        $currentUserId = auth()->id();
+
+        $angkaToHuruf = function ($nilaiAngka) {
+            if ($nilaiAngka === null) {
+                return null;
+            }
+
+            $nilai = (float) $nilaiAngka;
+            return match (true) {
+                $nilai >= 85 => 'A',
+                $nilai >= 80 => 'A-',
+                $nilai >= 75 => 'B+',
+                $nilai >= 70 => 'B',
+                $nilai >= 65 => 'B-',
+                $nilai >= 60 => 'C+',
+                $nilai >= 55 => 'C',
+                $nilai >= 50 => 'C-',
+                $nilai >= 40 => 'D',
+                default => 'E',
+            };
+        };
+
+        $normalizeHuruf = function ($huruf) {
+            if ($huruf === null) {
+                return null;
+            }
+
+            $grade = strtoupper(trim((string) $huruf));
+            return $grade !== '' ? $grade : null;
+        };
+
+        $resolveHuruf = function ($kontrak) use ($angkaToHuruf, $normalizeHuruf) {
+            $grade = $normalizeHuruf($kontrak->nilai_huruf ?? null);
+            if ($grade !== null) {
+                return $grade;
+            }
+
+            return $angkaToHuruf($kontrak->nilai_angka ?? null);
+        };
+
+        $kontrakQuery = KontrakMk::query()
+            ->with(['mahasiswa', 'mk'])
+            ->where('mk_id', $mk->id)
+            ->whereNotNull('mahasiswa_id');
+
+        if ($currentUserId) {
+            $kontrakQuery->where('user_id', $currentUserId);
+        } else {
+            $kontrakQuery->whereRaw('1 = 0');
+        }
+
+        $kontrakMks = $kontrakQuery
+            ->get()
+            ->filter(fn ($item) => $item->mahasiswa !== null)
+            ->values();
+
+        $mahasiswaIds = $kontrakMks->pluck('mahasiswa_id')->filter()->unique()->values();
+
+        $nilaiByMahasiswa = Nilai::query()
+            ->where('mk_id', $mk->id)
+            ->whereIn('mahasiswa_id', $mahasiswaIds)
+            ->with([
+                'penugasan.joinSubcpmkPenugasans.subcpmk.joinCplCpmk.cpmk',
+            ])
+            ->get()
+            ->groupBy('mahasiswa_id');
+
+        $byMahasiswa = $kontrakMks->groupBy('mahasiswa_id');
+
+        $detailPerMahasiswa = $byMahasiswa->map(function ($kontraks, $mahasiswaId) use ($resolveHuruf, $angkaToHuruf, $nilaiByMahasiswa) {
+            $mahasiswa = $kontraks->first()->mahasiswa;
+
+            $totalSks = (int) $kontraks->sum(fn ($kontrak) => (int) optional($kontrak->mk)->sks);
+            $nilaiAngkaRerata = $kontraks
+                ->whereNotNull('nilai_angka')
+                ->avg('nilai_angka');
+            $nilaiAngkaRerata = $nilaiAngkaRerata !== null ? round((float) $nilaiAngkaRerata, 2) : 0;
+
+            $detailMks = $kontraks
+                ->sortBy(fn ($kontrak) => optional($kontrak->mk)->nama)
+                ->values()
+                ->map(function ($kontrak) use ($totalSks, $resolveHuruf) {
+                    $sks = (int) optional($kontrak->mk)->sks;
+                    $kontribusi = $totalSks > 0 ? round(($sks / $totalSks) * 100, 2) : 0;
+
+                    return [
+                        'kode' => optional($kontrak->mk)->kode,
+                        'nama' => optional($kontrak->mk)->nama,
+                        'sks' => $sks,
+                        'nilai' => $kontrak->nilai_angka !== null ? round((float) $kontrak->nilai_angka, 2) : null,
+                        'nilai_huruf' => $resolveHuruf($kontrak),
+                        'kontribusi' => $kontribusi,
+                    ];
+                });
+
+            $allowedSemesterIds = $kontraks->pluck('semester_id')->filter()->unique()->flip()->all();
+            $nilaiMahasiswa = collect($nilaiByMahasiswa->get($mahasiswaId) ?? [])
+                ->filter(function ($nilai) use ($allowedSemesterIds) {
+                    return isset($allowedSemesterIds[(string) $nilai->semester_id]);
+                })
+                ->values();
+
+            $penugasanAgg = [];
+            $subcpmkAgg = [];
+            $cpmkAgg = [];
+
+            foreach ($nilaiMahasiswa as $nilai) {
+                $nilaiAngka = $nilai->nilai;
+                if ($nilaiAngka === null) {
+                    continue;
+                }
+
+                $penugasan = $nilai->penugasan;
+                if (!$penugasan) {
+                    continue;
+                }
+
+                $penugasanId = (string) $penugasan->id;
+                if (!isset($penugasanAgg[$penugasanId])) {
+                    $penugasanAgg[$penugasanId] = [
+                        'kode' => $penugasan->kode,
+                        'nama' => $penugasan->nama,
+                        'total' => 0.0,
+                        'count' => 0,
+                    ];
+                }
+                $penugasanAgg[$penugasanId]['total'] += (float) $nilaiAngka;
+                $penugasanAgg[$penugasanId]['count']++;
+
+                foreach ($penugasan->joinSubcpmkPenugasans as $jsp) {
+                    $subcpmk = $jsp->subcpmk;
+                    if (!$subcpmk) {
+                        continue;
+                    }
+
+                    $subcpmkId = (string) $subcpmk->id;
+                    if (!isset($subcpmkAgg[$subcpmkId])) {
+                        $subcpmkAgg[$subcpmkId] = [
+                            'kode' => $subcpmk->kode,
+                            'nama' => $subcpmk->nama,
+                            'total' => 0.0,
+                            'count' => 0,
+                        ];
+                    }
+                    $subcpmkAgg[$subcpmkId]['total'] += (float) $nilaiAngka;
+                    $subcpmkAgg[$subcpmkId]['count']++;
+
+                    $cpmk = optional($subcpmk->joinCplCpmk)->cpmk;
+                    if (!$cpmk) {
+                        continue;
+                    }
+
+                    $cpmkId = (string) $cpmk->id;
+                    if (!isset($cpmkAgg[$cpmkId])) {
+                        $cpmkAgg[$cpmkId] = [
+                            'kode' => $cpmk->kode,
+                            'nama' => $cpmk->nama,
+                            'total' => 0.0,
+                            'count' => 0,
+                        ];
+                    }
+                    $cpmkAgg[$cpmkId]['total'] += (float) $nilaiAngka;
+                    $cpmkAgg[$cpmkId]['count']++;
+                }
+            }
+
+            $toScores = function ($agg) {
+                return collect($agg)
+                    ->map(function ($item) {
+                        $avg = ($item['count'] ?? 0) > 0
+                            ? round(((float) $item['total']) / ((int) $item['count']), 2)
+                            : 0;
+
+                        return [
+                            'kode' => $item['kode'] ?? '-',
+                            'nama' => $item['nama'] ?? '-',
+                            'nilai' => $avg,
+                        ];
+                    })
+                    ->sortBy('kode')
+                    ->values();
+            };
+
+            return [
+                'mahasiswa' => [
+                    'id' => $mahasiswaId,
+                    'nim' => $mahasiswa->nim,
+                    'nama' => $mahasiswa->nama,
+                    'nilai_angka' => $nilaiAngkaRerata,
+                    'nilai_huruf' => $angkaToHuruf($nilaiAngkaRerata),
+                ],
+                'detail_mks' => $detailMks->values(),
+                'cpmk_scores' => $toScores($cpmkAgg),
+                'subcpmk_scores' => $toScores($subcpmkAgg),
+                'penugasan_scores' => $toScores($penugasanAgg),
+            ];
+        });
+
+        $mahasiswas = $detailPerMahasiswa
+            ->pluck('mahasiswa')
+            ->sortBy('nim')
+            ->values();
+
+        return view('obe.report.laporan-mk')
+            ->with('mk', $mk)
+            ->with('mahasiswas', $mahasiswas)
+            ->with('detailPerMahasiswa', $detailPerMahasiswa);
     }
 
     private function buildNilaiPageData(Mk $mk): array
