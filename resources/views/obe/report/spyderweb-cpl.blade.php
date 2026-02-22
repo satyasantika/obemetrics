@@ -30,7 +30,7 @@
             $hasData = collect($chart['labels'] ?? [])->isNotEmpty();
             $canvasId = 'chart-cpl-' . $cpl->id;
         @endphp
-        <div class="col-md-6 mt-3">
+        <div class="col-md-6 col-sm-auto mt-3">
             <div class="card">
                 <div class="card-header">
                     <strong>Grafik {{ $cpl->kode }}</strong>
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 plugins: {
                     legend: {
-                        position: 'top'
+                        position: 'bottom'
                     },
                     tooltip: {
                         callbacks: {

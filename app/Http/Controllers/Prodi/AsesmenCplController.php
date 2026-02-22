@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Prodi;
 
+use App\Models\KontrakMk;
 use App\Models\Kurikulum;
 use App\Http\Controllers\Controller;
 
@@ -244,5 +245,237 @@ class AsesmenCplController extends Controller
             ->with('cpls', $cpls)
             ->with('mks', $mks)
             ->with('chartPerCpl', $chartPerCpl);
+    }
+
+    public function laporanMahasiswa(Kurikulum $kurikulum)
+    {
+        $target = (float) ($kurikulum->target_capaian_lulusan ?? 0);
+        $gradePointMap = [
+            'A' => 4.0,
+            'A-' => 3.7,
+            'B+' => 3.4,
+            'B' => 3.0,
+            'B-' => 2.7,
+            'C+' => 2.4,
+            'C' => 2.0,
+            'C-' => 1.7,
+            'D' => 1.0,
+            'E' => 0.0,
+        ];
+
+        $normalizeHuruf = function ($huruf) {
+            if ($huruf === null) {
+                return null;
+            }
+
+            $grade = strtoupper(trim((string) $huruf));
+            return $grade !== '' ? $grade : null;
+        };
+
+        $angkaToHuruf = function ($nilaiAngka) {
+            if ($nilaiAngka === null) {
+                return null;
+            }
+
+            $nilai = (float) $nilaiAngka;
+            return match (true) {
+                $nilai >= 85 => 'A',
+                $nilai >= 80 => 'A-',
+                $nilai >= 75 => 'B+',
+                $nilai >= 70 => 'B',
+                $nilai >= 65 => 'B-',
+                $nilai >= 60 => 'C+',
+                $nilai >= 55 => 'C',
+                $nilai >= 50 => 'C-',
+                $nilai >= 40 => 'D',
+                default => 'E',
+            };
+        };
+
+        $poinToHuruf = function ($poin) use ($gradePointMap) {
+            $nilai = (float) ($poin ?? 0);
+            $terdekat = 'E';
+            $jarakMin = INF;
+
+            foreach ($gradePointMap as $huruf => $bobot) {
+                $jarak = abs($nilai - $bobot);
+                if ($jarak < $jarakMin) {
+                    $jarakMin = $jarak;
+                    $terdekat = $huruf;
+                }
+            }
+
+            return $terdekat;
+        };
+
+        $hurufToBobot = function ($huruf) use ($gradePointMap, $normalizeHuruf) {
+            $grade = $normalizeHuruf($huruf);
+            return $grade !== null && array_key_exists($grade, $gradePointMap)
+                ? (float) $gradePointMap[$grade]
+                : null;
+        };
+
+        $resolveHuruf = function ($kontrak) use ($normalizeHuruf, $angkaToHuruf) {
+            $grade = $normalizeHuruf($kontrak->nilai_huruf ?? null);
+            if ($grade !== null) {
+                return $grade;
+            }
+
+            return $angkaToHuruf($kontrak->nilai_angka ?? null);
+        };
+
+        $cpls = $kurikulum->cpls()
+            ->with('joinCplBks.bk.joinBkMks.mk')
+            ->get();
+
+        $profils = $kurikulum->profils()->get();
+        $joinProfilCplsByProfil = $kurikulum->joinProfilCpls()
+            ->get()
+            ->groupBy('profil_id');
+
+        $mkIds = $kurikulum->mks()->pluck('id');
+
+        $kontrakMks = KontrakMk::query()
+            ->with([
+                'mahasiswa',
+                'mk.joinCplCpmks.joinCplBk',
+            ])
+            ->whereIn('mk_id', $mkIds)
+            ->whereNotNull('mahasiswa_id')
+            ->get()
+            ->filter(fn ($item) => $item->mahasiswa !== null)
+            ->values();
+
+        $byMahasiswa = $kontrakMks->groupBy('mahasiswa_id');
+
+        $detailPerMahasiswa = $byMahasiswa->map(function ($kontraks, $mahasiswaId) use ($cpls, $profils, $joinProfilCplsByProfil, $target, $resolveHuruf, $hurufToBobot, $poinToHuruf, $gradePointMap) {
+            $mahasiswa = $kontraks->first()->mahasiswa;
+
+            $totalSks = (int) $kontraks->sum(fn ($kontrak) => (int) optional($kontrak->mk)->sks);
+
+            $totalSksIpk = 0;
+            $totalMutu = 0.0;
+            foreach ($kontraks as $kontrak) {
+                $sks = (int) optional($kontrak->mk)->sks;
+                $huruf = $resolveHuruf($kontrak);
+                $bobot = $hurufToBobot($huruf);
+
+                if ($sks > 0 && $bobot !== null) {
+                    $totalSksIpk += $sks;
+                    $totalMutu += $sks * $bobot;
+                }
+            }
+
+            $ipk = $totalSksIpk > 0 ? round($totalMutu / $totalSksIpk, 2) : 0.0;
+            $nilaiHurufMahasiswa = $poinToHuruf($ipk);
+            $bobotHurufMahasiswa = (float) ($gradePointMap[$nilaiHurufMahasiswa] ?? 0);
+
+            $detailMks = $kontraks
+                ->sortBy(fn ($kontrak) => optional($kontrak->mk)->nama)
+                ->values()
+                ->map(function ($kontrak) use ($totalSks, $resolveHuruf, $hurufToBobot) {
+                    $sks = (int) optional($kontrak->mk)->sks;
+                    $kontribusi = $totalSks > 0 ? round(($sks / $totalSks) * 100, 2) : 0;
+                    $huruf = $resolveHuruf($kontrak);
+                    $bobot = $hurufToBobot($huruf);
+
+                    return [
+                        'kode' => optional($kontrak->mk)->kode,
+                        'nama' => optional($kontrak->mk)->nama,
+                        'sks' => $sks,
+                        'nilai' => $kontrak->nilai_angka !== null ? round((float) $kontrak->nilai_angka, 2) : null,
+                        'nilai_huruf' => $huruf,
+                        'bobot_huruf' => $bobot,
+                        'kontribusi' => $kontribusi,
+                    ];
+                });
+
+            $kontrakByMk = $kontraks
+                ->whereNotNull('nilai_angka')
+                ->groupBy('mk_id')
+                ->map(fn ($items) => round((float) $items->avg('nilai_angka'), 2));
+
+            $cplScores = $cpls->map(function ($cpl) use ($kontrakByMk, $target) {
+                $mksCpl = $cpl->joinCplBks
+                    ->pluck('bk.joinBkMks')
+                    ->flatten()
+                    ->pluck('mk')
+                    ->filter()
+                    ->unique('id')
+                    ->values();
+
+                $totalSksCpl = (float) $mksCpl->sum(fn ($mk) => (int) ($mk->sks ?? 0));
+
+                $nilai = 0.0;
+                if ($totalSksCpl > 0) {
+                    foreach ($mksCpl as $mk) {
+                        $mkId = $mk->id;
+                        $mkSks = (float) ($mk->sks ?? 0);
+                        $bobot = $mkSks > 0 ? ($mkSks / $totalSksCpl) : 0.0;
+                        $nilaiMk = (float) ($kontrakByMk->get($mkId) ?? 0);
+                        $nilai += $bobot * $nilaiMk;
+                    }
+                }
+
+                $nilai = round($nilai, 2);
+
+                return [
+                    'id' => $cpl->id,
+                    'kode' => $cpl->kode,
+                    'nama' => $cpl->nama,
+                    'nilai' => $nilai,
+                    'tercapai' => $nilai >= $target,
+                ];
+            });
+
+            $cplScoreById = $cplScores->keyBy('id');
+            $profilScores = $profils->map(function ($profil) use ($joinProfilCplsByProfil, $cplScoreById) {
+                $cplIds = optional($joinProfilCplsByProfil->get($profil->id))
+                    ->pluck('cpl_id')
+                    ->filter()
+                    ->unique() ?? collect();
+
+                $jumlahCplPendukung = $cplIds->count();
+                $totalNilaiCpl = $cplIds->sum(function ($cplId) use ($cplScoreById) {
+                    return (float) data_get($cplScoreById->get($cplId), 'nilai', 0);
+                });
+
+                $nilai = $jumlahCplPendukung > 0
+                    ? ($totalNilaiCpl / $jumlahCplPendukung)
+                    : 0;
+
+                return [
+                    'kode' => $profil->kode,
+                    'nama' => $profil->nama,
+                    'nilai' => round((float) ($nilai ?? 0), 2),
+                ];
+            });
+
+            return [
+                'mahasiswa' => [
+                    'id' => $mahasiswaId,
+                    'nim' => $mahasiswa->nim,
+                    'nama' => $mahasiswa->nama,
+                    'sks_kontrak' => $totalSks,
+                    'nilai_huruf' => $nilaiHurufMahasiswa,
+                    'bobot_huruf' => $bobotHurufMahasiswa,
+                    'ipk' => $ipk,
+                ],
+                'detail_mks' => $detailMks->values(),
+                'cpl_scores' => $cplScores->values(),
+                'profil_scores' => $profilScores->values(),
+            ];
+        });
+
+        $mahasiswas = $detailPerMahasiswa
+            ->pluck('mahasiswa')
+            ->sortBy('nim')
+            ->values();
+
+        return view('obe.report.laporan-mahasiswa')
+            ->with('kurikulum', $kurikulum)
+            ->with('mahasiswas', $mahasiswas)
+            ->with('detailPerMahasiswa', $detailPerMahasiswa)
+            ->with('target', $target);
     }
 }

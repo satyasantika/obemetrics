@@ -28,3 +28,6 @@
 <a href="{{ route('kurikulums.spyderweb-cpl',[$kurikulum->id]) }}" class="btn btn-sm btn-secondary mt-1">
     <i class="bi bi-gear"></i> Grafik Jaring Laba-laba CPL
 </a>
+<a href="{{ route('kurikulums.laporan-mahasiswa',[$kurikulum->id]) }}" class="btn btn-sm btn-secondary mt-1">
+    <i class="bi bi-gear"></i> Resume Mahasiswa
+</a>

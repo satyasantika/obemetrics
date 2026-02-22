@@ -62,6 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::get('kurikulums/{kurikulum}/rencana-asesmen', [App\Http\Controllers\Prodi\AsesmenCplController::class,'rencanaAsesmen'])->name('kurikulums.rencana-asesmen');
     Route::get('kurikulums/{kurikulum}/analisis-asesmen', [App\Http\Controllers\Prodi\AsesmenCplController::class,'analisisAsesmen'])->name('kurikulums.analisis-asesmen');
     Route::get('kurikulums/{kurikulum}/spyderweb-cpl', [App\Http\Controllers\Prodi\AsesmenCplController::class,'spyderwebCpl'])->name('kurikulums.spyderweb-cpl');
+    Route::get('kurikulums/{kurikulum}/laporan-mahasiswa', [App\Http\Controllers\Prodi\AsesmenCplController::class,'laporanMahasiswa'])->name('kurikulums.laporan-mahasiswa');
     // Dosen >< MK
     Route::resource('mks.users', App\Http\Controllers\Prodi\JoinMkUserController::class)->only('index','update');
 
