@@ -201,4 +201,48 @@ class AsesmenCplController extends Controller
             ->with('bobotFraksiPerCplMk', $bobotFraksiPerCplMk)
             ->with('nilaiCplTertimbang', $nilaiCplTertimbang);
     }
+
+    public function spyderwebCpl(Kurikulum $kurikulum)
+    {
+        $cpls = $kurikulum->cpls()
+            ->with('joinCplBks.bk.joinBkMks.mk.kontrakMks')
+            ->get();
+
+        $mks = $kurikulum->mks;
+
+        $chartPerCpl = $cpls->mapWithKeys(function ($cpl) use ($kurikulum) {
+            $matkuls = $cpl->joinCplBks
+                ->pluck('bk.joinBkMks')
+                ->flatten()
+                ->pluck('mk')
+                ->filter(fn ($mk) => (string) $mk->kurikulum_id === (string) $kurikulum->id)
+                ->unique('id')
+                ->sortBy('nama')
+                ->values();
+
+            $labels = $matkuls->map(fn ($mk) => $mk->nama)->values();
+            $data = $matkuls
+                ->map(function ($mk) {
+                    $rerata = $mk->kontrakMks
+                        ->whereNotNull('nilai_angka')
+                        ->avg('nilai_angka');
+
+                    return $rerata !== null ? round((float) $rerata, 2) : 0;
+                })
+                ->values();
+
+            return [$cpl->id => [
+                'kode' => $cpl->kode,
+                'nama' => $cpl->nama,
+                'labels' => $labels,
+                'data' => $data,
+            ]];
+        });
+
+        return view('obe.report.spyderweb-cpl')
+            ->with('kurikulum', $kurikulum)
+            ->with('cpls', $cpls)
+            ->with('mks', $mks)
+            ->with('chartPerCpl', $chartPerCpl);
+    }
 }
