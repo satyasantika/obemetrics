@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Setting;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Permission;
+use App\Models\KontrakMk;
 use Illuminate\Http\Request;
 use App\DataTables\UsersDataTable;
 use Illuminate\Support\Facades\DB;
@@ -57,6 +58,14 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $name = strtoupper($user->name);
+        $isUsed = $user->joinProdiUsers()->exists()
+            || $user->joinMkUsers()->exists()
+            || KontrakMk::query()->where('user_id', $user->id)->exists();
+
+        if ($isUsed) {
+            return to_route('users.index')->with('error', 'user '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
+        }
+
         $user->delete();
         return to_route('users.index')->with('danger','user '.$name.' telah dihapus');
     }

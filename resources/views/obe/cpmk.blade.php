@@ -133,10 +133,21 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    @php
+                        $canDeleteCpmk = !$cpmk->joinCplCpmks()->exists() && !$cpmk->subcpmks()->exists();
+                    @endphp
+                    @if ($canDeleteCpmk)
+                        <button type="button" class="btn btn-outline-danger btn-sm me-auto" onclick="if(confirm('Yakin akan menghapus CPMK {{ $cpmk->kode }}?')){ document.getElementById('delete-cpmk-{{ $cpmk->id }}').submit(); }"><i class="bi bi-trash"></i> Hapus</button>
+                    @else
+                        <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+                    @endif
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
                 </div>
             </form>
+            @if ($canDeleteCpmk)
+                <form id="delete-cpmk-{{ $cpmk->id }}" action="{{ route('mks.cpmks.destroy',[$mk->id,$cpmk->id]) }}" method="POST" class="d-none">@csrf @method('DELETE')</form>
+            @endif
         </div>
     </div>
 </div>

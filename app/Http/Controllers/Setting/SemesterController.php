@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Setting;
 
 use App\Models\Semester;
+use App\Models\Subcpmk;
+use App\Models\Penugasan;
+use App\Models\JoinSubcpmkPenugasan;
+use App\Models\Nilai;
 use Illuminate\Http\Request;
 use App\DataTables\SemestersDataTable;
 use App\Http\Controllers\Controller;
@@ -52,6 +56,17 @@ class SemesterController extends Controller
     public function destroy(Semester $semester)
     {
         $name = strtoupper($semester->nama);
+
+        $isUsed = $semester->kontrakmks()->exists()
+            || Subcpmk::query()->where('semester_id', $semester->id)->exists()
+            || Penugasan::query()->where('semester_id', $semester->id)->exists()
+            || JoinSubcpmkPenugasan::query()->where('semester_id', $semester->id)->exists()
+            || Nilai::query()->where('semester_id', $semester->id)->exists();
+
+        if ($isUsed) {
+            return to_route('semesters.index')->with('error','Semester '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
+        }
+
         $semester->delete();
         return to_route('semesters.index')->with('warning','Semester '.$name.' telah dihapus');
     }

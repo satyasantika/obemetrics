@@ -206,10 +206,26 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    @php
+                        $canDeleteMk =
+                            !$mk->joinBkMks()->exists() &&
+                            !$mk->joinMkUsers()->exists() &&
+                            !$mk->kontrakMks()->exists() &&
+                            !$mk->cpmks()->exists() &&
+                            !$mk->penugasans()->exists();
+                    @endphp
+                    @if ($canDeleteMk)
+                        <button type="button" class="btn btn-outline-danger btn-sm me-auto" onclick="if(confirm('Yakin akan menghapus MK {{ $mk->kode }} - {{ $mk->nama }}?')){ document.getElementById('delete-mk-{{ $mk->id }}').submit(); }"><i class="bi bi-trash"></i> Hapus</button>
+                    @else
+                        <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+                    @endif
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
                 </div>
             </form>
+            @if ($canDeleteMk)
+                <form id="delete-mk-{{ $mk->id }}" action="{{ route('kurikulums.mks.destroy',[$kurikulum->id,$mk->id]) }}" method="POST" class="d-none">@csrf @method('DELETE')</form>
+            @endif
         </div>
     </div>
 </div>

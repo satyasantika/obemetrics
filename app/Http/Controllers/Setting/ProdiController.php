@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Setting;
 
 use App\Models\Prodi;
+use App\Models\JoinProdiUser;
 use Illuminate\Http\Request;
 use App\DataTables\ProdisDataTable;
 use App\Http\Controllers\Controller;
@@ -52,6 +53,15 @@ class ProdiController extends Controller
     public function destroy(Prodi $prodi)
     {
         $name = strtoupper($prodi->name);
+
+        $isUsed = $prodi->kurikulums()->exists()
+            || $prodi->mahasiswas()->exists()
+            || JoinProdiUser::query()->where('prodi_id', $prodi->id)->exists();
+
+        if ($isUsed) {
+            return to_route('prodis.index')->with('error','Prodi '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
+        }
+
         $prodi->delete();
         return to_route('prodis.index')->with('warning','Prodi '.$name.' telah dihapus');
     }

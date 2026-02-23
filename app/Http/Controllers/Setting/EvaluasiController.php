@@ -51,6 +51,11 @@ class EvaluasiController extends Controller
     public function destroy(Evaluasi $evaluasi)
     {
         $name = strtoupper($evaluasi->nama);
+
+        if ($evaluasi->penugasans()->exists()) {
+            return to_route('evaluasis.index')->with('error','Evaluasi '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
+        }
+
         $evaluasi->delete();
         return to_route('evaluasis.index')->with('warning','Evaluasi '.$name.' telah dihapus');
     }

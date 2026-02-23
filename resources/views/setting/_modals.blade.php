@@ -57,10 +57,26 @@
                     <div class="mb-3"><label class="form-label">Deskripsi</label><textarea class="form-control" rows="3" name="deskripsi">{{ $evaluasi->deskripsi }}</textarea></div>
                 </div>
                 <div class="modal-footer">
+                    @php
+                        $canDeleteEvaluasi = !$evaluasi->penugasans()->exists();
+                    @endphp
+                    @if ($canDeleteEvaluasi)
+                        <button class="btn btn-outline-danger btn-sm me-auto" type="button" onclick="if(confirm('Yakin akan menghapus {{ $evaluasi->kode }}: {{ $evaluasi->nama }}?')){ document.getElementById('delete-evaluasi-{{ $evaluasi->id }}').submit(); }">
+                            <i class="bi bi-trash"></i> Hapus
+                        </button>
+                    @else
+                        <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+                    @endif
                     <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button>
                     <button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button>
                 </div>
             </form>
+            @if ($canDeleteEvaluasi)
+                <form id="delete-evaluasi-{{ $evaluasi->id }}" action="{{ route('evaluasis.destroy', $evaluasi->id) }}" method="POST" class="d-none">
+                    @csrf
+                    @method('DELETE')
+                </form>
+            @endif
         </div>
     </div>
 </div>
@@ -198,10 +214,26 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    @php
+                        $canDeleteKontrakmk = true;
+                    @endphp
+                    @if ($canDeleteKontrakmk)
+                        <button class="btn btn-outline-danger btn-sm me-auto" type="button" onclick="if(confirm('Yakin akan menghapus kontrak mata kuliah ini?')){ document.getElementById('delete-kontrakmk-{{ $kontrakmk->id }}').submit(); }">
+                            <i class="bi bi-trash"></i> Hapus
+                        </button>
+                    @else
+                        <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+                    @endif
                     <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button>
                     <button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button>
                 </div>
             </form>
+            @if ($canDeleteKontrakmk)
+                <form id="delete-kontrakmk-{{ $kontrakmk->id }}" action="{{ route('kontrakmks.destroy', $kontrakmk->id) }}" method="POST" class="d-none">
+                    @csrf
+                    @method('DELETE')
+                </form>
+            @endif
         </div>
     </div>
 </div>
@@ -238,8 +270,27 @@
                 <div class="mb-3"><label class="form-label">Alamat Email</label><input class="form-control" type="email" name="email" value="{{ $mahasiswa->email }}"></div>
                 <div class="mb-3"><label class="form-label">No. WA aktif</label><input class="form-control" name="phone" value="{{ $mahasiswa->phone }}"></div>
             </div>
-            <div class="modal-footer"><button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button></div>
+            <div class="modal-footer">
+                @php
+                    $canDeleteMahasiswa = !\App\Models\KontrakMk::where('mahasiswa_id', $mahasiswa->id)->exists()
+                        && !\App\Models\Nilai::where('mahasiswa_id', $mahasiswa->id)->exists();
+                @endphp
+                @if ($canDeleteMahasiswa)
+                    <button class="btn btn-outline-danger btn-sm me-auto" type="button" onclick="if(confirm('Yakin akan menghapus {{ $mahasiswa->nim }}: {{ $mahasiswa->nama }}?')){ document.getElementById('delete-mahasiswa-{{ $mahasiswa->id }}').submit(); }">
+                        <i class="bi bi-trash"></i> Hapus
+                    </button>
+                @else
+                    <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+                @endif
+                <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button>
+            </div>
         </form>
+        @if ($canDeleteMahasiswa)
+            <form id="delete-mahasiswa-{{ $mahasiswa->id }}" action="{{ route('mahasiswas.destroy', $mahasiswa->id) }}" method="POST" class="d-none">
+                @csrf
+                @method('DELETE')
+            </form>
+        @endif
     </div></div>
 </div>
 @endforeach
@@ -255,8 +306,22 @@
 <div class="modal fade" id="modalEditPermission-{{ $permission->id }}" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><form action="{{ route('permissions.update', $permission->id) }}" method="POST">@csrf @method('PUT')
 <div class="modal-header"><h5 class="modal-title">Edit Permission</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
 <div class="modal-body"><div class="mb-3"><label class="form-label">Name</label><input class="form-control" name="name" value="{{ $permission->name }}" required></div><div class="mb-3"><label class="form-label">Guard</label><input class="form-control" name="guard_name" value="{{ $permission->guard_name }}" required></div></div>
-<div class="modal-footer"><button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button></div>
+<div class="modal-footer">
+    @php
+        $canDeletePermission = !\Illuminate\Support\Facades\DB::table('role_has_permissions')->where('permission_id', $permission->id)->exists()
+            && !\Illuminate\Support\Facades\DB::table('model_has_permissions')->where('permission_id', $permission->id)->exists();
+    @endphp
+    @if ($canDeletePermission)
+        <button class="btn btn-outline-danger btn-sm me-auto" type="button" onclick="if(confirm('Yakin akan menghapus permission {{ $permission->name }}?')){ document.getElementById('delete-permission-{{ $permission->id }}').submit(); }"><i class="bi bi-trash"></i> Hapus</button>
+    @else
+        <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+    @endif
+    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button>
+</div>
 </form></div></div></div>
+@if ($canDeletePermission)
+<form id="delete-permission-{{ $permission->id }}" action="{{ route('permissions.destroy', $permission->id) }}" method="POST" class="d-none">@csrf @method('DELETE')</form>
+@endif
 @endforeach
 @endif
 
@@ -292,8 +357,23 @@
         <div class="col-12"><label class="form-label">Visi Keilmuan</label><textarea class="form-control" rows="4" name="visi_misi">{{ $prodi->visi_misi }}</textarea></div>
     </div>
 </div>
-<div class="modal-footer"><button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button></div>
+<div class="modal-footer">
+    @php
+        $canDeleteProdi = !$prodi->kurikulums()->exists()
+            && !$prodi->mahasiswas()->exists()
+            && !\App\Models\JoinProdiUser::where('prodi_id', $prodi->id)->exists();
+    @endphp
+    @if ($canDeleteProdi)
+        <button class="btn btn-outline-danger btn-sm me-auto" type="button" onclick="if(confirm('Yakin akan menghapus prodi {{ $prodi->nama }}?')){ document.getElementById('delete-prodi-{{ $prodi->id }}').submit(); }"><i class="bi bi-trash"></i> Hapus</button>
+    @else
+        <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+    @endif
+    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button>
+</div>
 </form></div></div></div>
+@if ($canDeleteProdi)
+<form id="delete-prodi-{{ $prodi->id }}" action="{{ route('prodis.destroy', $prodi->id) }}" method="POST" class="d-none">@csrf @method('DELETE')</form>
+@endif
 @endforeach
 @endif
 
@@ -301,14 +381,30 @@
 <div class="modal fade" id="modalCreateRole" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><form action="{{ route('roles.store') }}" method="POST">@csrf
 <div class="modal-header"><h5 class="modal-title">Tambah Role</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
 <div class="modal-body"><div class="mb-3"><label class="form-label">Name</label><input class="form-control" name="name" required></div><div class="mb-3"><label class="form-label">Guard</label><input class="form-control" name="guard_name" value="web" required></div></div>
-<div class="modal-footer"><button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button></div>
+<div class="modal-footer">
+    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button>
+</div>
 </form></div></div></div>
 @foreach (($roles ?? collect()) as $role)
 <div class="modal fade" id="modalEditRole-{{ $role->id }}" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><form action="{{ route('roles.update', $role->id) }}" method="POST">@csrf @method('PUT')
 <div class="modal-header"><h5 class="modal-title">Edit Role</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
 <div class="modal-body"><div class="mb-3"><label class="form-label">Name</label><input class="form-control" name="name" value="{{ $role->name }}" required></div><div class="mb-3"><label class="form-label">Guard</label><input class="form-control" name="guard_name" value="{{ $role->guard_name }}" required></div></div>
-<div class="modal-footer"><button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button></div>
+<div class="modal-footer">
+    @php
+        $canDeleteRole = !\Illuminate\Support\Facades\DB::table('model_has_roles')->where('role_id', $role->id)->exists()
+            && !\Illuminate\Support\Facades\DB::table('role_has_permissions')->where('role_id', $role->id)->exists();
+    @endphp
+    @if ($canDeleteRole)
+        <button class="btn btn-outline-danger btn-sm me-auto" type="button" onclick="if(confirm('Yakin akan menghapus role {{ $role->name }}?')){ document.getElementById('delete-role-{{ $role->id }}').submit(); }"><i class="bi bi-trash"></i> Hapus</button>
+    @else
+        <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+    @endif
+    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button>
+</div>
 </form></div></div></div>
+@if ($canDeleteRole)
+<form id="delete-role-{{ $role->id }}" action="{{ route('roles.destroy', $role->id) }}" method="POST" class="d-none">@csrf @method('DELETE')</form>
+@endif
 
 <div class="modal fade" id="modalSetRolePermission-{{ $role->id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
@@ -464,8 +560,25 @@
 <div class="modal fade" id="modalEditSemester-{{ $semester->id }}" tabindex="-1" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><form action="{{ route('semesters.update', $semester->id) }}" method="POST">@csrf @method('PUT')
 <div class="modal-header"><h5 class="modal-title">Edit Semester</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
 <div class="modal-body"><div class="mb-3"><label class="form-label">Kode Semester</label><input class="form-control" name="kode" value="{{ $semester->kode }}" required></div><div class="mb-3"><label class="form-label">Nama Semester</label><input class="form-control" name="nama" value="{{ $semester->nama }}" required></div><div class="mb-3"><label class="form-label">Deskripsi</label><textarea class="form-control" rows="3" name="deskripsi">{{ $semester->deskripsi }}</textarea></div></div>
-<div class="modal-footer"><button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button></div>
+<div class="modal-footer">
+    @php
+        $canDeleteSemester = !$semester->kontrakmks()->exists()
+            && !\App\Models\Subcpmk::where('semester_id', $semester->id)->exists()
+            && !\App\Models\Penugasan::where('semester_id', $semester->id)->exists()
+            && !\App\Models\JoinSubcpmkPenugasan::where('semester_id', $semester->id)->exists()
+            && !\App\Models\Nilai::where('semester_id', $semester->id)->exists();
+    @endphp
+    @if ($canDeleteSemester)
+        <button class="btn btn-outline-danger btn-sm me-auto" type="button" onclick="if(confirm('Yakin akan menghapus semester {{ $semester->kode }} - {{ $semester->nama }}?')){ document.getElementById('delete-semester-{{ $semester->id }}').submit(); }"><i class="bi bi-trash"></i> Hapus</button>
+    @else
+        <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+    @endif
+    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button>
+</div>
 </form></div></div></div>
+@if ($canDeleteSemester)
+<form id="delete-semester-{{ $semester->id }}" action="{{ route('semesters.destroy', $semester->id) }}" method="POST" class="d-none">@csrf @method('DELETE')</form>
+@endif
 @endforeach
 @endif
 
@@ -481,7 +594,9 @@
     <div class="mb-3"><label class="form-label">NIDN</label><input class="form-control" name="nidn"></div>
     <div class="mb-3"><label class="form-label">Role</label><select class="form-select" name="role" required><option value="">Pilih Role</option>@foreach (($roles ?? collect()) as $roleName)<option value="{{ $roleName }}">{{ $roleName }}</option>@endforeach</select></div>
 </div>
-<div class="modal-footer"><button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button></div>
+<div class="modal-footer">
+    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button>
+</div>
 </form></div></div></div>
 
 @foreach (($users ?? collect()) as $user)
@@ -495,8 +610,23 @@
     <div class="mb-3"><label class="form-label">no. WA aktif</label><input class="form-control" name="phone" value="{{ $user->phone }}"></div>
     <div class="mb-3"><label class="form-label">NIDN</label><input class="form-control" name="nidn" value="{{ $user->nidn }}"></div>
 </div>
-<div class="modal-footer"><button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button></div>
+<div class="modal-footer">
+    @php
+        $canDeleteUser = !$user->joinProdiUsers()->exists()
+            && !$user->joinMkUsers()->exists()
+            && !\App\Models\KontrakMk::where('user_id', $user->id)->exists();
+    @endphp
+    @if ($canDeleteUser)
+        <button class="btn btn-outline-danger btn-sm me-auto" type="button" onclick="if(confirm('Yakin akan menghapus user {{ $user->name }}?')){ document.getElementById('delete-user-{{ $user->id }}').submit(); }"><i class="bi bi-trash"></i> Hapus</button>
+    @else
+        <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+    @endif
+    <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button><button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button>
+</div>
 </form></div></div></div>
+@if ($canDeleteUser)
+<form id="delete-user-{{ $user->id }}" action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-none">@csrf @method('DELETE')</form>
+@endif
 
 <div class="modal fade" id="modalSetUserRole-{{ $user->id }}" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content"><form action="{{ route('userroles.update', $user->id) }}" method="POST">@csrf @method('PUT')
 <div class="modal-header border-0 pb-0">

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Setting;
 
 use App\Models\Prodi;
 use App\Models\Mahasiswa;
+use App\Models\KontrakMk;
+use App\Models\Nilai;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\DataTables\MahasiswasDataTable;
@@ -52,6 +54,14 @@ class MahasiswaController extends Controller
     public function destroy(Mahasiswa $mahasiswa)
     {
         $name = strtoupper($mahasiswa->name);
+
+        $isUsed = KontrakMk::query()->where('mahasiswa_id', $mahasiswa->id)->exists()
+            || Nilai::query()->where('mahasiswa_id', $mahasiswa->id)->exists();
+
+        if ($isUsed) {
+            return to_route('mahasiswas.index')->with('error','mahasiswa '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
+        }
+
         $mahasiswa->delete();
         return to_route('mahasiswas.index')->with('danger','mahasiswa '.$name.' telah dihapus');
     }

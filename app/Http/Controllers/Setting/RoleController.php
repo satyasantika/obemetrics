@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Permission;
 use App\DataTables\RolesDataTable;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 
 class RoleController extends Controller
 {
@@ -52,6 +53,14 @@ class RoleController extends Controller
     public function destroy(Role $role)
     {
         $name = strtoupper($role->name);
+
+        $isUsed = DB::table('model_has_roles')->where('role_id', $role->id)->exists()
+            || DB::table('role_has_permissions')->where('role_id', $role->id)->exists();
+
+        if ($isUsed) {
+            return to_route('roles.index')->with('error','role '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
+        }
+
         $role->delete();
         return to_route('roles.index')->with('warning','role '.$name.' telah dihapus');
     }

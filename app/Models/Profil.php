@@ -23,4 +23,9 @@ class Profil extends Model
         return $this->hasMany(ProfilIndikator::class);
     }
 
+    public function joinProfilCpls(): HasMany
+    {
+        return $this->hasMany(JoinProfilCpl::class);
+    }
+
 }

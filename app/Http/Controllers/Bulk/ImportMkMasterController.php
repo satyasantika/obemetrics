@@ -19,6 +19,7 @@ use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -95,6 +96,11 @@ class ImportMkMasterController extends Controller
             try {
                 $semesterId = (string) $request->input('semester_id', '');
                 $this->assertSemester($semesterId);
+
+                $extension = Str::lower((string) $request->file('file')->getClientOriginalExtension());
+                if ($extension === 'csv') {
+                    return back()->with('error', 'File CSV tidak didukung untuk target ini. Gunakan template multi-sheet berformat .xlsx atau .ods.');
+                }
 
                 $spreadsheet = IOFactory::load($request->file('file')->getPathname());
                 $result = DB::transaction(function () use ($spreadsheet, $mk, $semesterId) {
@@ -1021,6 +1027,25 @@ class ImportMkMasterController extends Controller
     {
         $spreadsheet = new Spreadsheet();
         $spreadsheet->removeSheetByIndex(0);
+        $evaluasiCodes = Evaluasi::query()
+            ->orderBy('kode')
+            ->pluck('kode')
+            ->map(fn ($kode) => trim((string) $kode))
+            ->filter(fn ($kode) => $kode !== '')
+            ->unique()
+            ->values()
+            ->all();
+
+        $evaluasiRangeFormula = null;
+        if (!empty($evaluasiCodes)) {
+            $listSheet = $spreadsheet->createSheet(0);
+            $listSheet->setTitle('REF_EVALUASI');
+            foreach ($evaluasiCodes as $idx => $kode) {
+                $listSheet->setCellValue('A' . ($idx + 1), $kode);
+            }
+            $listSheet->setSheetState(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet::SHEETSTATE_HIDDEN);
+            $evaluasiRangeFormula = '=REF_EVALUASI!$A$1:$A$' . count($evaluasiCodes);
+        }
 
         $sheetDefinitions = [
             [
@@ -1114,6 +1139,27 @@ class ImportMkMasterController extends Controller
                     ->getStartColor()
                     ->setARGB('FFFFFF00');
             }
+
+            if (($definition['name'] ?? '') === 'Penugasan' && isset($columnLetters['kode_evaluasi']) && $evaluasiRangeFormula) {
+                $validation = new DataValidation();
+                $validation->setType(DataValidation::TYPE_LIST);
+                $validation->setErrorStyle(DataValidation::STYLE_STOP);
+                $validation->setAllowBlank(true);
+                $validation->setShowInputMessage(true);
+                $validation->setShowErrorMessage(true);
+                $validation->setShowDropDown(true);
+                $validation->setErrorTitle('Nilai tidak valid');
+                $validation->setError('Pilih kode evaluasi dari daftar.');
+                $validation->setPromptTitle('Kode Evaluasi');
+                $validation->setPrompt('Pilih salah satu kode evaluasi yang tersedia.');
+                $validation->setFormula1($evaluasiRangeFormula);
+
+                $validationLastRow = max(200, $lastDataRow + 100);
+                $targetColumn = $columnLetters['kode_evaluasi'];
+                for ($row = 2; $row <= $validationLastRow; $row++) {
+                    $sheet->getCell($targetColumn . $row)->setDataValidation(clone $validation);
+                }
+            }
         }
 
         $spreadsheet->setActiveSheetIndex(0);
@@ -1199,28 +1245,9 @@ class ImportMkMasterController extends Controller
                     throw new \RuntimeException('Relasi CPL >< BK tidak ditemukan untuk kode_cpl: ' . $kodeCpl);
                 }
 
-                $joinCplCpmkQuery = JoinCplCpmk::query()
-                    ->where('mk_id', $mk->id)
-                    ->whereIn('join_cpl_bk_id', $joinCplBkIds);
-
                 $kodeCpmk = trim((string) ($row['kode_cpmk'] ?? ''));
                 $namaCpmk = trim((string) ($row['nama_cpmk'] ?? ''));
-                if ($kodeCpmk !== '') {
-                    $cpmk = Cpmk::query()->where('mk_id', $mk->id)->where('kode', $kodeCpmk)->first();
-                    if ($cpmk) {
-                        $joinCplCpmkQuery->where('cpmk_id', $cpmk->id);
-                    }
-                } elseif ($namaCpmk !== '') {
-                    $cpmk = Cpmk::query()->where('mk_id', $mk->id)->where('nama', $namaCpmk)->first();
-                    if ($cpmk) {
-                        $joinCplCpmkQuery->where('cpmk_id', $cpmk->id);
-                    }
-                }
-
-                $joinCplCpmk = $joinCplCpmkQuery->first();
-                if (!$joinCplCpmk) {
-                    throw new \RuntimeException('Join CPL CPMK tidak ditemukan untuk SubCPMK: ' . $kode);
-                }
+                $joinCplCpmk = $this->resolveJoinCplCpmkForBundleSubcpmk($mk, $joinCplBkIds->all(), $kodeCpmk, $namaCpmk, $kode);
 
                 Subcpmk::updateOrCreate(
                     [
@@ -1306,5 +1333,50 @@ class ImportMkMasterController extends Controller
 
             $handler($normalized);
         }
+    }
+
+    private function resolveJoinCplCpmkForBundleSubcpmk(Mk $mk, array $joinCplBkIds, string $kodeCpmk, string $namaCpmk, string $kodeSubcpmk): JoinCplCpmk
+    {
+        $query = JoinCplCpmk::query()
+            ->where('mk_id', $mk->id)
+            ->whereIn('join_cpl_bk_id', $joinCplBkIds);
+
+        $selectedCpmk = null;
+        if ($kodeCpmk !== '') {
+            $selectedCpmk = Cpmk::query()->where('mk_id', $mk->id)->where('kode', $kodeCpmk)->first();
+            if (!$selectedCpmk) {
+                throw new \RuntimeException('CPMK tidak ditemukan untuk SubCPMK ' . $kodeSubcpmk . ': ' . $kodeCpmk);
+            }
+            $query->where('cpmk_id', $selectedCpmk->id);
+        } elseif ($namaCpmk !== '') {
+            $selectedCpmk = Cpmk::query()->where('mk_id', $mk->id)->where('nama', $namaCpmk)->first();
+            if (!$selectedCpmk) {
+                throw new \RuntimeException('CPMK tidak ditemukan untuk SubCPMK ' . $kodeSubcpmk . ': ' . $namaCpmk);
+            }
+            $query->where('cpmk_id', $selectedCpmk->id);
+        }
+
+        $existing = $query->first();
+        if ($existing) {
+            return $existing;
+        }
+
+        if (!$selectedCpmk) {
+            throw new \RuntimeException('Join CPL CPMK tidak ditemukan untuk SubCPMK ' . $kodeSubcpmk . '. Isi kode_cpmk atau nama_cpmk yang valid pada sheet SubCPMK.');
+        }
+
+        $joinCplBkId = (string) ($joinCplBkIds[0] ?? '');
+        if ($joinCplBkId === '') {
+            throw new \RuntimeException('Relasi CPL >< BK tidak tersedia untuk membentuk Join CPL CPMK pada SubCPMK ' . $kodeSubcpmk . '.');
+        }
+
+        return JoinCplCpmk::updateOrCreate(
+            [
+                'mk_id' => $mk->id,
+                'join_cpl_bk_id' => $joinCplBkId,
+                'cpmk_id' => $selectedCpmk->id,
+            ],
+            []
+        );
     }
 }
