@@ -22,9 +22,9 @@
                     <hr>
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('kurikulums.profils.create',$kurikulum) }}" class="btn btn-success btn-sm">
+                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateProfil">
                                 <i class="bi bi-plus-circle"></i> Tambah Profil Lulusan
-                            </a>
+                            </button>
                             <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'profil_indikators']) }}" class="btn btn-sm btn-success mt-1 float-end">
                                 <i class="bi bi-upload"></i> Upload Banyak Indikator Profil
                             </a>
@@ -46,9 +46,9 @@
                                     <h5 class="card-title mb-0">
                                         {{ $profil->nama }}
                                         {{-- Edit Profil --}}
-                                        <a href="{{ route('kurikulums.profils.edit',[$kurikulum->id,$profil->id]) }}" class="btn btn-sm btn-primary float-end">
+                                        <button type="button" class="btn btn-sm btn-primary float-end" data-bs-toggle="modal" data-bs-target="#modalEditProfil-{{ $profil->id }}">
                                             <i class="bi bi-pencil-square"></i> Edit Profil
-                                        </a>
+                                        </button>
                                     </h5>
                                 </div>
                                 <div class="card-body">
@@ -67,20 +67,129 @@
                                         @forelse ($profilindikators as $profilindikator)
                                         <li>
                                             {{ $profilindikator->nama }}
-                                            <a href="{{ route('profils.profilindikators.edit',[$profil->id,$profilindikator->id]) }}" class="btn btn-sm btn-white text-primary">
+                                            <button type="button" class="btn btn-sm btn-white text-primary" data-bs-toggle="modal" data-bs-target="#modalEditProfilIndikator-{{ $profilindikator->id }}">
                                                 <i class="bi bi-pencil-square"></i>
-                                            </a>
+                                            </button>
                                         </li>
                                         @empty
                                         <span class="bg-danger text-white">Belum ada indikator untuk profil ini.</span>
                                         @endforelse
                                     </ol>
-                                    <a href="{{ route('profils.profilindikators.create',$profil) }}" class="btn btn-sm btn-success">
+                                    <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalCreateProfilIndikator-{{ $profil->id }}">
                                         <i class="bi bi-plus-circle"></i> Tambah Indikator
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="modal fade" id="modalEditProfil-{{ $profil->id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                                <div class="modal-content">
+                                    <form action="{{ route('kurikulums.profils.update',[$kurikulum->id,$profil->id]) }}" method="post">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Edit Profil: {{ $profil->nama }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row mb-3">
+                                                <div class="col">
+                                                    <label class="form-label">Nama Profil <span class="text-danger">(*)</span></label>
+                                                    <input type="text" name="nama" class="form-control" value="{{ $profil->nama }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col">
+                                                    <label class="form-label">Kode Profil <span class="text-danger">(*)</span></label>
+                                                    <input type="text" name="kode" class="form-control" value="{{ $profil->kode }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col">
+                                                    <label class="form-label">Deskripsi</label>
+                                                    <textarea name="deskripsi" rows="8" class="form-control">{{ $profil->deskripsi }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal fade" id="modalCreateProfilIndikator-{{ $profil->id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                                <div class="modal-content">
+                                    <form action="{{ route('profils.profilindikators.store',$profil) }}" method="post">
+                                        @csrf
+                                        <input type="hidden" name="profil_id" value="{{ $profil->id }}">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Tambah Indikator - {{ $profil->nama }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row mb-3">
+                                                <div class="col">
+                                                    <label class="form-label">Nama Indikator <span class="text-danger">(*)</span></label>
+                                                    <input type="text" name="nama" class="form-control" required>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col">
+                                                    <label class="form-label">Deskripsi</label>
+                                                    <textarea name="deskripsi" rows="10" class="form-control"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        @foreach ($profilindikators as $profilindikator)
+                        <div class="modal fade" id="modalEditProfilIndikator-{{ $profilindikator->id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                                <div class="modal-content">
+                                    <form action="{{ route('profils.profilindikators.update',[$profil->id,$profilindikator->id]) }}" method="post">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="profil_id" value="{{ $profil->id }}">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Edit Indikator - {{ $profil->nama }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row mb-3">
+                                                <div class="col">
+                                                    <label class="form-label">Nama Indikator <span class="text-danger">(*)</span></label>
+                                                    <input type="text" name="nama" class="form-control" value="{{ $profilindikator->nama }}" required>
+                                                </div>
+                                            </div>
+                                            <div class="row mb-3">
+                                                <div class="col">
+                                                    <label class="form-label">Deskripsi</label>
+                                                    <textarea name="deskripsi" rows="10" class="form-control">{{ $profilindikator->deskripsi }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
                         @empty
                         <div class="col">
                             <span class="bg-warning text-dark p-2">Belum ada data profil lulusan untuk kurikulum ini.</span>
@@ -90,6 +199,45 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCreateProfil" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('kurikulums.profils.store',$kurikulum) }}" method="post">
+                @csrf
+                <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Data Profil Lulusan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Nama Profil <span class="text-danger">(*)</span></label>
+                            <input type="text" name="nama" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Kode Profil <span class="text-danger">(*)</span></label>
+                            <input type="text" name="kode" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="deskripsi" rows="8" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

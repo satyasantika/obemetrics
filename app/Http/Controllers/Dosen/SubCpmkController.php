@@ -29,9 +29,8 @@ class SubCpmkController extends Controller
 
     public function create(Mk $mk)
     {
-        $join_cpl_cpmks = JoinCplCpmk::where('mk_id', $mk->id)->get();
-        $subcpmk = new Subcpmk();
-        return view('setting.subcpmk-form', compact('mk','subcpmk','join_cpl_cpmks'));
+        return to_route('mks.subcpmks.index', $mk)
+            ->with('warning', 'Gunakan tombol Tambah Sub CPMK (modal) pada halaman Sub CPMK.');
     }
 
     public function store(Request $request, Mk $mk, Subcpmk $subcpmk)
@@ -46,8 +45,8 @@ class SubCpmkController extends Controller
 
     public function edit(Mk $mk, Subcpmk $subcpmk)
     {
-        $join_cpl_cpmks = JoinCplCpmk::where('mk_id', $mk->id)->get();
-        return view('setting.subcpmk-form', compact('mk','subcpmk','join_cpl_cpmks'));
+        return to_route('mks.subcpmks.index', $mk)
+            ->with('warning', 'Gunakan tombol edit (modal) pada daftar Sub CPMK.');
     }
 
     public function update(Request $request, Mk $mk, Subcpmk $subcpmk)

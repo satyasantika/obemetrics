@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Setting;
 
 use App\Models\Role;
 use Illuminate\Http\Request;
+use App\Models\Permission;
 use App\DataTables\RolesDataTable;
 use App\Http\Controllers\Controller;
 
@@ -19,13 +20,12 @@ class RoleController extends Controller
 
     public function index(RolesDataTable $dataTable)
     {
-        return $dataTable->render('layouts.setting', $this->_dataSelection(''));
+        return $dataTable->render('layouts.setting', $this->_dataSelection(new Role()));
     }
 
     public function create()
     {
-        $role = new Role();
-        return view('setting.role-form', $this->_dataSelection($role));
+        return to_route('roles.index')->with('warning', 'Gunakan tombol tambah (modal) pada halaman Role.');
     }
 
     public function store(Request $request)
@@ -37,7 +37,7 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
-        return view('setting.role-form', $this->_dataSelection($role));
+        return to_route('roles.index')->with('warning', 'Gunakan tombol edit (modal) pada daftar Role.');
     }
 
     public function update(Request $request, Role $role)
@@ -58,9 +58,14 @@ class RoleController extends Controller
 
     private function _dataSelection($role)
     {
+        $roles = Role::with('permissions:id,name')->orderBy('name')->get();
+        $permissions = Permission::orderBy('name')->get();
+
         return [
             'header' => 'Data Role',
             'role' => $role,
+            'roles' => $roles,
+            'permissions' => $permissions,
             'title' => 'Role',
         ];
     }

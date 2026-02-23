@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Setting;
 
-use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,12 +16,7 @@ class UserRoleController extends Controller
 
     public function edit(User $userrole)
     {
-        $roles = Role::orderBy('name')->get();
-        $userRoles = DB::table("model_has_roles")->where("model_has_roles.model_id",$userrole->id)
-            ->pluck('model_has_roles.role_id','model_has_roles.role_id')
-            ->all();
-
-        return view('setting.userrole-form',compact('userrole','roles','userRoles'));
+        return to_route('users.index')->with('warning', 'Gunakan tombol SET Role (modal) pada daftar User.');
     }
 
     public function update(Request $request, User $userrole)

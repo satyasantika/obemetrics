@@ -137,8 +137,8 @@
                                                         <small class="text-muted">{{ $kontrakMk->mahasiswa->nim }}</small><br>
                                                         {{ $kontrakMk->mahasiswa->nama }}
                                                         <br>
-                                                        <small class="text-muted">
-                                                            Nilai: {{ $kontrakMk->nilai_angka !== null ? round((float) $kontrakMk->nilai_angka, 2) : '-' }} ({{ $kontrakMk->nilai_huruf ?? '-' }})
+                                                        <small class="text-primary">
+                                                            Nilai: <span class="kontrak-nilai-angka">{{ $kontrakMk->nilai_angka !== null ? round((float) $kontrakMk->nilai_angka, 2) : '-' }}</span> <span class="badge bg-primary kontrak-nilai-huruf">{{ $kontrakMk->nilai_huruf ?? '-' }}</span>
                                                         </small>
                                                     </td>
                                                     @forelse ($penugasans as $penugasan)
@@ -248,12 +248,28 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 return response.json();
             })
-            .then(function () {
+            .then(function (result) {
                 statusEl.textContent = 'tersimpan';
                 statusEl.className = 'save-status small text-success';
                 setTimeout(function () {
                     statusEl.textContent = '';
                 }, 1200);
+
+                const row = form.closest('.matriks-row');
+                if (row && result && result.kontrak_nilai) {
+                    const nilaiAngkaEl = row.querySelector('.kontrak-nilai-angka');
+                    const nilaiHurufEl = row.querySelector('.kontrak-nilai-huruf');
+
+                    if (nilaiAngkaEl) {
+                        const angka = result.kontrak_nilai.nilai_angka;
+                        nilaiAngkaEl.textContent = angka === null || angka === undefined || angka === '' ? '-' : String(angka);
+                    }
+
+                    if (nilaiHurufEl) {
+                        const huruf = result.kontrak_nilai.nilai_huruf;
+                        nilaiHurufEl.textContent = huruf === null || huruf === undefined || huruf === '' ? '-' : String(huruf);
+                    }
+                }
             })
             .catch(function () {
                 statusEl.textContent = 'gagal';

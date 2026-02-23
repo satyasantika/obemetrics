@@ -15,7 +15,7 @@
                     <a href="{{ route((isset($back_route)? $back_route : 'home')) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> kembali</a>
                 </div>
                 <div class="card-body">
-                    
+
                     @include('layouts.alert')
                     @stack('info')
 
@@ -26,6 +26,8 @@
         </div>
     </div>
 </div>
+
+@include('setting._modals')
 @endsection
 
 @push('scripts')

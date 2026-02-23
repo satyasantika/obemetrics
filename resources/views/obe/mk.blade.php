@@ -22,7 +22,7 @@
                     <hr>
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('kurikulums.mks.create',$kurikulum) }}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Tambah Mata Kuliah</a>
+                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateMk"><i class="bi bi-plus-circle"></i> Tambah Mata Kuliah</button>
                             <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'joinmkusers']) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-upload"></i> Import Dosen Pengampu</a>
                             <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'mks']) }}" class="btn btn-success btn-sm float-end me-1"><i class="bi bi-upload"></i> Upload Banyak MK</a>
                         </div>
@@ -45,9 +45,9 @@
                                             <span class="badge bg-{{ $mk->semester % 2 == 0 ? 'primary' : 'secondary' }}">semester {{ $mk->semester }}</span>
                                             <br>
                                             {{-- Edit MK --}}
-                                            <a href="{{ route('kurikulums.mks.edit',[$kurikulum->id,$mk->id]) }}" class="btn btn-sm btn-white text-primary">
+                                            <button type="button" class="btn btn-sm btn-white text-primary" data-bs-toggle="modal" data-bs-target="#modalEditMk-{{ $mk->id }}">
                                                 <i class="bi bi-pencil-square"></i>
-                                            </a>
+                                            </button>
                                         </td>
                                         <td style="text-align: justify">
                                             {{ $mk->kode }} - {{ $mk->nama }}
@@ -87,6 +87,133 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modalCreateMk" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('kurikulums.mks.store', $kurikulum) }}" method="post">
+                @csrf
+                <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Mata Kuliah</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Semester <span class="text-danger">(*)</span></label>
+                            <select name="semester" class="form-select" required>
+                                <option value="">- Pilih Semester -</option>
+                                @for ($i = 1; $i <= 8; $i++)
+                                    <option value="{{ $i }}">{{ $i }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label class="form-label"><strong>Kode</strong> Mata Kuliah <span class="text-danger">(*)</span></label>
+                            <input type="text" name="kode" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label"><strong>Nama</strong> Mata Kuliah <span class="text-danger">(*)</span></label>
+                            <input type="text" name="nama" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">SKS Teori</label>
+                            <input type="number" min="0" max="6" value="0" name="sks_teori" class="form-control">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">SKS Praktikum</label>
+                            <input type="number" min="0" max="6" value="0" name="sks_praktik" class="form-control">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">SKS Lapangan</label>
+                            <input type="number" min="0" max="6" value="0" name="sks_lapangan" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="deskripsi" rows="6" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@foreach ($mks as $mk)
+<div class="modal fade" id="modalEditMk-{{ $mk->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('kurikulums.mks.update',[$kurikulum->id,$mk->id]) }}" method="post">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit MK: {{ $mk->kode }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Semester <span class="text-danger">(*)</span></label>
+                            <select name="semester" class="form-select" required>
+                                <option value="">- Pilih Semester -</option>
+                                @for ($i = 1; $i <= 8; $i++)
+                                    <option value="{{ $i }}" @selected($mk->semester == $i)>{{ $i }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label class="form-label"><strong>Kode</strong> Mata Kuliah <span class="text-danger">(*)</span></label>
+                            <input type="text" name="kode" class="form-control" value="{{ $mk->kode }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label"><strong>Nama</strong> Mata Kuliah <span class="text-danger">(*)</span></label>
+                            <input type="text" name="nama" class="form-control" value="{{ $mk->nama }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">SKS Teori</label>
+                            <input type="number" min="0" max="6" value="{{ $mk->sks_teori ?? 0 }}" name="sks_teori" class="form-control">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">SKS Praktikum</label>
+                            <input type="number" min="0" max="6" value="{{ $mk->sks_praktik ?? 0 }}" name="sks_praktik" class="form-control">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">SKS Lapangan</label>
+                            <input type="number" min="0" max="6" value="{{ $mk->sks_lapangan ?? 0 }}" name="sks_lapangan" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="deskripsi" rows="6" class="form-control">{{ $mk->deskripsi }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 
 
 @endsection

@@ -25,8 +25,8 @@ class BkController extends Controller
 
     public function create(Kurikulum $kurikulum)
     {
-        $bk = new Bk();
-        return view('setting.bk-form', compact('kurikulum','bk'));
+        return to_route('kurikulums.bks.index', $kurikulum)
+            ->with('warning', 'Gunakan tombol Tambah Bahan Kajian (modal) pada halaman BK.');
     }
 
     public function store(Request $request, Kurikulum $kurikulum, Bk $bk)
@@ -39,7 +39,8 @@ class BkController extends Controller
 
     public function edit(Kurikulum $kurikulum, Bk $bk)
     {
-        return view('setting.bk-form', compact('kurikulum','bk'));
+        return to_route('kurikulums.bks.index', $kurikulum)
+            ->with('warning', 'Gunakan tombol edit (modal) pada daftar BK.');
     }
 
     public function update(Request $request, Kurikulum $kurikulum, Bk $bk)

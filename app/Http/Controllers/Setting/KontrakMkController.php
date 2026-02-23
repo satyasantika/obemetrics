@@ -9,7 +9,6 @@ use App\Models\Semester;
 use App\Models\KontrakMk;
 use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
 use App\DataTables\KontrakMksDataTable;
 
@@ -39,8 +38,7 @@ class KontrakMkController extends Controller
 
     public function create()
     {
-        $kontrakmk = new KontrakMk();
-        return view('setting.kontrakmk-form', $this->_dataSelection($kontrakmk));
+        return to_route('kontrakmks.index')->with('warning', 'Gunakan tombol tambah (modal) pada halaman KontrakMK.');
     }
 
     public function store(Request $request)
@@ -77,7 +75,7 @@ class KontrakMkController extends Controller
 
     public function edit(KontrakMk $kontrakmk)
     {
-        return view('setting.kontrakmk-form', $this->_dataSelection($kontrakmk));
+        return to_route('kontrakmks.index')->with('warning', 'Gunakan tombol edit (modal) pada daftar KontrakMK.');
     }
 
     public function update(Request $request, KontrakMk $kontrakmk)
@@ -153,13 +151,27 @@ class KontrakMkController extends Controller
             });
         }
 
+        $prodis = empty($prodiIds) ? Prodi::all() : Prodi::whereIn('id', $prodiIds)->get();
+        $mahasiswas = $mahasiswasQuery->get();
+        $mks = $mksQuery->get();
+        $dosens = User::role('dosen')->orderBy('name')->get();
+        $semesters = Semester::orderBy('nama')->get();
+
+        $kontrakmksQuery = KontrakMk::with(['mahasiswa.prodi', 'mk.kurikulum.prodi', 'user', 'semester']);
+        if (!empty($prodiIds)) {
+            $kontrakmksQuery->whereHas('mahasiswa', function ($query) use ($prodiIds) {
+                $query->whereIn('prodi_id', $prodiIds);
+            });
+        }
+
         return [
-            'prodis' => empty($prodiIds) ? Prodi::all() : Prodi::whereIn('id', $prodiIds)->get(),
-            'mahasiswas' => $mahasiswasQuery->get(),
-            'mks' => $mksQuery->get(),
-            'dosens' => User::role('dosen')->orderBy('name')->get(),
-            'semesters' => Semester::orderBy('nama')->get(),
+            'prodis' => $prodis,
+            'mahasiswas' => $mahasiswas,
+            'mks' => $mks,
+            'dosens' => $dosens,
+            'semesters' => $semesters,
             'kontrakmk' => $kontrakmk,
+            'kontrakmks' => $kontrakmksQuery->orderByDesc('updated_at')->get(),
             'header' => 'Data KontrakMk',
             'title' => 'KontrakMk',
         ];

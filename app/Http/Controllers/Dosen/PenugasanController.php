@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Dosen;
 use App\Models\Mk;
 use App\Models\Evaluasi;
 use App\Models\Penugasan;
-use App\Models\JoinCplCpmk;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -30,9 +29,8 @@ class PenugasanController extends Controller
 
     public function create(Mk $mk)
     {
-        $penugasan = New Penugasan();
-        $evaluasis = Evaluasi::all();
-        return view('setting.penugasan-form', compact('mk', 'penugasan','evaluasis'));
+        return to_route('mks.penugasans.index', $mk->id)
+            ->with('warning', 'Gunakan tombol Tambah Tagihan (modal) pada halaman Rancangan Tugas.');
     }
 
     public function store(Request $request, Mk $mk)
@@ -45,8 +43,8 @@ class PenugasanController extends Controller
 
     public function edit(Mk $mk, Penugasan $penugasan)
     {
-        $evaluasis = Evaluasi::all();
-        return view('setting.penugasan-form', compact('mk', 'penugasan','evaluasis'));
+        return to_route('mks.penugasans.index', $mk->id)
+            ->with('warning', 'Gunakan tombol edit (modal) pada daftar Tagihan.');
     }
 
     public function update(Request $request, Mk $mk, Penugasan $penugasan)

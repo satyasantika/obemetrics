@@ -22,9 +22,9 @@
                     <hr>
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('kurikulums.cpls.create',$kurikulum) }}" class="btn btn-success btn-sm">
+                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateCpl">
                                 <i class="bi bi-plus-circle"></i> Tambah CPL
-                            </a>
+                            </button>
                             <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'cpls']) }}" class="btn btn-sm btn-success mt-1 float-end">
                                 <i class="bi bi-upload"></i> Upload Banyak CPL
                             </a>
@@ -40,9 +40,9 @@
                                         <td>
                                             <strong>{{ $cpl->kode }}</strong>
                                             {{-- Edit CPL --}}
-                                            <a href="{{ route('kurikulums.cpls.edit',[$kurikulum->id,$cpl->id]) }}" class="btn btn-sm btn-white text-primary">
+                                            <button type="button" class="btn btn-sm btn-white text-primary" data-bs-toggle="modal" data-bs-target="#modalEditCpl-{{ $cpl->id }}">
                                                 <i class="bi bi-pencil-square"></i>
-                                            </a>
+                                            </button>
                                             <span class="badge bg-{{ $cpl->cakupan == 'Universitas' ? 'success' : '' }}{{ $cpl->cakupan == 'Fakultas' ? 'primary' : '' }}{{ $cpl->cakupan == 'Program Studi' ? 'dark' : '' }}">{{ $cpl->cakupan }}</span>
                                         </td>
                                         <td style="text-align: justify">
@@ -65,6 +65,97 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modalCreateCpl" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('kurikulums.cpls.store', $kurikulum) }}" method="post">
+                @csrf
+                <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Data CPL</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Kode CPL <span class="text-danger">(*)</span></label>
+                            <input type="text" name="kode" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Nama CPL <span class="text-danger">(*)</span></label>
+                            <textarea name="nama" rows="6" class="form-control" required></textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label class="form-label col-md-4">Cakupan CPL <span class="text-danger">(*)</span></label>
+                        <div class="col">
+                            <select name="cakupan" class="form-select" required>
+                                <option value="">- Pilih Cakupan -</option>
+                                <option value="Universitas">Universitas</option>
+                                <option value="Fakultas">Fakultas</option>
+                                <option value="Program Studi">Program Studi</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@foreach ($cpls as $cpl)
+<div class="modal fade" id="modalEditCpl-{{ $cpl->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('kurikulums.cpls.update',[$kurikulum->id,$cpl->id]) }}" method="post">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit CPL: {{ $cpl->kode }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Kode CPL <span class="text-danger">(*)</span></label>
+                            <input type="text" name="kode" class="form-control" value="{{ $cpl->kode }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Nama CPL <span class="text-danger">(*)</span></label>
+                            <textarea name="nama" rows="6" class="form-control" required>{{ $cpl->nama }}</textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label class="form-label col-md-4">Cakupan CPL <span class="text-danger">(*)</span></label>
+                        <div class="col">
+                            <select name="cakupan" class="form-select" required>
+                                <option value="">- Pilih Cakupan -</option>
+                                <option value="Universitas" @selected($cpl->cakupan == 'Universitas')>Universitas</option>
+                                <option value="Fakultas" @selected($cpl->cakupan == 'Fakultas')>Fakultas</option>
+                                <option value="Program Studi" @selected($cpl->cakupan == 'Program Studi')>Program Studi</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 
 
 @endsection

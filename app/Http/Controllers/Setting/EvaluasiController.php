@@ -19,13 +19,12 @@ class EvaluasiController extends Controller
 
     public function index(EvaluasisDataTable $dataTable)
     {
-        return $dataTable->render('layouts.setting', $this->_dataSelection(''));
+        return $dataTable->render('layouts.setting', $this->_dataSelection(new Evaluasi()));
     }
 
     public function create()
     {
-        $evaluasi = new Evaluasi();
-        return view('setting.evaluasi-form', $this->_dataSelection($evaluasi));
+        return to_route('evaluasis.index')->with('warning', 'Gunakan tombol tambah (modal) pada halaman Evaluasi.');
     }
 
     public function store(Request $request)
@@ -38,7 +37,7 @@ class EvaluasiController extends Controller
 
     public function edit(Evaluasi $evaluasi)
     {
-        return view('setting.evaluasi-form', $this->_dataSelection($evaluasi));
+        return to_route('evaluasis.index')->with('warning', 'Gunakan tombol edit (modal) pada daftar Evaluasi.');
     }
 
     public function update(Request $request, Evaluasi $evaluasi)
@@ -60,6 +59,7 @@ class EvaluasiController extends Controller
     {
         return [
             'evaluasi' => $evaluasi,
+            'evaluasis' => Evaluasi::orderBy('kode')->get(),
             'header' => 'Data Evaluasi Perkuliahan',
             'title' => 'Evaluasi',
         ];

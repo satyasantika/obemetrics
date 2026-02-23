@@ -25,8 +25,8 @@ class ProfilController extends Controller
 
     public function create(Kurikulum $kurikulum)
     {
-        $profil = new Profil();
-        return view('setting.profil-form', compact('kurikulum','profil'));
+        return to_route('kurikulums.profils.index', $kurikulum)
+            ->with('warning', 'Gunakan tombol Tambah Profil Lulusan (modal) pada halaman Profil.');
     }
 
     public function store(Request $request, Kurikulum $kurikulum, Profil $profil)
@@ -39,7 +39,8 @@ class ProfilController extends Controller
 
     public function edit(Kurikulum $kurikulum, Profil $profil)
     {
-        return view('setting.profil-form', compact('kurikulum','profil'));
+        return to_route('kurikulums.profils.index', $kurikulum)
+            ->with('warning', 'Gunakan tombol edit (modal) pada daftar Profil.');
     }
 
     public function update(Request $request, Kurikulum $kurikulum, Profil $profil)

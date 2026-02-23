@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Setting;
 
 use App\Models\User;
-use App\Models\Permission;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
 class UserPermissionController extends Controller
@@ -17,18 +15,31 @@ class UserPermissionController extends Controller
 
     public function edit(User $userpermission)
     {
-        $getPermissionViaRoles = $userpermission->getPermissionsViaRoles()->pluck('id')->all();
-        $permissions = Permission::whereNotIn('id',$getPermissionViaRoles)->orderBy('name')->pluck('name','id');
-        $userPermissions = $userpermission->permissions->pluck('id','id')->all();
-
-        return view('setting.userpermission-form',compact('userpermission','permissions','userPermissions'));
+        return to_route('users.index')->with('warning', 'Gunakan tombol SET Permission (modal) pada daftar User.');
     }
 
     public function update(Request $request, User $userpermission)
     {
-        DB::table('model_has_permissions')->where('model_id',$userpermission->id)->delete();
+        $requestedPermissions = collect($request->input('permission', []))
+            ->map(fn ($id) => (string) $id)
+            ->unique()
+            ->values();
+
+        $roleDerivedPermissionIds = $userpermission->roles()
+            ->with('permissions:id')
+            ->get()
+            ->flatMap(fn ($role) => $role->permissions->pluck('id'))
+            ->map(fn ($id) => (string) $id)
+            ->unique()
+            ->values();
+
+        $directPermissionsToSync = $requestedPermissions
+            ->diff($roleDerivedPermissionIds)
+            ->values()
+            ->all();
+
         $name = strtoupper($userpermission->name);
-        $userpermission->givePermissionTo($request->permission);
+        $userpermission->syncPermissions($directPermissionsToSync);
 
         return back()->with('success','permission untuk user '.$name.' telah diperbarui');
     }

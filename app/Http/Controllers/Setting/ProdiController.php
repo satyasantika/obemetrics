@@ -19,13 +19,12 @@ class ProdiController extends Controller
 
     public function index(ProdisDataTable $dataTable)
     {
-        return $dataTable->render('layouts.setting', $this->_dataSelection(''));
+        return $dataTable->render('layouts.setting', $this->_dataSelection(new Prodi()));
     }
 
     public function create()
     {
-        $prodi = new Prodi();
-        return view('setting.prodi-form', $this->_dataSelection($prodi));
+        return to_route('prodis.index')->with('warning', 'Gunakan tombol tambah (modal) pada halaman Prodi.');
     }
 
     public function store(Request $request)
@@ -38,7 +37,7 @@ class ProdiController extends Controller
 
     public function edit(Prodi $prodi)
     {
-        return view('setting.prodi-form', $this->_dataSelection($prodi));
+        return to_route('prodis.index')->with('warning', 'Gunakan tombol edit (modal) pada daftar Prodi.');
     }
 
     public function update(Request $request, Prodi $prodi)
@@ -61,6 +60,7 @@ class ProdiController extends Controller
     {
         return [
             'prodi' => $prodi,
+            'prodis' => Prodi::orderBy('jenjang')->orderBy('nama')->get(),
             'header' => 'Data Program Studi',
             'title' => 'Prodi',
         ];

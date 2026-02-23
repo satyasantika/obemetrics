@@ -9,7 +9,6 @@ use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class PermissionsDataTable extends DataTable
@@ -24,7 +23,7 @@ class PermissionsDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
                 $action = ' ';
-                $action .= ' <a href="'.route('permissions.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit Permission"><i class="bi bi-pencil-square"></i></a></div>';
+                $action .= ' <button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditPermission-'.$row->id.'" title="Edit Permission"><i class="bi bi-pencil-square"></i></button>';
                 return $action;
             })
             ->setRowId('id');
@@ -54,7 +53,11 @@ class PermissionsDataTable extends DataTable
                     ->selectStyleSingle()
                     ->setTableAttribute('class', 'table table-striped table-bordered table-hover')
                     ->buttons([
-                        Button::make('add'),
+                        Button::make([
+                            'text'   => '<i class="bi bi-plus-circle"></i> Add',
+                            'className' => 'btn btn-primary',
+                            'action' => 'function(e, dt, node, config){ const modal = document.getElementById("modalCreatePermission"); if(modal && window.bootstrap){ bootstrap.Modal.getOrCreateInstance(modal).show(); } }',
+                        ]),
                         Button::make('reset'),
                         Button::make('reload')
                     ]);

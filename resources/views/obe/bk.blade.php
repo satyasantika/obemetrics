@@ -22,7 +22,9 @@
                     <hr>
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('kurikulums.bks.create',$kurikulum) }}" class="btn btn-success btn-sm"><i class="bi bi-plus-circle"></i> Tambah Bahan Kajian</a>
+                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateBk">
+                                <i class="bi bi-plus-circle"></i> Tambah Bahan Kajian
+                            </button>
                             <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'bks']) }}" class="btn btn-sm btn-success mt-1 float-end"><i class="bi bi-upload"></i> Upload Banyak BK</a>
                         </div>
                     </div>
@@ -36,9 +38,9 @@
                                         <td>
                                             <strong>{{ $bk->kode }}</strong>
                                             {{-- Edit BK --}}
-                                            <a href="{{ route('kurikulums.bks.edit',[$kurikulum->id,$bk->id]) }}" class="btn btn-sm btn-white text-primary">
+                                            <button type="button" class="btn btn-sm btn-white text-primary" data-bs-toggle="modal" data-bs-target="#modalEditBk-{{ $bk->id }}">
                                                 <i class="bi bi-pencil-square"></i>
-                                            </a>
+                                            </button>
                                         </td>
                                         <td style="text-align: justify">
                                             {{ $bk->nama }}
@@ -60,6 +62,87 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modalCreateBk" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('kurikulums.bks.store', $kurikulum) }}" method="post">
+                @csrf
+                <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Data Bahan Kajian</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Nama Bahan Kajian <span class="text-danger">(*)</span></label>
+                            <input type="text" name="nama" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Kode Bahan Kajian <span class="text-danger">(*)</span></label>
+                            <input type="text" name="kode" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="deskripsi" rows="6" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@foreach ($bks as $bk)
+<div class="modal fade" id="modalEditBk-{{ $bk->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('kurikulums.bks.update',[$kurikulum->id,$bk->id]) }}" method="post">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit BK: {{ $bk->kode }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Nama Bahan Kajian <span class="text-danger">(*)</span></label>
+                            <input type="text" name="nama" class="form-control" value="{{ $bk->nama }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Kode Bahan Kajian <span class="text-danger">(*)</span></label>
+                            <input type="text" name="kode" class="form-control" value="{{ $bk->kode }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="deskripsi" rows="6" class="form-control">{{ $bk->deskripsi }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 
 
 @endsection

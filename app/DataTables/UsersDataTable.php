@@ -9,7 +9,6 @@ use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class UsersDataTable extends DataTable
@@ -25,9 +24,9 @@ class UsersDataTable extends DataTable
             ->addColumn('action', function($row){
                 $action = '<div class="row">';
                 $action .= ' <div class="col-auto">';
-                $action .= '  <a href="'.route('users.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit User"><i class="bi bi-pencil-square"></i></a>';
-                $action .= '  <a href="'.route('userroles.edit',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET Role"><i class="bi bi-person-gear"></i> R</a>';
-                $action .= '  <a href="'.route('userpermissions.edit',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET Permission"><i class="bi bi-person-gear"></i> P</a>';
+                $action .= '  <button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditUser-'.$row->id.'" title="Edit User"><i class="bi bi-pencil-square"></i></button>';
+                $action .= '  <button type="button" class="btn btn-success btn-sm action" data-bs-toggle="modal" data-bs-target="#modalSetUserRole-'.$row->id.'" title="SET Role"><i class="bi bi-person-gear"></i> R</button>';
+                $action .= '  <button type="button" class="btn btn-success btn-sm action" data-bs-toggle="modal" data-bs-target="#modalSetUserPermission-'.$row->id.'" title="SET Permission"><i class="bi bi-person-gear"></i> P</button>';
                 $action .= '  <a href="'.route('impersonate',$row->id).'" class="btn btn-warning btn-sm action" data-bs-toggle="tooltip" title="Impersonate"><i class="bi bi-person-badge"></i></a>';
                 $action .= ' </div>';
                 $action .= '</div>';
@@ -80,7 +79,11 @@ class UsersDataTable extends DataTable
                     ->selectStyleSingle()
                     ->setTableAttribute('class', 'table table-striped table-bordered table-hover')
                     ->buttons([
-                        Button::make('add'),
+                        Button::make([
+                                        'text'   => '<i class="bi bi-plus-circle"></i> Add',
+                                        'className' => 'btn btn-primary',
+                                        'action' => 'function(e, dt, node, config){ const modal = document.getElementById("modalCreateUser"); if(modal && window.bootstrap){ bootstrap.Modal.getOrCreateInstance(modal).show(); } }',
+                                    ]),
                         Button::make('reset'),
                         Button::make('reload'),
                         Button::make([

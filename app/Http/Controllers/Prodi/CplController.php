@@ -25,8 +25,8 @@ class CplController extends Controller
 
     public function create(Kurikulum $kurikulum)
     {
-        $cpl = new Cpl();
-        return view('setting.cpl-form', compact('kurikulum','cpl'));
+        return to_route('kurikulums.cpls.index', $kurikulum)
+            ->with('warning', 'Gunakan tombol Tambah CPL (modal) pada halaman CPL.');
     }
 
     public function store(Request $request, Kurikulum $kurikulum, Cpl $cpl)
@@ -39,7 +39,8 @@ class CplController extends Controller
 
     public function edit(Kurikulum $kurikulum, Cpl $cpl)
     {
-        return view('setting.cpl-form', compact('kurikulum','cpl'));
+        return to_route('kurikulums.cpls.index', $kurikulum)
+            ->with('warning', 'Gunakan tombol edit (modal) pada daftar CPL.');
     }
 
     public function update(Request $request, Kurikulum $kurikulum, Cpl $cpl)

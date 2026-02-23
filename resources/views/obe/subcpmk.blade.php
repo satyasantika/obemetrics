@@ -44,7 +44,10 @@
                     <hr>
                     <div class="row">
                         <div class="col">
-                            <a href="{{ route('mks.subcpmks.create',$mk) }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Tambah Sub CPMK</a>
+                            @php
+                                $joinCplCpmkOptions = \App\Models\JoinCplCpmk::where('mk_id', $mk->id)->with('cpmk')->get();
+                            @endphp
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateSubcpmk"><i class="bi bi-plus-circle"></i> Tambah Sub CPMK</button>
                             <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'subcpmks']) }}" class="btn btn-sm btn-success"><i class="bi bi-upload"></i> Import banyak SubCPMK</a>
                         </div>
                     </div>
@@ -71,9 +74,9 @@
                                             <li>
                                                 <strong class="h5">{{ $subcpmk->kode }}</strong>
                                                 {{-- Edit SubCPMK --}}
-                                                <a href="{{ route('mks.subcpmks.edit',[$mk->id,$subcpmk->id]) }}" class="btn btn-sm btn-white text-primary">
+                                                <button type="button" class="btn btn-sm btn-white text-primary" data-bs-toggle="modal" data-bs-target="#modalEditSubcpmk-{{ $subcpmk->id }}">
                                                     <i class="bi bi-pencil-square"></i>
-                                                </a>
+                                                </button>
                                                 <br>
                                                 <span class="h5">{{ $subcpmk->nama }}</span>
                                                 @php
@@ -142,4 +145,193 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modalCreateSubcpmk" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('mks.subcpmks.store', $mk) }}" method="post">
+                @csrf
+                <input type="hidden" name="mk_id" value="{{ $mk->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Sub CPMK</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label"><strong>CPMK</strong><span class="text-danger">(*)</span></label>
+                            <select name="join_cpl_cpmk_id" class="form-control" required>
+                                <option value="">Pilih CPMK</option>
+                                @foreach ($joinCplCpmkOptions as $joinOption)
+                                    <option value="{{ $joinOption->id }}">{{ $joinOption->cpmk->kode }} - {{ $joinOption->cpmk->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label"><strong>Kode</strong> Sub CPMK <span class="text-danger">(*)</span></label>
+                            <input type="text" name="kode" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label"><strong>Nama</strong> Sub CPMK <span class="text-danger">(*)</span></label>
+                            <textarea name="nama" rows="3" class="form-control" required></textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Kognitif</label>
+                            <select name="kompetensi_c" class="form-control">
+                                <option value="">Pilih Kognitif</option>
+                                <option value="C1">C1 - Mengingat</option>
+                                <option value="C2">C2 - Memahami</option>
+                                <option value="C3">C3 - Menerapkan</option>
+                                <option value="C4">C4 - Menganalisis</option>
+                                <option value="C5">C5 - Mengevaluasi</option>
+                                <option value="C6">C6 - Menciptakan</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Afektif</label>
+                            <select name="kompetensi_a" class="form-control">
+                                <option value="">Pilih Afektif</option>
+                                <option value="A1">A1 - Menerima</option>
+                                <option value="A2">A2 - Merespon</option>
+                                <option value="A3">A3 - Menghargai</option>
+                                <option value="A4">A4 - Mengorganisasikan</option>
+                                <option value="A5">A5 - Karakterisasi Menurut Nilai</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Psikomotor</label>
+                            <select name="kompetensi_p" class="form-control">
+                                <option value="">Pilih Psikomotor</option>
+                                <option value="P1">P1 - Meniru</option>
+                                <option value="P2">P2 - Memanipulasi</option>
+                                <option value="P3">P3 - Presisi</option>
+                                <option value="P4">P4 - Artikulasi</option>
+                                <option value="P5">P5 - Naturalisasi</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Indikator dari SubCPMK <span class="text-danger">(*)</span></label>
+                            <textarea name="indikator" rows="3" class="form-control" required></textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Deskripsi Rencana Evaluasi dari SubCPMK <span class="text-danger">(*)</span></label>
+                            <textarea name="evaluasi" rows="3" class="form-control" required></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@foreach ($cpmks as $cpmk)
+    @foreach ($cpmk->joinCplCpmks->pluck('subcpmks')->flatten() as $subcpmk)
+    <div class="modal fade" id="modalEditSubcpmk-{{ $subcpmk->id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <form action="{{ route('mks.subcpmks.update',[$mk->id,$subcpmk->id]) }}" method="post">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="mk_id" value="{{ $mk->id }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit SubCPMK: {{ $subcpmk->kode }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label"><strong>CPMK</strong><span class="text-danger">(*)</span></label>
+                                <select name="join_cpl_cpmk_id" class="form-control" required>
+                                    <option value="">Pilih CPMK</option>
+                                    @foreach ($joinCplCpmkOptions as $joinOption)
+                                        <option value="{{ $joinOption->id }}" @selected($subcpmk->join_cpl_cpmk_id == $joinOption->id)>{{ $joinOption->cpmk->kode }} - {{ $joinOption->cpmk->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label"><strong>Kode</strong> Sub CPMK <span class="text-danger">(*)</span></label>
+                                <input type="text" name="kode" class="form-control" value="{{ $subcpmk->kode }}" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label"><strong>Nama</strong> Sub CPMK <span class="text-danger">(*)</span></label>
+                                <textarea name="nama" rows="3" class="form-control" required>{{ $subcpmk->nama }}</textarea>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label">Kognitif</label>
+                                <select name="kompetensi_c" class="form-control">
+                                    <option value="">Pilih Kognitif</option>
+                                    <option value="C1" @selected($subcpmk->kompetensi_c == 'C1')>C1 - Mengingat</option>
+                                    <option value="C2" @selected($subcpmk->kompetensi_c == 'C2')>C2 - Memahami</option>
+                                    <option value="C3" @selected($subcpmk->kompetensi_c == 'C3')>C3 - Menerapkan</option>
+                                    <option value="C4" @selected($subcpmk->kompetensi_c == 'C4')>C4 - Menganalisis</option>
+                                    <option value="C5" @selected($subcpmk->kompetensi_c == 'C5')>C5 - Mengevaluasi</option>
+                                    <option value="C6" @selected($subcpmk->kompetensi_c == 'C6')>C6 - Menciptakan</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label class="form-label">Afektif</label>
+                                <select name="kompetensi_a" class="form-control">
+                                    <option value="">Pilih Afektif</option>
+                                    <option value="A1" @selected($subcpmk->kompetensi_a == 'A1')>A1 - Menerima</option>
+                                    <option value="A2" @selected($subcpmk->kompetensi_a == 'A2')>A2 - Merespon</option>
+                                    <option value="A3" @selected($subcpmk->kompetensi_a == 'A3')>A3 - Menghargai</option>
+                                    <option value="A4" @selected($subcpmk->kompetensi_a == 'A4')>A4 - Mengorganisasikan</option>
+                                    <option value="A5" @selected($subcpmk->kompetensi_a == 'A5')>A5 - Karakterisasi Menurut Nilai</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label class="form-label">Psikomotor</label>
+                                <select name="kompetensi_p" class="form-control">
+                                    <option value="">Pilih Psikomotor</option>
+                                    <option value="P1" @selected($subcpmk->kompetensi_p == 'P1')>P1 - Meniru</option>
+                                    <option value="P2" @selected($subcpmk->kompetensi_p == 'P2')>P2 - Memanipulasi</option>
+                                    <option value="P3" @selected($subcpmk->kompetensi_p == 'P3')>P3 - Presisi</option>
+                                    <option value="P4" @selected($subcpmk->kompetensi_p == 'P4')>P4 - Artikulasi</option>
+                                    <option value="P5" @selected($subcpmk->kompetensi_p == 'P5')>P5 - Naturalisasi</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label">Indikator dari SubCPMK <span class="text-danger">(*)</span></label>
+                                <textarea name="indikator" rows="3" class="form-control" required>{{ $subcpmk->indikator }}</textarea>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label">Deskripsi Rencana Evaluasi dari SubCPMK <span class="text-danger">(*)</span></label>
+                                <textarea name="evaluasi" rows="3" class="form-control" required>{{ $subcpmk->evaluasi }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endforeach
+@endforeach
 @endsection

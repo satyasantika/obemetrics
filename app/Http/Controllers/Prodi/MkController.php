@@ -4,9 +4,7 @@ namespace App\Http\Controllers\Prodi;
 
 use App\Models\Mk;
 use App\Models\Kurikulum;
-use App\Models\JoinMkUser;
 use Illuminate\Http\Request;
-use App\Models\JoinProdiUser;
 use App\Http\Controllers\Controller;
 
 class MkController extends Controller
@@ -27,9 +25,8 @@ class MkController extends Controller
 
     public function create(Kurikulum $kurikulum)
     {
-        $mk = new Mk();
-        $users = JoinProdiUser::where('prodi_id', $kurikulum->prodi_id)->pluck('user_id')->toArray();
-        return view('setting.mk-form', compact('kurikulum','mk','users'));
+        return to_route('kurikulums.mks.index', $kurikulum)
+            ->with('warning', 'Gunakan tombol Tambah Mata Kuliah (modal) pada halaman MK.');
     }
 
     public function store(Request $request, Kurikulum $kurikulum, Mk $mk)
@@ -44,10 +41,8 @@ class MkController extends Controller
 
     public function edit(Kurikulum $kurikulum, Mk $mk)
     {
-        $join_mk_users = $mk->joinMkUsers()->pluck('user_id')->toArray();
-        $koordinator_user = JoinMkUser::where('koordinator',1)->pluck('user_id');
-        $join_prodi_users = JoinProdiUser::where('prodi_id', $kurikulum->prodi_id)->get();
-        return view('setting.mk-form', compact('kurikulum','mk','join_prodi_users','join_mk_users','koordinator_user'));
+        return to_route('kurikulums.mks.index', $kurikulum)
+            ->with('warning', 'Gunakan tombol edit (modal) pada daftar MK.');
     }
 
     public function update(Request $request, Kurikulum $kurikulum, Mk $mk)

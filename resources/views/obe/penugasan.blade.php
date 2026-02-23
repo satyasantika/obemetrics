@@ -54,7 +54,7 @@
                     <hr>
                     <div class="row">
                         <div class="col">
-                            <a href="{{ route('mks.penugasans.create',$mk) }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Tambah Tagihan</a>
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreatePenugasan"><i class="bi bi-plus-circle"></i> Tambah Tagihan</button>
                             <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'penugasans']) }}" class="btn btn-sm btn-success"><i class="bi bi-upload"></i> Import Banyak Tagihan</a>
                         </div>
                     </div>
@@ -86,9 +86,9 @@
                                         </td>
                                         <td>
                                             {{ $penugasan->nama }}
-                                            <a href="{{ route('mks.penugasans.edit',[$mk->id,$penugasan->id]) }}" class="btn btn-sm btn-white text-primary">
+                                            <button type="button" class="btn btn-sm btn-white text-primary" data-bs-toggle="modal" data-bs-target="#modalEditPenugasan-{{ $penugasan->id }}">
                                                 <i class="bi bi-pencil-square"></i>
-                                            </a>
+                                            </button>
                                         </td>
                                         <td>{{ $penugasan->bobot }}</td>
                                         <td>{{ $penugasan->evaluasi->nama }}</td>
@@ -200,5 +200,116 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modalCreatePenugasan" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('mks.penugasans.store', $mk->id) }}" method="post">
+                @csrf
+                <input type="hidden" name="mk_id" value="{{ $mk->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Tagihan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Nama Tugas <span class="text-danger">(*)</span></label>
+                            <textarea name="nama" rows="3" class="form-control" required></textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Kode</label>
+                            <input type="text" name="kode" class="form-control">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Bobot (%) <span class="text-danger">(*)</span></label>
+                            <input type="number" step="1" name="bobot" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Bentuk Evaluasi <span class="text-danger">(*)</span></label>
+                            <select name="evaluasi_id" class="form-select" required>
+                                <option value="">-Pilih Evaluasi-</option>
+                                @foreach ($evaluasis as $evaluasi)
+                                    <option value="{{ $evaluasi->id }}">{{ $evaluasi->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="deskripsi" rows="8" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@foreach ($penugasans as $penugasan)
+<div class="modal fade" id="modalEditPenugasan-{{ $penugasan->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('mks.penugasans.update',[$mk->id,$penugasan->id]) }}" method="post">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="mk_id" value="{{ $mk->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Tagihan: {{ $penugasan->kode }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Nama Tugas <span class="text-danger">(*)</span></label>
+                            <textarea name="nama" rows="3" class="form-control" required>{{ $penugasan->nama }}</textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Kode</label>
+                            <input type="text" name="kode" class="form-control" value="{{ $penugasan->kode }}">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Bobot (%) <span class="text-danger">(*)</span></label>
+                            <input type="number" step="1" name="bobot" class="form-control" value="{{ $penugasan->bobot }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Bentuk Evaluasi <span class="text-danger">(*)</span></label>
+                            <select name="evaluasi_id" class="form-select" required>
+                                <option value="">-Pilih Evaluasi-</option>
+                                @foreach ($evaluasis as $evaluasi)
+                                    <option value="{{ $evaluasi->id }}" @selected($penugasan->evaluasi_id == $evaluasi->id)>{{ $evaluasi->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="deskripsi" rows="8" class="form-control">{{ $penugasan->deskripsi }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 
 @endsection

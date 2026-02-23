@@ -9,7 +9,6 @@ use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class MahasiswasDataTable extends DataTable
@@ -25,7 +24,7 @@ class MahasiswasDataTable extends DataTable
             ->addColumn('action', function($row){
                 $action = '<div class="row">';
                 $action .= ' <div class="col-auto">';
-                $action .= '  <a href="'.route('mahasiswas.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit Mahasiswa"><i class="bi bi-pencil-square"></i></a>';
+                $action .= '  <button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditMahasiswa-'.$row->id.'" title="Edit Mahasiswa"><i class="bi bi-pencil-square"></i></button>';
                 $action .= ' </div>';
                 $action .= '</div>';
                 return $action;
@@ -64,7 +63,11 @@ class MahasiswasDataTable extends DataTable
                     ->selectStyleSingle()
                     ->setTableAttribute('class', 'table table-striped table-bordered table-hover')
                     ->buttons([
-                        Button::make('add'),
+                        Button::make([
+                                        'text'   => '<i class="bi bi-plus-circle"></i> Add',
+                                        'className' => 'btn btn-primary',
+                                        'action' => 'function(e, dt, node, config){ const modal = document.getElementById("modalCreateMahasiswa"); if(modal && window.bootstrap){ bootstrap.Modal.getOrCreateInstance(modal).show(); } }',
+                                    ]),
                         Button::make('reset'),
                         Button::make('reload'),
                         Button::make([

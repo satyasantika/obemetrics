@@ -20,13 +20,12 @@ class PermissionController extends Controller
 
     public function index(PermissionsDataTable $dataTable)
     {
-        return $dataTable->render('layouts.setting', $this->_dataSelection(''));
+        return $dataTable->render('layouts.setting', $this->_dataSelection(new Permission()));
     }
 
     public function create()
     {
-        $permission = new Permission();
-        return view('setting.permission-form', $this->_dataSelection($permission));
+        return to_route('permissions.index')->with('warning', 'Gunakan tombol tambah (modal) pada halaman Permission.');
     }
 
     public function store(Request $request)
@@ -38,7 +37,7 @@ class PermissionController extends Controller
 
     public function edit(Permission $permission)
     {
-        return view('setting.permission-form', $this->_dataSelection($permission));
+        return to_route('permissions.index')->with('warning', 'Gunakan tombol edit (modal) pada daftar Permission.');
     }
 
     public function update(Request $request, Permission $permission)
@@ -62,6 +61,7 @@ class PermissionController extends Controller
         return [
             'header' => 'Data Permission',
             'permission' => $permission,
+            'permissions' => Permission::orderBy('name')->get(),
             'title' => 'Permission',
         ];
     }

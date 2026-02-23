@@ -24,7 +24,7 @@ class SemestersDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
                 $action = '<div class="row">';
-                $action .= ' <div class="col-auto"><a href="'.route('semesters.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit data semester"><i class="bi bi-pencil-square"></i></a></div>';
+                $action .= ' <div class="col-auto"><button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditSemester-'.$row->id.'" title="Edit data semester"><i class="bi bi-pencil-square"></i></button></div>';
                 $action .= '</div>';
                 return $action;
             })
@@ -59,7 +59,11 @@ class SemestersDataTable extends DataTable
                     ->selectStyleSingle()
                     ->setTableAttribute('class', 'table table-striped table-bordered table-hover')
                     ->buttons([
-                        Button::make('add'),
+                        Button::make([
+                            'text'   => '<i class="bi bi-plus-circle"></i> Add',
+                            'className' => 'btn btn-primary',
+                            'action' => 'function(e, dt, node, config){ const modal = document.getElementById("modalCreateSemester"); if(modal && window.bootstrap){ bootstrap.Modal.getOrCreateInstance(modal).show(); } }',
+                        ]),
                         Button::make('reset'),
                         Button::make('reload')
                     ]);

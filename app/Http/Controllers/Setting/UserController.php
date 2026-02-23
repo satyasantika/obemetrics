@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Setting;
 
 use App\Models\User;
+use App\Models\Role;
+use App\Models\Permission;
 use Illuminate\Http\Request;
 use App\DataTables\UsersDataTable;
-use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
 class UserController extends Controller
@@ -20,13 +22,12 @@ class UserController extends Controller
 
     public function index(UsersDataTable $dataTable)
     {
-        return $dataTable->render('layouts.setting', $this->_dataSelection(''));
+        return $dataTable->render('layouts.setting', $this->_dataSelection(new User()));
     }
 
     public function create()
     {
-        $user = new User();
-        return view('setting.user-form', $this->_dataSelection($user));
+        return to_route('users.index')->with('warning', 'Gunakan tombol tambah (modal) pada halaman User.');
     }
 
     public function store(Request $request)
@@ -41,7 +42,7 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        return view('setting.user-form', $this->_dataSelection($user));
+        return to_route('users.index')->with('warning', 'Gunakan tombol edit (modal) pada daftar User.');
     }
 
     public function update(Request $request, User $user)
@@ -69,8 +70,34 @@ class UserController extends Controller
 
     private function _dataSelection($user)
     {
+        $users = User::with(['roles.permissions:id,name', 'permissions:id,name'])->orderBy('name')->get();
+        $roles = Role::all()->pluck('name')->sort();
+        $roleModels = Role::orderBy('name')->get();
+        $permissions = Permission::orderBy('name')->get();
+
+        $userRolesMap = DB::table('model_has_roles')
+            ->where('model_type', User::class)
+            ->select('model_id', 'role_id')
+            ->get()
+            ->groupBy('model_id')
+            ->map(fn ($items) => $items->pluck('role_id')->map(fn ($id) => (string) $id)->all())
+            ->toArray();
+
+        $userPermissionsMap = DB::table('model_has_permissions')
+            ->where('model_type', User::class)
+            ->select('model_id', 'permission_id')
+            ->get()
+            ->groupBy('model_id')
+            ->map(fn ($items) => $items->pluck('permission_id')->map(fn ($id) => (string) $id)->all())
+            ->toArray();
+
         return [
-            'roles' =>  Role::all()->pluck('name')->sort(),
+            'roles' =>  $roles,
+            'users' => $users,
+            'roleModels' => $roleModels,
+            'permissions' => $permissions,
+            'userRolesMap' => $userRolesMap,
+            'userPermissionsMap' => $userPermissionsMap,
             'user' => $user,
             'header' => 'Data User',
             'title' => 'User',

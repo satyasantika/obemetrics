@@ -106,10 +106,26 @@ class NilaiController extends Controller
 
             $this->syncKontrakMkScore($mk, $payload['mahasiswa_id'], $payload['semester_id']);
 
-            return response()->json([
+            $kontrakMk = KontrakMk::query()
+                ->where('mk_id', $mk->id)
+                ->where('mahasiswa_id', $payload['mahasiswa_id'])
+                ->where('semester_id', $payload['semester_id'])
+                ->first();
+
+            $responsePayload = [
                 'status' => 'ok',
                 'message' => 'Nilai dikosongkan.',
-            ]);
+                'kontrak_nilai' => [
+                    'nilai_angka' => $kontrakMk?->nilai_angka !== null ? round((float) $kontrakMk->nilai_angka, 2) : null,
+                    'nilai_huruf' => $kontrakMk?->nilai_huruf,
+                ],
+            ];
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json($responsePayload);
+            }
+
+            return to_route('mks.nilais.index', $mk->id)->with('success', 'Nilai berhasil dikosongkan.');
         }
 
         $nilai = Nilai::updateOrCreate(
@@ -126,12 +142,29 @@ class NilaiController extends Controller
         );
 
         $this->syncKontrakMkScore($mk, $payload['mahasiswa_id'], $payload['semester_id']);
+        $nama_mahasiswa = $nilai->mahasiswa->nama ?? 'N/A';
+        $tugas = $nilai->penugasan->kode. '-' . $nilai->penugasan->nama ?? 'N/A';
 
-        return response()->json([
+        $kontrakMk = KontrakMk::query()
+            ->where('mk_id', $mk->id)
+            ->where('mahasiswa_id', $payload['mahasiswa_id'])
+            ->where('semester_id', $payload['semester_id'])
+            ->first();
+
+        $responsePayload = [
             'status' => 'ok',
-            'message' => 'Nilai tersimpan.',
-            'nilai' => $nilai->nilai,
-        ]);
+            'message' => 'Nilai '.$nama_mahasiswa.' untuk '.$tugas.' berhasil diperbarui.',
+            'kontrak_nilai' => [
+                'nilai_angka' => $kontrakMk?->nilai_angka !== null ? round((float) $kontrakMk->nilai_angka, 2) : null,
+                'nilai_huruf' => $kontrakMk?->nilai_huruf,
+            ],
+        ];
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json($responsePayload);
+        }
+
+        return to_route('mks.nilais.index', $mk->id)->with('success', 'Nilai '.$nama_mahasiswa.' untuk '.$tugas.' berhasil diperbarui.');
     }
 
     private function syncKontrakMkScore(Mk $mk, string $mahasiswaId, string $semesterId): void

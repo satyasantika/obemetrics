@@ -19,13 +19,12 @@ class SemesterController extends Controller
 
     public function index(SemestersDataTable $dataTable)
     {
-        return $dataTable->render('layouts.setting', $this->_dataSelection(''));
+        return $dataTable->render('layouts.setting', $this->_dataSelection(new Semester()));
     }
 
     public function create()
     {
-        $semester = new Semester();
-        return view('setting.semester-form', $this->_dataSelection($semester));
+        return to_route('semesters.index')->with('warning', 'Gunakan tombol tambah (modal) pada halaman Semester.');
     }
 
     public function store(Request $request)
@@ -38,7 +37,7 @@ class SemesterController extends Controller
 
     public function edit(Semester $semester)
     {
-        return view('setting.semester-form', $this->_dataSelection($semester));
+        return to_route('semesters.index')->with('warning', 'Gunakan tombol edit (modal) pada daftar Semester.');
     }
 
     public function update(Request $request, Semester $semester)
@@ -61,6 +60,7 @@ class SemesterController extends Controller
     {
         return [
             'semester' => $semester,
+            'semesters' => Semester::orderByDesc('kode')->get(),
             'header' => 'Data Semester',
             'title' => 'Semester',
         ];

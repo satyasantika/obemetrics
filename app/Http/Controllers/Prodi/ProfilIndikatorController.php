@@ -6,7 +6,6 @@ use App\Models\Profil;
 use Illuminate\Http\Request;
 use App\Models\ProfilIndikator;
 use App\Http\Controllers\Controller;
-use App\DataTables\ProfilIndikatorsDataTable;
 
 class ProfilIndikatorController extends Controller
 {
@@ -19,8 +18,8 @@ class ProfilIndikatorController extends Controller
 
     public function create(Profil $profil)
     {
-        $profilindikator = new ProfilIndikator();
-        return view('setting.profilindikator-form', compact('profil','profilindikator'));
+        return to_route('kurikulums.profils.index', $profil->kurikulum)
+            ->with('warning', 'Gunakan tombol Tambah Indikator (modal) pada halaman Profil.');
     }
 
     public function store(Request $request, Profil $profil, ProfilIndikator $profilindikator)
@@ -33,7 +32,8 @@ class ProfilIndikatorController extends Controller
 
     public function edit(Profil $profil, ProfilIndikator $profilindikator)
     {
-        return view('setting.profilindikator-form', compact('profil','profilindikator'));
+        return to_route('kurikulums.profils.index', $profil->kurikulum)
+            ->with('warning', 'Gunakan tombol edit indikator (modal) pada halaman Profil.');
     }
 
     public function update(Request $request, Profil $profil, ProfilIndikator $profilindikator)

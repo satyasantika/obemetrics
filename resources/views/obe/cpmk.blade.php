@@ -22,7 +22,7 @@
                     <hr>
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('mks.cpmks.create',$mk) }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-circle"></i> Tambah CPMK</a>
+                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateCpmk"><i class="bi bi-plus-circle"></i> Tambah CPMK</button>
                             <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'cpmks']) }}" class="btn btn-sm btn-success mt-1 float-end"><i class="bi bi-upload"></i> Tambah Banyak CPMK</a>
                         </div>
                     </div>
@@ -36,9 +36,9 @@
                                         <td>
                                             <strong>{{ $cpmk->kode }}</strong>
                                             {{-- Edit CPMK --}}
-                                            <a href="{{ route('mks.cpmks.edit',[$mk->id,$cpmk->id]) }}" class="btn btn-sm btn-white text-primary">
+                                            <button type="button" class="btn btn-sm btn-white text-primary" data-bs-toggle="modal" data-bs-target="#modalEditCpmk-{{ $cpmk->id }}">
                                                 <i class="bi bi-pencil-square"></i>
-                                            </a>
+                                            </button>
                                         </td>
                                         <td style="text-align: justify">
                                             {{ $cpmk->nama }}
@@ -60,6 +60,87 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modalCreateCpmk" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('mks.cpmks.store', $mk) }}" method="post">
+                @csrf
+                <input type="hidden" name="mk_id" value="{{ $mk->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah CPMK</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label"><strong>Kode</strong> CPMK <span class="text-danger">(*)</span></label>
+                            <input type="text" name="kode" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label"><strong>Nama</strong> CPMK <span class="text-danger">(*)</span></label>
+                            <textarea name="nama" rows="3" class="form-control" required></textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="deskripsi" rows="8" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@foreach ($cpmks as $cpmk)
+<div class="modal fade" id="modalEditCpmk-{{ $cpmk->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="{{ route('mks.cpmks.update',[$mk->id,$cpmk->id]) }}" method="post">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="mk_id" value="{{ $mk->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit CPMK: {{ $cpmk->kode }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label"><strong>Kode</strong> CPMK <span class="text-danger">(*)</span></label>
+                            <input type="text" name="kode" class="form-control" value="{{ $cpmk->kode }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label"><strong>Nama</strong> CPMK <span class="text-danger">(*)</span></label>
+                            <textarea name="nama" rows="3" class="form-control" required>{{ $cpmk->nama }}</textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="deskripsi" rows="8" class="form-control">{{ $cpmk->deskripsi }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endforeach
 
 
 @endsection

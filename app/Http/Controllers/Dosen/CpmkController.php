@@ -25,8 +25,8 @@ class CpmkController extends Controller
 
     public function create(Mk $mk)
     {
-        $cpmk = new Cpmk();
-        return view('setting.cpmk-form', compact('mk','cpmk'));
+        return to_route('mks.cpmks.index', $mk)
+            ->with('warning', 'Gunakan tombol Tambah CPMK (modal) pada halaman CPMK.');
     }
 
     public function store(Request $request, Mk $mk, Cpmk $cpmk)
@@ -40,7 +40,8 @@ class CpmkController extends Controller
 
     public function edit(Mk $mk, Cpmk $cpmk)
     {
-        return view('setting.cpmk-form', compact('mk','cpmk'));
+        return to_route('mks.cpmks.index', $mk)
+            ->with('warning', 'Gunakan tombol edit (modal) pada daftar CPMK.');
     }
 
     public function update(Request $request, Mk $mk, Cpmk $cpmk)

@@ -9,7 +9,6 @@ use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class ProdisDataTable extends DataTable
@@ -24,7 +23,7 @@ class ProdisDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
                 $action = '<div class="row">';
-                $action .= ' <div class="col-auto"><a href="'.route('prodis.edit',$row->id).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit data prodi"><i class="bi bi-pencil-square"></i></a></div>';
+                $action .= ' <div class="col-auto"><button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditProdi-'.$row->id.'" title="Edit data prodi"><i class="bi bi-pencil-square"></i></button></div>';
                 $action .= ' <div class="col-auto"><a href="'.route('prodis.joinprodiusers.index',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET User"><i class="bi bi-person-gear"></i> User</a></div>';
                 $action .= '</div>';
                 return $action;
@@ -60,7 +59,11 @@ class ProdisDataTable extends DataTable
                     ->selectStyleSingle()
                     ->setTableAttribute('class', 'table table-striped table-bordered table-hover')
                     ->buttons([
-                        Button::make('add'),
+                        Button::make([
+                                        'text'   => '<i class="bi bi-plus-circle"></i> Add',
+                                        'className' => 'btn btn-primary',
+                                        'action' => 'function(e, dt, node, config){ const modal = document.getElementById("modalCreateProdi"); if(modal && window.bootstrap){ bootstrap.Modal.getOrCreateInstance(modal).show(); } }',
+                                    ]),
                         Button::make('reset'),
                         Button::make('reload'),
                         Button::make([
