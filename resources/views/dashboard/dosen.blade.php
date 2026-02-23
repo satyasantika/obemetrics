@@ -32,7 +32,9 @@
                                     <li>
                                         {{ $mk->kode }} {{ $mk->nama }}
                                         <br>
-                                        @include('components.menu-mk',$mk)
+                                        <a href="{{ route('mks.cpmks.index',[$mk->id]) }}" class="text-primary" style="text-decoration: none;">
+                                            <i class="bi bi-eye"></i> Selengkapnya ...
+                                        </a>
                                     </li>
                                 @endforeach
                             </ol>

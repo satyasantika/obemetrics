@@ -21,11 +21,14 @@
                             <div class="col">
                                 <li>
                                     {{ $kurikulum->nama }}
-                                    <a href="{{ route('prodis.kurikulums.edit',[$prodi->id,$kurikulum->id]) }}" class="text-primary">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
                                     <br>
-                                    @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
+                                    <a href="{{ route('prodis.kurikulums.edit',[$prodi->id,$kurikulum->id]) }}" class="text-primary" style="text-decoration: none;">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
+                                    |
+                                    <a href="{{ route('kurikulums.profils.index',[$kurikulum->id]) }}" class="text-primary" style="text-decoration: none;">
+                                        <i class="bi bi-eye"></i> Selengkapnya ...
+                                    </a>
                                 </li>
                             </div>
                         </div>
