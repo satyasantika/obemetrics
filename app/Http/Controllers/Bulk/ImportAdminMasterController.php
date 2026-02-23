@@ -87,7 +87,7 @@ class ImportAdminMasterController extends Controller
                     continue;
                 }
 
-                $previewRows[] = $normalizedRow;
+                $previewRows[] = $this->decoratePreviewRow($target, $normalizedRow);
             }
 
             if (empty($previewRows)) {
@@ -136,6 +136,11 @@ class ImportAdminMasterController extends Controller
 
         foreach ($selectedIndexes as $idx) {
             if (!isset($rows[$idx])) {
+                continue;
+            }
+
+            if (($rows[$idx]['can_save'] ?? true) === false) {
+                $skipped[] = 'Baris ' . ($idx + 2) . ': ' . ($rows[$idx]['status_message'] ?? 'Data tidak valid.');
                 continue;
             }
 
@@ -302,6 +307,74 @@ class ImportAdminMasterController extends Controller
         }
 
         return $text;
+    }
+
+    private function decoratePreviewRow(string $target, array $row): array
+    {
+        if (!in_array($target, ['users', 'joinprodiusers'], true)) {
+            return $row;
+        }
+
+        if ($target === 'joinprodiusers') {
+            $kodeProdi = trim((string) ($row['kode_prodi'] ?? ''));
+            $nidn = trim((string) ($row['nidn'] ?? ''));
+
+            if ($kodeProdi === '' || $nidn === '') {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Kode prodi dan NIDN wajib diisi',
+                ]);
+            }
+
+            $prodi = Prodi::query()->where('kode_prodi', $kodeProdi)->first();
+            if (!$prodi) {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Prodi tidak ditemukan: ' . $kodeProdi,
+                ]);
+            }
+
+            $user = User::query()->where('nidn', $nidn)->first();
+            if (!$user) {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'User dosen tidak ditemukan untuk NIDN: ' . $nidn,
+                ]);
+            }
+
+            $exists = JoinProdiUser::query()
+                ->where('prodi_id', $prodi->id)
+                ->where('user_id', $user->id)
+                ->exists();
+
+            return array_merge($row, [
+                'exists' => $exists,
+                'can_save' => true,
+                'status_message' => null,
+            ]);
+        }
+
+        $username = trim((string) ($row['username'] ?? ''));
+        if ($username === '') {
+            return array_merge($row, [
+                'exists' => false,
+                'can_save' => false,
+                'status_message' => 'Username wajib diisi',
+            ]);
+        }
+
+        $exists = User::query()
+            ->where('username', $username)
+            ->exists();
+
+        return array_merge($row, [
+            'exists' => $exists,
+            'can_save' => true,
+            'status_message' => null,
+        ]);
     }
 
     private function resolveTarget(?string $target): string

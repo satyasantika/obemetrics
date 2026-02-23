@@ -10,8 +10,7 @@ class AsesmenCplController extends Controller
 {
     function __construct()
     {
-        // $this->middleware('permission:read join cpl mks', ['only' => ['rencanaAsesmen']]);
-        // $this->middleware('permission:update join cpl mks', ['only' => ['update']]);
+        $this->middleware('permission:read join cpl mks', ['only' => ['rencanaAsesmen', 'analisisAsesmen', 'spyderwebCpl', 'laporanMahasiswa']]);
     }
 
     public function rencanaAsesmen(Kurikulum $kurikulum)
@@ -153,7 +152,6 @@ class AsesmenCplController extends Controller
                     ->map(fn ($statMk) => (float) ($statMk['rerata'] ?? 0));
             });
         // Akses: $avgPerCplPerMk[cpl_id][mk_id] = rerata MK
-        // dd($avgPerCplPerMk['a11a1a70-4a3e-49a5-a862-868398ffc2b2']['a11adaac-7d62-4a5d-a6eb-8c2127b26f2c'] ?? null);
 
         $nilaiCplTertimbang = $avgPerCplPerMk->map(function ($avgPerMk, $cplId) use ($bobotFraksiPerCplMk) {
             $bobotMk = $bobotFraksiPerCplMk->get($cplId) ?? collect();
@@ -166,7 +164,6 @@ class AsesmenCplController extends Controller
             return round($sum, 2);
         });
         // Akses: $nilaiCplTertimbang[cpl_id] = nilai CPL (0..100 tipikal)
-        // dd($nilaiCplTertimbang['a11a1a70-4a3e-49a5-a862-868398ffc2b2'] ?? null);
 
         $ketercapaianCpl = $statPerCplMk->map(function ($statPerMk, $cplId) use ($bobotFraksiPerCplMk, $nilaiCplTertimbang, $target) {
             $bobotMk = $bobotFraksiPerCplMk->get($cplId) ?? collect();

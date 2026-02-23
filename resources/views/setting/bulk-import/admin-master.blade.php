@@ -70,6 +70,7 @@
 
                         @php
                             $columns = $targets[$target]['columns'] ?? [];
+                            $showStatus = in_array($target, ['users', 'joinprodiusers'], true);
                         @endphp
 
                         <form action="{{ route('setting.import.admin-master.commit') }}" method="POST">
@@ -85,15 +86,47 @@
                                             @foreach ($columns as $column)
                                                 <th>{{ $column }}</th>
                                             @endforeach
+                                            @if ($showStatus)
+                                                <th>Status</th>
+                                            @endif
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach ($preview['rows'] as $index => $row)
-                                            <tr>
-                                                <td><input type="checkbox" class="form-check-input row-check" name="selected[]" value="{{ $index }}" checked></td>
+                                            @php
+                                                $hasError = $showStatus && (($row['can_save'] ?? true) === false);
+                                                $isExists = $showStatus && (($row['exists'] ?? false) === true);
+                                                $rowClass = $hasError ? 'table-danger' : ($isExists ? 'table-warning' : '');
+                                            @endphp
+                                            <tr class="{{ $rowClass }}">
+                                                <td>
+                                                    <input
+                                                        type="checkbox"
+                                                        class="form-check-input row-check"
+                                                        name="selected[]"
+                                                        value="{{ $index }}"
+                                                        @if ($showStatus)
+                                                            @checked((($row['can_save'] ?? true) === true) && (($row['exists'] ?? false) === false))
+                                                            @disabled(($row['can_save'] ?? true) === false)
+                                                        @else
+                                                            checked
+                                                        @endif
+                                                    >
+                                                </td>
                                                 @foreach ($columns as $column)
                                                     <td>{{ $row[$column] ?? '' }}</td>
                                                 @endforeach
+                                                @if ($showStatus)
+                                                    <td>
+                                                        @if (($row['can_save'] ?? true) === false)
+                                                            <span class="badge bg-danger">{{ $row['status_message'] ?? 'Data tidak valid' }}</span>
+                                                        @elseif (($row['exists'] ?? false) === true)
+                                                            <span class="badge bg-warning text-dark">Sudah ada</span>
+                                                        @else
+                                                            <span class="badge bg-success">Baru</span>
+                                                        @endif
+                                                    </td>
+                                                @endif
                                             </tr>
                                         @endforeach
                                     </tbody>
