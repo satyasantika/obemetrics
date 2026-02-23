@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Role;
 use App\Models\Permission;
 use App\Models\KontrakMk;
+use App\Models\JoinMkUser;
+use App\Models\JoinProdiUser;
 use Illuminate\Http\Request;
 use App\DataTables\UsersDataTable;
 use Illuminate\Support\Facades\DB;
@@ -79,7 +81,10 @@ class UserController extends Controller
 
     private function _dataSelection($user)
     {
-        $users = User::with(['roles.permissions:id,name', 'permissions:id,name'])->orderBy('name')->get();
+        $users = User::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'username', 'email', 'password', 'phone', 'nidn']);
+
         $roles = Role::all()->pluck('name')->sort();
         $roleModels = Role::orderBy('name')->get();
         $permissions = Permission::orderBy('name')->get();
@@ -100,6 +105,33 @@ class UserController extends Controller
             ->map(fn ($items) => $items->pluck('permission_id')->map(fn ($id) => (string) $id)->all())
             ->toArray();
 
+        $userRoleDerivedPermissionsMap = DB::table('model_has_roles as mhr')
+            ->join('role_has_permissions as rhp', 'mhr.role_id', '=', 'rhp.role_id')
+            ->where('mhr.model_type', User::class)
+            ->select('mhr.model_id', 'rhp.permission_id')
+            ->get()
+            ->groupBy('model_id')
+            ->map(function ($items) {
+                return $items
+                    ->pluck('permission_id')
+                    ->map(fn ($id) => (string) $id)
+                    ->unique()
+                    ->values()
+                    ->all();
+            })
+            ->toArray();
+
+        $usedUserIds = collect()
+            ->merge(JoinProdiUser::query()->pluck('user_id'))
+            ->merge(JoinMkUser::query()->pluck('user_id'))
+            ->merge(KontrakMk::query()->pluck('user_id'))
+            ->filter()
+            ->map(fn ($id) => (string) $id)
+            ->unique()
+            ->values();
+
+        $nonDeletableUserIds = array_fill_keys($usedUserIds->all(), true);
+
         return [
             'roles' =>  $roles,
             'users' => $users,
@@ -107,6 +139,8 @@ class UserController extends Controller
             'permissions' => $permissions,
             'userRolesMap' => $userRolesMap,
             'userPermissionsMap' => $userPermissionsMap,
+            'userRoleDerivedPermissionsMap' => $userRoleDerivedPermissionsMap,
+            'nonDeletableUserIds' => $nonDeletableUserIds,
             'user' => $user,
             'header' => 'Data User',
             'title' => 'User',

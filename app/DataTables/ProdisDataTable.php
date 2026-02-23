@@ -22,8 +22,16 @@ class ProdisDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
+                $kodeProdi = e((string) ($row->kode_prodi ?? ''));
+                $nama = e((string) $row->nama);
+                $jenjang = e((string) ($row->jenjang ?? ''));
+                $kodePddikti = e((string) ($row->kode_pddikti ?? ''));
+                $singkat = e((string) ($row->singkat ?? ''));
+                $pt = e((string) ($row->pt ?? ''));
+                $fakultas = e((string) ($row->fakultas ?? ''));
+                $visiMisi = e((string) ($row->visi_misi ?? ''));
                 $action = '<div class="row">';
-                $action .= ' <div class="col-auto"><button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditProdi-'.$row->id.'" title="Edit data prodi"><i class="bi bi-pencil-square"></i></button></div>';
+                $action .= ' <div class="col-auto"><button type="button" class="btn btn-primary btn-sm action js-prodi-modal-trigger" data-bs-toggle="modal" data-bs-target="#modalEditProdi" data-prodi-id="'.$row->id.'" data-prodi-kode-prodi="'.$kodeProdi.'" data-prodi-nama="'.$nama.'" data-prodi-jenjang="'.$jenjang.'" data-prodi-kode-pddikti="'.$kodePddikti.'" data-prodi-singkat="'.$singkat.'" data-prodi-pt="'.$pt.'" data-prodi-fakultas="'.$fakultas.'" data-prodi-visi-misi="'.$visiMisi.'" title="Edit data prodi"><i class="bi bi-pencil-square"></i></button></div>';
                 $action .= ' <div class="col-auto"><a href="'.route('prodis.joinprodiusers.index',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET User"><i class="bi bi-person-gear"></i> User</a></div>';
                 $action .= '</div>';
                 return $action;

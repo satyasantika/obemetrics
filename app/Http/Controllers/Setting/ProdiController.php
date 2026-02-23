@@ -7,6 +7,7 @@ use App\Models\JoinProdiUser;
 use Illuminate\Http\Request;
 use App\DataTables\ProdisDataTable;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 
 class ProdiController extends Controller
 {
@@ -68,9 +69,19 @@ class ProdiController extends Controller
 
     private function _dataSelection($prodi)
     {
+        $usedProdiIds = collect()
+            ->merge(DB::table('kurikulums')->pluck('prodi_id'))
+            ->merge(DB::table('mahasiswas')->pluck('prodi_id'))
+            ->merge(DB::table('join_prodi_users')->pluck('prodi_id'))
+            ->filter()
+            ->map(fn ($id) => (string) $id)
+            ->unique()
+            ->values();
+
         return [
             'prodi' => $prodi,
             'prodis' => Prodi::orderBy('jenjang')->orderBy('nama')->get(),
+            'nonDeletableProdiIds' => array_fill_keys($usedProdiIds->all(), true),
             'header' => 'Data Program Studi',
             'title' => 'Prodi',
         ];

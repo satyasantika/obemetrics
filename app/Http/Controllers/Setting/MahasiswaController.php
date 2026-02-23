@@ -68,10 +68,19 @@ class MahasiswaController extends Controller
 
     private function _dataSelection($mahasiswa)
     {
+        $usedMahasiswaIds = collect()
+            ->merge(KontrakMk::query()->pluck('mahasiswa_id'))
+            ->merge(Nilai::query()->pluck('mahasiswa_id'))
+            ->filter()
+            ->map(fn ($id) => (string) $id)
+            ->unique()
+            ->values();
+
         return [
             'prodis' => Prodi::all(),
             'mahasiswa' => $mahasiswa,
             'mahasiswas' => Mahasiswa::with('prodi')->orderBy('nama')->get(),
+            'nonDeletableMahasiswaIds' => array_fill_keys($usedMahasiswaIds->all(), true),
             'header' => 'Data Mahasiswa',
             'title' => 'Mahasiswa',
         ];

@@ -22,9 +22,15 @@ class KontrakMksDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
+                $prodiId = (string) ($row->mahasiswa->prodi_id ?? '');
+                $mahasiswaId = (string) ($row->mahasiswa_id ?? '');
+                $mkId = (string) ($row->mk_id ?? '');
+                $userId = (string) ($row->user_id ?? '');
+                $semesterId = (string) ($row->semester_id ?? '');
+                $kelas = e((string) ($row->kelas ?? ''));
                 $action = '<div class="row">';
                 $action .= ' <div class="col-auto">';
-                $action .= '  <button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditKontrakmk-'.$row->id.'" title="Edit KontrakMk"><i class="bi bi-pencil-square"></i></button>';
+                $action .= '  <button type="button" class="btn btn-primary btn-sm action js-kontrakmk-modal-trigger" data-bs-toggle="modal" data-bs-target="#modalEditKontrakmk" data-kontrakmk-id="'.$row->id.'" data-kontrakmk-prodi-id="'.$prodiId.'" data-kontrakmk-mahasiswa-id="'.$mahasiswaId.'" data-kontrakmk-mk-id="'.$mkId.'" data-kontrakmk-user-id="'.$userId.'" data-kontrakmk-semester-id="'.$semesterId.'" data-kontrakmk-kelas="'.$kelas.'" title="Edit KontrakMk"><i class="bi bi-pencil-square"></i></button>';
                 $action .= ' </div>';
                 $action .= '</div>';
                 return $action;

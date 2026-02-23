@@ -9,7 +9,6 @@ use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Html\Editor\Editor;
-use Yajra\DataTables\Html\Editor\Fields;
 use Yajra\DataTables\Services\DataTable;
 
 class SemestersDataTable extends DataTable
@@ -23,8 +22,11 @@ class SemestersDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
+                $kode = e((string) $row->kode);
+                $nama = e((string) $row->nama);
+                $deskripsi = e((string) ($row->deskripsi ?? ''));
                 $action = '<div class="row">';
-                $action .= ' <div class="col-auto"><button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditSemester-'.$row->id.'" title="Edit data semester"><i class="bi bi-pencil-square"></i></button></div>';
+                $action .= ' <div class="col-auto"><button type="button" class="btn btn-primary btn-sm action js-semester-modal-trigger" data-bs-toggle="modal" data-bs-target="#modalEditSemester" data-semester-id="'.$row->id.'" data-semester-kode="'.$kode.'" data-semester-nama="'.$nama.'" data-semester-deskripsi="'.$deskripsi.'" title="Edit data semester"><i class="bi bi-pencil-square"></i></button></div>';
                 $action .= '</div>';
                 return $action;
             })

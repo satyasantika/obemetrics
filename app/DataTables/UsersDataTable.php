@@ -22,11 +22,17 @@ class UsersDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
+                $userName = e((string) $row->name);
+                $username = e((string) $row->username);
+                $email = e((string) $row->email);
+                $phone = e((string) ($row->phone ?? ''));
+                $nidn = e((string) ($row->nidn ?? ''));
+
                 $action = '<div class="row">';
                 $action .= ' <div class="col-auto">';
-                $action .= '  <button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditUser-'.$row->id.'" title="Edit User"><i class="bi bi-pencil-square"></i></button>';
-                $action .= '  <button type="button" class="btn btn-success btn-sm action" data-bs-toggle="modal" data-bs-target="#modalSetUserRole-'.$row->id.'" title="SET Role"><i class="bi bi-person-gear"></i> R</button>';
-                $action .= '  <button type="button" class="btn btn-success btn-sm action" data-bs-toggle="modal" data-bs-target="#modalSetUserPermission-'.$row->id.'" title="SET Permission"><i class="bi bi-person-gear"></i> P</button>';
+                $action .= '  <button type="button" class="btn btn-primary btn-sm action js-user-modal-trigger" data-bs-toggle="modal" data-bs-target="#modalEditUser" data-user-id="'.$row->id.'" data-user-name="'.$userName.'" data-user-username="'.$username.'" data-user-email="'.$email.'" data-user-phone="'.$phone.'" data-user-nidn="'.$nidn.'" title="Edit User"><i class="bi bi-pencil-square"></i></button>';
+                $action .= '  <button type="button" class="btn btn-success btn-sm action js-user-modal-trigger" data-bs-toggle="modal" data-bs-target="#modalSetUserRole" data-user-id="'.$row->id.'" data-user-name="'.$userName.'" title="SET Role"><i class="bi bi-person-gear"></i> R</button>';
+                $action .= '  <button type="button" class="btn btn-success btn-sm action js-user-modal-trigger" data-bs-toggle="modal" data-bs-target="#modalSetUserPermission" data-user-id="'.$row->id.'" data-user-name="'.$userName.'" title="SET Permission"><i class="bi bi-person-gear"></i> P</button>';
                 $action .= '  <a href="'.route('impersonate',$row->id).'" class="btn btn-warning btn-sm action" data-bs-toggle="tooltip" title="Impersonate"><i class="bi bi-person-badge"></i></a>';
                 $action .= ' </div>';
                 $action .= '</div>';
@@ -60,7 +66,7 @@ class UsersDataTable extends DataTable
      */
     public function query(User $model): QueryBuilder
     {
-        return $model->newQuery();
+        return $model->newQuery()->with('roles:id,name');
     }
 
     /**

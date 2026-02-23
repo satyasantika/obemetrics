@@ -22,9 +22,11 @@ class RolesDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
+                $name = e((string) $row->name);
+                $guard = e((string) ($row->guard_name ?? ''));
                 $action = ' ';
-                $action .= ' <button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditRole-'.$row->id.'" title="Edit Role"><i class="bi bi-pencil-square"></i></button>';
-                $action .= ' <button type="button" class="btn btn-success btn-sm action" data-bs-toggle="modal" data-bs-target="#modalSetRolePermission-'.$row->id.'" title="SET Permission"><i class="bi bi-person-gear"></i> P</button>';
+                $action .= ' <button type="button" class="btn btn-primary btn-sm action js-role-modal-trigger" data-bs-toggle="modal" data-bs-target="#modalEditRole" data-role-id="'.$row->id.'" data-role-name="'.$name.'" data-role-guard="'.$guard.'" title="Edit Role"><i class="bi bi-pencil-square"></i></button>';
+                $action .= ' <button type="button" class="btn btn-success btn-sm action js-role-modal-trigger" data-bs-toggle="modal" data-bs-target="#modalSetRolePermission" data-role-id="'.$row->id.'" data-role-name="'.$name.'" title="SET Permission"><i class="bi bi-person-gear"></i> P</button>';
                 return $action;
             })
             // ->editColumn('name', function($row){

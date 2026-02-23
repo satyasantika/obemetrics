@@ -67,10 +67,19 @@ class PermissionController extends Controller
 
     private function _dataSelection($permission)
     {
+        $usedPermissionIds = collect()
+            ->merge(DB::table('role_has_permissions')->pluck('permission_id'))
+            ->merge(DB::table('model_has_permissions')->pluck('permission_id'))
+            ->filter()
+            ->map(fn ($id) => (string) $id)
+            ->unique()
+            ->values();
+
         return [
             'header' => 'Data Permission',
             'permission' => $permission,
             'permissions' => Permission::orderBy('name')->get(),
+            'nonDeletablePermissionIds' => array_fill_keys($usedPermissionIds->all(), true),
             'title' => 'Permission',
         ];
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Setting;
 
 use App\Models\Evaluasi;
+use App\Models\Penugasan;
 use Illuminate\Http\Request;
 use App\DataTables\EvaluasisDataTable;
 use App\Http\Controllers\Controller;
@@ -62,9 +63,17 @@ class EvaluasiController extends Controller
 
     private function _dataSelection($evaluasi)
     {
+        $usedEvaluasiIds = Penugasan::query()
+            ->pluck('evaluasi_id')
+            ->filter()
+            ->map(fn ($id) => (string) $id)
+            ->unique()
+            ->values();
+
         return [
             'evaluasi' => $evaluasi,
             'evaluasis' => Evaluasi::orderBy('kode')->get(),
+            'nonDeletableEvaluasiIds' => array_fill_keys($usedEvaluasiIds->all(), true),
             'header' => 'Data Evaluasi Perkuliahan',
             'title' => 'Evaluasi',
         ];

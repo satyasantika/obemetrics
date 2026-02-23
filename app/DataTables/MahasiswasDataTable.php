@@ -22,9 +22,15 @@ class MahasiswasDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
+                $nama = e((string) $row->nama);
+                $nim = e((string) $row->nim);
+                $angkatan = e((string) ($row->angkatan ?? ''));
+                $prodiId = e((string) ($row->prodi_id ?? ''));
+                $email = e((string) ($row->email ?? ''));
+                $phone = e((string) ($row->phone ?? ''));
                 $action = '<div class="row">';
                 $action .= ' <div class="col-auto">';
-                $action .= '  <button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditMahasiswa-'.$row->id.'" title="Edit Mahasiswa"><i class="bi bi-pencil-square"></i></button>';
+                $action .= '  <button type="button" class="btn btn-primary btn-sm action js-mahasiswa-modal-trigger" data-bs-toggle="modal" data-bs-target="#modalEditMahasiswa" data-mahasiswa-id="'.$row->id.'" data-mahasiswa-nama="'.$nama.'" data-mahasiswa-nim="'.$nim.'" data-mahasiswa-angkatan="'.$angkatan.'" data-mahasiswa-prodi-id="'.$prodiId.'" data-mahasiswa-email="'.$email.'" data-mahasiswa-phone="'.$phone.'" title="Edit Mahasiswa"><i class="bi bi-pencil-square"></i></button>';
                 $action .= ' </div>';
                 $action .= '</div>';
                 return $action;

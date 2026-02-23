@@ -22,8 +22,10 @@ class PermissionsDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
+                $name = e((string) $row->name);
+                $guard = e((string) ($row->guard_name ?? ''));
                 $action = ' ';
-                $action .= ' <button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditPermission-'.$row->id.'" title="Edit Permission"><i class="bi bi-pencil-square"></i></button>';
+                $action .= ' <button type="button" class="btn btn-primary btn-sm action js-permission-modal-trigger" data-bs-toggle="modal" data-bs-target="#modalEditPermission" data-permission-id="'.$row->id.'" data-permission-name="'.$name.'" data-permission-guard="'.$guard.'" title="Edit Permission"><i class="bi bi-pencil-square"></i></button>';
                 return $action;
             })
             ->setRowId('id');

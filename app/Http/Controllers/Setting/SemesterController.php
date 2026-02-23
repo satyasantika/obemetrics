@@ -10,6 +10,7 @@ use App\Models\Nilai;
 use Illuminate\Http\Request;
 use App\DataTables\SemestersDataTable;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 
 class SemesterController extends Controller
 {
@@ -73,9 +74,21 @@ class SemesterController extends Controller
 
     private function _dataSelection($semester)
     {
+        $usedSemesterIds = collect()
+            ->merge(DB::table('kontrak_mks')->pluck('semester_id'))
+            ->merge(DB::table('subcpmks')->pluck('semester_id'))
+            ->merge(DB::table('penugasans')->pluck('semester_id'))
+            ->merge(DB::table('join_subcpmk_penugasans')->pluck('semester_id'))
+            ->merge(DB::table('nilais')->pluck('semester_id'))
+            ->filter()
+            ->map(fn ($id) => (string) $id)
+            ->unique()
+            ->values();
+
         return [
             'semester' => $semester,
             'semesters' => Semester::orderByDesc('kode')->get(),
+            'nonDeletableSemesterIds' => array_fill_keys($usedSemesterIds->all(), true),
             'header' => 'Data Semester',
             'title' => 'Semester',
         ];

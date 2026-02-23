@@ -69,12 +69,20 @@ class RoleController extends Controller
     {
         $roles = Role::with('permissions:id,name')->orderBy('name')->get();
         $permissions = Permission::orderBy('name')->get();
+        $usedRoleIds = collect()
+            ->merge(DB::table('model_has_roles')->pluck('role_id'))
+            ->merge(DB::table('role_has_permissions')->pluck('role_id'))
+            ->filter()
+            ->map(fn ($id) => (string) $id)
+            ->unique()
+            ->values();
 
         return [
             'header' => 'Data Role',
             'role' => $role,
             'roles' => $roles,
             'permissions' => $permissions,
+            'nonDeletableRoleIds' => array_fill_keys($usedRoleIds->all(), true),
             'title' => 'Role',
         ];
     }

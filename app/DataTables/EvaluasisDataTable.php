@@ -22,8 +22,12 @@ class EvaluasisDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
+                $kode = e((string) $row->kode);
+                $nama = e((string) $row->nama);
+                $kategori = e((string) ($row->kategori ?? ''));
+                $deskripsi = e((string) ($row->deskripsi ?? ''));
                 $action = '<div class="row">';
-                $action .= ' <div class="col-auto"><button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditEvaluasi-'.$row->id.'" title="Edit data evaluasi"><i class="bi bi-pencil-square"></i></button></div>';
+                $action .= ' <div class="col-auto"><button type="button" class="btn btn-primary btn-sm action js-evaluasi-modal-trigger" data-bs-toggle="modal" data-bs-target="#modalEditEvaluasi" data-evaluasi-id="'.$row->id.'" data-evaluasi-kode="'.$kode.'" data-evaluasi-nama="'.$nama.'" data-evaluasi-kategori="'.$kategori.'" data-evaluasi-deskripsi="'.$deskripsi.'" title="Edit data evaluasi"><i class="bi bi-pencil-square"></i></button></div>';
                 $action .= '</div>';
                 return $action;
             })
