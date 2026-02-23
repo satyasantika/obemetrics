@@ -28,7 +28,8 @@
                             <table id="table-laporan-mahasiswa" class="table table-bordered table-hover align-middle">
                                 <thead>
                                     <tr>
-                                        <th>NPM<br>NAMA</th>
+                                        <th>NPM</th>
+                                        <th>NAMA</th>
                                         <th>SKS KONTRAK</th>
                                         <th>NILAI HURUF</th>
                                         <th>BOBOT HURUF</th>
@@ -39,10 +40,8 @@
                                 <tbody>
                                 @forelse ($mahasiswas as $mahasiswa)
                                     <tr>
-                                        <td>
-                                            <strong>{{ $mahasiswa['nim'] ?? '-' }}</strong><br>
-                                            {{ $mahasiswa['nama'] ?? '-' }}
-                                        </td>
+                                        <td>{{ $mahasiswa['nim'] ?? '-' }}</td>
+                                        <td>{{ $mahasiswa['nama'] ?? '-' }}</td>
                                         <td class="text-end">{{ $mahasiswa['sks_kontrak'] ?? 0 }}</td>
                                         <td class="text-center">{{ $mahasiswa['nilai_huruf'] ?? '-' }}</td>
                                         <td class="text-end">{{ number_format((float) ($mahasiswa['bobot_huruf'] ?? 0), 2) }}</td>
@@ -56,7 +55,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ 6 }}"><span class="bg-warning text-dark p-2">
+                                        <td colspan="{{ 7 }}"><span class="bg-warning text-dark p-2">
                                             Belum ada data mahasiswa untuk kurikulum ini.</span>
                                         </td>
                                     </tr>
@@ -148,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
             pageLength: 10,
             order: [[0, 'asc']],
             columnDefs: [
-                { orderable: false, targets: 5 }
+                { orderable: false, targets: 6 }
             ]
         });
     }

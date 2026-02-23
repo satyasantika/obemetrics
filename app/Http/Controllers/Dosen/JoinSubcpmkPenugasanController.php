@@ -6,7 +6,6 @@ use App\Models\Mk;
 use App\Models\Penugasan;
 use App\Models\Subcpmk;
 use App\Models\JoinSubcpmkPenugasan;
-use App\Models\Nilai;
 use App\Models\Semester;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -100,41 +99,27 @@ class JoinSubcpmkPenugasanController extends Controller
             ], 422);
         }
 
-        $existing = JoinSubcpmkPenugasan::query()
+        $relationQuery = JoinSubcpmkPenugasan::query()
             ->where('mk_id', $mkId)
             ->where('semester_id', $semesterId)
             ->where('subcpmk_id', $subcpmk->id)
-            ->where('penugasan_id', $penugasan->id)
-            ->first();
+            ->where('penugasan_id', $penugasan->id);
+
+        $existingRows = $relationQuery
+            ->orderBy('created_at')
+            ->get();
+
+        $existing = $existingRows->first();
 
         $bobotValue = $request->input('bobot');
         $hasBobotValue = $bobotValue !== null && trim((string) $bobotValue) !== '';
+        $bobot = $hasBobotValue ? (float) $bobotValue : null;
 
         if (!$hasBobotValue) {
-            if ($existing) {
-                $isUsed = Nilai::query()
-                    ->where('mk_id', $mkId)
-                    ->where('penugasan_id', $penugasan->id)
-                    ->where('semester_id', $semesterId)
-                    ->exists();
-
-                if ($isUsed) {
-                    $message = 'Relasi tidak dapat dihapus karena nilai penugasan sudah digunakan.';
-
-                    if ($request->expectsJson() || $request->ajax()) {
-                        return response()->json([
-                            'status' => 'error',
-                            'message' => $message,
-                            'linked' => true,
-                            'bobot' => (float) ($existing->bobot ?? 0),
-                        ], 422);
-                    }
-
-                    return to_route('mks.joinsubcpmkpenugasans.index', ['mk' => $mkId, 'semester_id' => $semesterId])
-                        ->with('error', $message);
-                }
-
-                $existing->delete();
+            if ($existingRows->isNotEmpty()) {
+                JoinSubcpmkPenugasan::query()
+                    ->whereIn('id', $existingRows->pluck('id'))
+                    ->delete();
             }
 
             if ($request->expectsJson() || $request->ajax()) {
@@ -149,18 +134,80 @@ class JoinSubcpmkPenugasanController extends Controller
                 ->with('warning', $subcpmk->kode . ' dihapus dari ' . $penugasan->nama . '.');
         }
 
-        $bobot = (float) $bobotValue;
-        $link = JoinSubcpmkPenugasan::updateOrCreate(
-            [
+        if ($bobot <= 0) {
+            if ($existingRows->isNotEmpty()) {
+                JoinSubcpmkPenugasan::query()
+                    ->whereIn('id', $existingRows->pluck('id'))
+                    ->delete();
+
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json([
+                        'status' => 'ok',
+                        'linked' => false,
+                        'bobot' => null,
+                    ]);
+                }
+
+                return to_route('mks.joinsubcpmkpenugasans.index', ['mk' => $mkId, 'semester_id' => $semesterId])
+                    ->with('warning', $subcpmk->kode . ' dihapus dari ' . $penugasan->nama . '.');
+            }
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'status' => 'ok',
+                    'linked' => false,
+                    'bobot' => null,
+                ]);
+            }
+
+            return to_route('mks.joinsubcpmkpenugasans.index', ['mk' => $mkId, 'semester_id' => $semesterId])
+                ->with('warning', 'Tidak ada relasi yang diubah.');
+        }
+
+        if ($existing) {
+            $existing->bobot = $bobot;
+            $existing->save();
+
+            $duplicateIds = $existingRows
+                ->skip(1)
+                ->pluck('id');
+
+            if ($duplicateIds->isNotEmpty()) {
+                JoinSubcpmkPenugasan::query()
+                    ->whereIn('id', $duplicateIds)
+                    ->delete();
+            }
+
+            $link = $existing;
+        } else {
+            $link = JoinSubcpmkPenugasan::create([
                 'mk_id' => $mkId,
                 'semester_id' => $semesterId,
                 'subcpmk_id' => $subcpmk->id,
                 'penugasan_id' => $penugasan->id,
-            ],
-            [
                 'bobot' => $bobot,
-            ]
-        );
+            ]);
+
+            $latestRows = JoinSubcpmkPenugasan::query()
+                ->where('mk_id', $mkId)
+                ->where('semester_id', $semesterId)
+                ->where('subcpmk_id', $subcpmk->id)
+                ->where('penugasan_id', $penugasan->id)
+                ->orderBy('created_at')
+                ->get();
+
+            $link = $latestRows->first() ?? $link;
+
+            $duplicateIds = $latestRows
+                ->skip(1)
+                ->pluck('id');
+
+            if ($duplicateIds->isNotEmpty()) {
+                JoinSubcpmkPenugasan::query()
+                    ->whereIn('id', $duplicateIds)
+                    ->delete();
+            }
+        }
 
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([

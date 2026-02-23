@@ -74,7 +74,13 @@
     </div>
 </form>
 
-@if ($mahasiswa->id)
+@php
+    $canDeleteMahasiswa = !$mahasiswa->id || (
+        !\App\Models\KontrakMk::where('mahasiswa_id', $mahasiswa->id)->exists() &&
+        !\App\Models\Nilai::where('mahasiswa_id', $mahasiswa->id)->exists()
+    );
+@endphp
+@if ($mahasiswa->id && $canDeleteMahasiswa)
     <form id="delete-form" action="{{ route('mahasiswas.destroy',$mahasiswa->id) }}" method="POST">
         @csrf
         @method('DELETE')
@@ -82,6 +88,8 @@
             <i class="bi bi-trash"></i>
         </button>
     </form>
+@elseif ($mahasiswa->id)
+    <span class="badge bg-secondary float-end">Data digunakan, tidak dapat dihapus</span>
 @endif
 
 @endpush
