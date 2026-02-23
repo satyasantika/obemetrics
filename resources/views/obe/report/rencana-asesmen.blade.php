@@ -23,43 +23,73 @@
 
                     <div class="row">
                         <div class="col">
-                            <table class="table table-bordered table-hover">
+                            <table class="table table-bordered table-hover align-top">
                                 <thead>
                                     <tr>
-                                        <th>CAPAIAN PEMBELAJARAN LULUSAN</th>
+                                        <th width="40%">CAPAIAN PEMBELAJARAN LULUSAN</th>
                                         <th>ASPEK MATA KULIAH</th>
                                         <th class="text-end">BOBOT</th>
                                     </tr>
                                 </thead>
+
                                 <tbody>
                                 @forelse ($cpls as $cpl)
+
                                     @php
-                                        $matkuls = $cpl->joinCplBks->pluck('bk.joinBkMks')->flatten()->pluck('mk');
+                                        // Kumpulkan MK yang terkait CPL ini, pastikan unik
+                                        $matkuls = $cpl->joinCplBks
+                                            ->pluck('bk.joinBkMks')->flatten()
+                                            ->pluck('mk')->unique('id');
+
+                                        $totalSks = $matkuls->sum('sks');
+                                        $rowspan  = max(1, $matkuls->count());
                                     @endphp
-                                    <tr style="vertical-align: text-top;">
-                                        <td rowspan="{{ $matkuls->count() + 1 }}" width="40%">
-                                            <strong>{{ $cpl->kode }}</strong>
-                                            <br>
+
+                                    {{-- Baris pertama CPL --}}
+                                    <tr style="vertical-align: top;">
+                                        <td rowspan="{{ $rowspan }}">
+                                            <strong>{{ $cpl->kode }}</strong><br>
                                             <small>{{ $cpl->nama }}</small>
                                         </td>
-                                        @forelse ($matkuls as $matkul)
-                                        <tr>
-                                            <td>
-                                                <span class="badge bg-primary text-white">{{ $matkul->sks }} SKS</span>
-                                                {{ $matkul->nama }}
-                                            </td>
-                                            <td class="text-end">{{ number_format($matkul->sks/$matkuls->sum('sks')*100, 2) }}%</td>
-                                        </tr>
-                                    </tr>
-                                    @empty
-                                    @endforelse
 
-                                        </td>
+                                        @if ($matkuls->count() > 0)
+                                            {{-- Cetak baris MK pertama --}}
+                                            @php $firstMk = $matkuls->first(); @endphp
+                                            <td>
+                                                <span class="badge bg-primary">{{ $firstMk->sks }} SKS</span>
+                                                {{ $firstMk->nama }}
+                                            </td>
+                                            <td class="text-end">
+                                                {{ $totalSks > 0 ? number_format($firstMk->sks / $totalSks * 100, 2) : '0.00' }}%
+                                            </td>
+                                        @else
+                                            {{-- Tidak ada MK terkait --}}
+                                            <td class="text-muted fst-italic">Belum ada mata kuliah terkait</td>
+                                            <td class="text-end">-</td>
+                                        @endif
                                     </tr>
+
+                                    {{-- Cetak MK pilihan kedua dst. --}}
+                                    @if ($matkuls->count() > 1)
+                                        @foreach ($matkuls->skip(1) as $mk)
+                                            <tr>
+                                                <td>
+                                                    <span class="badge bg-primary">{{ $mk->sks }} SKS</span>
+                                                    {{ $mk->nama }}
+                                                </td>
+                                                <td class="text-end">
+                                                    {{ $totalSks > 0 ? number_format($mk->sks / $totalSks * 100, 2) : '0.00' }}%
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @endif
+
                                 @empty
                                     <tr>
-                                        <td colspan="{{ 2+$bks->count() }}"><span class="bg-warning text-dark p-2">
-                                            Belum ada data CPL untuk kurikulum ini.</span>
+                                        <td colspan="3">
+                                            <span class="bg-warning text-dark p-2 d-inline-block">
+                                                Belum ada data CPL untuk kurikulum ini.
+                                            </span>
                                         </td>
                                     </tr>
                                 @endforelse
