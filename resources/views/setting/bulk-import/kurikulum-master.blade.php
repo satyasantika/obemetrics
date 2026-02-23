@@ -47,7 +47,7 @@
                             <div class="col-md-3"></div>
                             <div class="col">
                                 @php
-                                    $directSaveTargets = ['join_profil_cpls', 'join_cpl_bks', 'join_bk_mks'];
+                                    $directSaveTargets = ['kurikulum_bundle', 'join_profil_cpls', 'join_cpl_bks', 'join_bk_mks'];
                                     $isDirectSaveTarget = in_array($target, $directSaveTargets, true);
                                 @endphp
                                 <button type="submit" class="btn btn-primary btn-sm">

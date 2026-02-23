@@ -18,14 +18,21 @@ use App\Models\ProfilIndikator;
 use App\Models\Semester;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ImportKurikulumMasterController extends Controller
 {
     private const TARGETS = [
+        'kurikulum_bundle' => [
+            'label' => 'Master Kurikulum (Profil, CPL, BK, MK)',
+            'columns' => [],
+            'required' => [],
+        ],
         'profils' => [
             'label' => 'Profil Lulusan',
             'columns' => ['kode', 'nama', 'deskripsi'],
@@ -115,6 +122,20 @@ class ImportKurikulumMasterController extends Controller
 
         $target = $this->resolveTarget($request->input('target'));
         $meta = self::TARGETS[$target];
+
+        if ($target === 'kurikulum_bundle') {
+            try {
+                $spreadsheet = IOFactory::load($request->file('file')->getPathname());
+                $result = DB::transaction(function () use ($spreadsheet, $kurikulum) {
+                    return $this->commitKurikulumBundle($spreadsheet, $kurikulum);
+                });
+
+                return redirect()->to($this->resolveReturnUrl($request))
+                    ->with('success', "Import master kurikulum berhasil: {$result['profils']} profil, {$result['cpls']} CPL, {$result['bks']} BK, {$result['mks']} MK diproses.");
+            } catch (\Throwable $e) {
+                return back()->with('error', 'Gagal memproses import master kurikulum: ' . $e->getMessage());
+            }
+        }
 
         if (!empty($meta['requires_semester']) && empty($request->semester_id)) {
             return back()->with('error', 'Semester wajib dipilih untuk target import ini.');
@@ -267,6 +288,19 @@ class ImportKurikulumMasterController extends Controller
     {
         $target = $this->resolveTarget($request->query('target'));
         $meta = self::TARGETS[$target];
+
+        if ($target === 'kurikulum_bundle') {
+            $spreadsheet = $this->buildKurikulumBundleTemplate($kurikulum);
+            $writer = new Xlsx($spreadsheet);
+            $waktuDownload = now()->format('YmdHis');
+            $fileName = 'import' . $waktuDownload . '-master-kurikulum-prodi-' . Str::slug((string) ($kurikulum->prodi->jenjang . '-' . $kurikulum->prodi->nama ?? 'kurikulum'), '-') . '.xlsx';
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        }
 
         if ($target === 'join_profil_cpls') {
             $profils = $kurikulum->profils()->orderBy('nama')->get();
@@ -1307,5 +1341,250 @@ class ImportKurikulumMasterController extends Controller
             'linked' => count($desiredPairs),
             'removed' => $removed,
         ];
+    }
+
+    private function buildKurikulumBundleTemplate(Kurikulum $kurikulum): Spreadsheet
+    {
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->removeSheetByIndex(0);
+
+        $sheetDefinitions = [
+            [
+                'name' => 'Profil',
+                'columns' => ['kode', 'nama', 'deskripsi'],
+                'required' => ['kode', 'nama'],
+                'rows' => $kurikulum->profils()->orderBy('kode')->orderBy('nama')->get(['kode', 'nama', 'deskripsi'])
+                    ->map(fn ($item) => [
+                        'kode' => (string) ($item->kode ?? ''),
+                        'nama' => (string) ($item->nama ?? ''),
+                        'deskripsi' => (string) ($item->deskripsi ?? ''),
+                    ])->all(),
+                'examples' => [
+                    ['kode' => 'P1', 'nama' => 'Profesional', 'deskripsi' => 'Mampu bekerja sesuai etika profesi.'],
+                ],
+            ],
+            [
+                'name' => 'CPL',
+                'columns' => ['kode', 'nama', 'cakupan'],
+                'required' => ['kode', 'nama', 'cakupan'],
+                'rows' => $kurikulum->cpls()->orderBy('kode')->get(['kode', 'nama', 'cakupan'])
+                    ->map(fn ($item) => [
+                        'kode' => (string) ($item->kode ?? ''),
+                        'nama' => (string) ($item->nama ?? ''),
+                        'cakupan' => (string) ($item->cakupan ?? ''),
+                    ])->all(),
+                'examples' => [
+                    ['kode' => 'CPL-01', 'nama' => 'Sikap Profesional', 'cakupan' => 'S'],
+                ],
+            ],
+            [
+                'name' => 'BK',
+                'columns' => ['kode', 'nama', 'deskripsi'],
+                'required' => ['kode', 'nama'],
+                'rows' => $kurikulum->bks()->orderBy('kode')->get(['kode', 'nama', 'deskripsi'])
+                    ->map(fn ($item) => [
+                        'kode' => (string) ($item->kode ?? ''),
+                        'nama' => (string) ($item->nama ?? ''),
+                        'deskripsi' => (string) ($item->deskripsi ?? ''),
+                    ])->all(),
+                'examples' => [
+                    ['kode' => 'BK-01', 'nama' => 'Dasar Komputasi', 'deskripsi' => 'Konsep dasar komputasi modern.'],
+                ],
+            ],
+            [
+                'name' => 'MK',
+                'columns' => ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan', 'deskripsi'],
+                'required' => ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan'],
+                'rows' => $kurikulum->mks()->orderBy('kode')->get(['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan', 'deskripsi'])
+                    ->map(fn ($item) => [
+                        'kode' => (string) ($item->kode ?? ''),
+                        'nama' => (string) ($item->nama ?? ''),
+                        'semester' => (string) ($item->semester ?? ''),
+                        'sks_teori' => (string) ($item->sks_teori ?? 0),
+                        'sks_praktik' => (string) ($item->sks_praktik ?? 0),
+                        'sks_lapangan' => (string) ($item->sks_lapangan ?? 0),
+                        'deskripsi' => (string) ($item->deskripsi ?? ''),
+                    ])->all(),
+                'examples' => [
+                    ['kode' => 'MK-101', 'nama' => 'Algoritma dan Pemrograman', 'semester' => '1', 'sks_teori' => '2', 'sks_praktik' => '1', 'sks_lapangan' => '0', 'deskripsi' => 'Pengenalan logika dan pemrograman.'],
+                ],
+            ],
+        ];
+
+        foreach ($sheetDefinitions as $index => $definition) {
+            $sheet = $spreadsheet->createSheet($index);
+            $sheet->setTitle($definition['name']);
+
+            $columns = $definition['columns'];
+            $requiredColumns = $definition['required'];
+            $rows = !empty($definition['rows']) ? $definition['rows'] : $definition['examples'];
+
+            $columnLetters = [];
+            foreach ($columns as $columnIndex => $columnName) {
+                $letter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex + 1);
+                $columnLetters[$columnName] = $letter;
+                $sheet->setCellValue($letter . '1', $columnName);
+                $sheet->getStyle($letter . '1')->getFont()->setBold(true);
+                $sheet->getColumnDimension($letter)->setWidth(max(16, strlen($columnName) + 3));
+            }
+
+            $rowIndex = 2;
+            foreach ($rows as $row) {
+                foreach ($columns as $columnName) {
+                    $letter = $columnLetters[$columnName];
+                    $sheet->setCellValue($letter . $rowIndex, (string) ($row[$columnName] ?? ''));
+                }
+                $rowIndex++;
+            }
+
+            $lastDataRow = max(2, $rowIndex - 1);
+            foreach ($requiredColumns as $requiredColumn) {
+                if (!isset($columnLetters[$requiredColumn])) {
+                    continue;
+                }
+                $letter = $columnLetters[$requiredColumn];
+                $sheet->getStyle($letter . '2:' . $letter . $lastDataRow)
+                    ->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()
+                    ->setARGB('FFFFFF00');
+            }
+        }
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        return $spreadsheet;
+    }
+
+    private function commitKurikulumBundle(Spreadsheet $spreadsheet, Kurikulum $kurikulum): array
+    {
+        $summary = [
+            'profils' => 0,
+            'cpls' => 0,
+            'bks' => 0,
+            'mks' => 0,
+        ];
+
+        $this->importBundleSheet($spreadsheet, 'Profil', ['kode', 'nama', 'deskripsi'], ['nama'], function (array $row) use ($kurikulum, &$summary) {
+            $nama = $this->required($row['nama'] ?? null, 'nama');
+            $kode = trim((string) ($row['kode'] ?? ''));
+
+            if ($kode !== '') {
+                Profil::updateOrCreate(
+                    ['kurikulum_id' => $kurikulum->id, 'kode' => $kode],
+                    ['nama' => $nama, 'deskripsi' => $row['deskripsi'] ?? null]
+                );
+            } else {
+                Profil::updateOrCreate(
+                    ['kurikulum_id' => $kurikulum->id, 'nama' => $nama],
+                    ['kode' => null, 'deskripsi' => $row['deskripsi'] ?? null]
+                );
+            }
+
+            $summary['profils']++;
+        });
+
+        $this->importBundleSheet($spreadsheet, 'CPL', ['kode', 'nama', 'cakupan'], ['kode', 'nama', 'cakupan'], function (array $row) use ($kurikulum, &$summary) {
+            Cpl::updateOrCreate(
+                [
+                    'kurikulum_id' => $kurikulum->id,
+                    'kode' => $this->required($row['kode'] ?? null, 'kode'),
+                ],
+                [
+                    'nama' => $this->required($row['nama'] ?? null, 'nama'),
+                    'cakupan' => $this->required($row['cakupan'] ?? null, 'cakupan'),
+                ]
+            );
+
+            $summary['cpls']++;
+        });
+
+        $this->importBundleSheet($spreadsheet, 'BK', ['kode', 'nama', 'deskripsi'], ['kode', 'nama'], function (array $row) use ($kurikulum, &$summary) {
+            Bk::updateOrCreate(
+                [
+                    'kurikulum_id' => $kurikulum->id,
+                    'kode' => $this->required($row['kode'] ?? null, 'kode'),
+                ],
+                [
+                    'nama' => $this->required($row['nama'] ?? null, 'nama'),
+                    'deskripsi' => $row['deskripsi'] ?? null,
+                ]
+            );
+
+            $summary['bks']++;
+        });
+
+        $this->importBundleSheet(
+            $spreadsheet,
+            'MK',
+            ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan', 'deskripsi'],
+            ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan'],
+            function (array $row) use ($kurikulum, &$summary) {
+                $sksTeori = (int) $this->required($row['sks_teori'] ?? null, 'sks_teori');
+                $sksPraktik = (int) $this->required($row['sks_praktik'] ?? null, 'sks_praktik');
+                $sksLapangan = (int) $this->required($row['sks_lapangan'] ?? null, 'sks_lapangan');
+
+                Mk::updateOrCreate(
+                    [
+                        'kurikulum_id' => $kurikulum->id,
+                        'kode' => $this->required($row['kode'] ?? null, 'kode'),
+                    ],
+                    [
+                        'nama' => $this->required($row['nama'] ?? null, 'nama'),
+                        'semester' => (int) $this->required($row['semester'] ?? null, 'semester'),
+                        'sks_teori' => $sksTeori,
+                        'sks_praktik' => $sksPraktik,
+                        'sks_lapangan' => $sksLapangan,
+                        'sks' => $sksTeori + $sksPraktik + $sksLapangan,
+                        'deskripsi' => $row['deskripsi'] ?? null,
+                    ]
+                );
+
+                $summary['mks']++;
+            }
+        );
+
+        return $summary;
+    }
+
+    private function importBundleSheet(Spreadsheet $spreadsheet, string $sheetName, array $columns, array $requiredColumns, callable $handler): void
+    {
+        $sheet = $spreadsheet->getSheetByName($sheetName);
+        if (!$sheet) {
+            throw new \RuntimeException("Sheet '{$sheetName}' tidak ditemukan.");
+        }
+
+        $rows = $sheet->toArray(null, true, true, true);
+        $headerMap = $this->buildHeaderMap($rows[1] ?? []);
+
+        $missingHeaders = collect($columns)
+            ->filter(fn ($column) => !array_key_exists($column, $headerMap))
+            ->values()
+            ->all();
+
+        if (!empty($missingHeaders)) {
+            throw new \RuntimeException("Sheet '{$sheetName}' tidak memiliki kolom: " . implode(', ', $missingHeaders));
+        }
+
+        foreach ($rows as $index => $row) {
+            if ($index === 1) {
+                continue;
+            }
+
+            $normalized = [];
+            foreach ($columns as $column) {
+                $normalized[$column] = $this->cellValue($row[$headerMap[$column] ?? ''] ?? null);
+            }
+
+            if ($this->isEmptyRow($normalized)) {
+                continue;
+            }
+
+            foreach ($requiredColumns as $required) {
+                $this->required($normalized[$required] ?? null, $sheetName . '.' . $required . ' (baris ' . $index . ')');
+            }
+
+            $handler($normalized);
+        }
     }
 }

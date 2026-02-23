@@ -49,6 +49,9 @@
                                     @endforeach
                                 </select>
                                 <small class="text-muted">Isian Semester wajib diisi untuk import SubCPMK, Tagihan Tugas, dan Interaksi SubCPMK >< Tagihan.</small>
+                                @if ($target === 'mk_bundle')
+                                    <small class="text-muted d-block">Template target ini berisi 3 sheet sekaligus: CPMK, SubCPMK, dan Penugasan.</small>
+                                @endif
                                 @if ($target === 'join_subcpmk_penugasans')
                                     <small class="text-muted d-block">Template target ini berbentuk matriks (baris = penugasan, kolom = subCPMK). Cukup isi bobot pada sel.</small>
                                 @elseif ($target === 'join_cpl_cpmks')
@@ -71,7 +74,7 @@
                             <div class="col-md-3"></div>
                             <div class="col">
                                 @php
-                                    $directSaveTargets = ['join_subcpmk_penugasans', 'join_cpl_cpmks'];
+                                    $directSaveTargets = ['mk_bundle', 'join_subcpmk_penugasans', 'join_cpl_cpmks'];
                                     $isDirectSaveTarget = in_array($target, $directSaveTargets, true);
                                 @endphp
                                 <button type="submit" class="btn btn-primary btn-sm">

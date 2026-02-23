@@ -14,15 +14,23 @@ use App\Models\Penugasan;
 use App\Models\Semester;
 use App\Models\Subcpmk;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ImportMkMasterController extends Controller
 {
     private const TARGETS = [
+        'mk_bundle' => [
+            'label' => 'Master MK (CPMK, SubCPMK, Penugasan)',
+            'columns' => [],
+            'required' => [],
+            'requires_semester' => true,
+        ],
         'cpmks' => [
             'label' => 'CPMK',
             'columns' => ['kode', 'nama', 'deskripsi'],
@@ -82,6 +90,23 @@ class ImportMkMasterController extends Controller
 
         $target = $this->resolveTarget($request->input('target'));
         $meta = self::TARGETS[$target];
+
+        if ($target === 'mk_bundle') {
+            try {
+                $semesterId = (string) $request->input('semester_id', '');
+                $this->assertSemester($semesterId);
+
+                $spreadsheet = IOFactory::load($request->file('file')->getPathname());
+                $result = DB::transaction(function () use ($spreadsheet, $mk, $semesterId) {
+                    return $this->commitMkBundle($spreadsheet, $mk, $semesterId);
+                });
+
+                return redirect()->to($this->resolveReturnUrl($request))
+                    ->with('success', "Import master MK berhasil: {$result['cpmks']} CPMK, {$result['subcpmks']} SubCPMK, {$result['penugasans']} Penugasan diproses.");
+            } catch (\Throwable $e) {
+                return back()->with('error', 'Gagal memproses import master MK: ' . $e->getMessage());
+            }
+        }
 
         if (!empty($meta['requires_semester']) && empty($request->semester_id)) {
             return back()->with('error', 'Semester wajib dipilih untuk target import ini.');
@@ -247,6 +272,22 @@ class ImportMkMasterController extends Controller
     {
         $target = $this->resolveTarget($request->query('target'));
         $meta = self::TARGETS[$target];
+
+        if ($target === 'mk_bundle') {
+            $semesterId = (string) $request->query('semester_id', '');
+            $this->assertSemester($semesterId);
+
+            $spreadsheet = $this->buildMkBundleTemplate($mk, $semesterId);
+            $writer = new Xlsx($spreadsheet);
+            $waktuDownload = now()->format('YmdHis');
+            $fileName = 'import' . $waktuDownload . '-master-mk-' . Str::slug((string) ($mk->kode ?? 'mk'), '-') . '.xlsx';
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        }
 
         if ($target === 'join_subcpmk_penugasans') {
             $semesterId = (string) $request->query('semester_id', '');
@@ -974,5 +1015,296 @@ class ImportMkMasterController extends Controller
             'linked' => count($desiredPairs),
             'removed' => $removed,
         ];
+    }
+
+    private function buildMkBundleTemplate(Mk $mk, string $semesterId): Spreadsheet
+    {
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->removeSheetByIndex(0);
+
+        $sheetDefinitions = [
+            [
+                'name' => 'CPMK',
+                'columns' => ['kode', 'nama', 'deskripsi'],
+                'required' => ['kode', 'nama'],
+                'rows' => $mk->cpmks()->orderBy('kode')->get(['kode', 'nama', 'deskripsi'])
+                    ->map(fn ($item) => [
+                        'kode' => (string) ($item->kode ?? ''),
+                        'nama' => (string) ($item->nama ?? ''),
+                        'deskripsi' => (string) ($item->deskripsi ?? ''),
+                    ])->all(),
+                'examples' => [
+                    ['kode' => 'CPMK-1', 'nama' => 'Mahasiswa mampu menjelaskan konsep dasar.', 'deskripsi' => 'Contoh deskripsi CPMK'],
+                ],
+            ],
+            [
+                'name' => 'SubCPMK',
+                'columns' => ['kode_cpl', 'kode', 'nama', 'kompetensi_c', 'kompetensi_a', 'kompetensi_p', 'indikator', 'evaluasi', 'kode_cpmk', 'nama_cpmk'],
+                'required' => ['kode_cpl', 'kode', 'nama'],
+                'rows' => $this->mkBundleSubcpmkRows($mk, $semesterId),
+                'examples' => [
+                    [
+                        'kode_cpl' => 'CPL-01',
+                        'kode' => 'SCPMK-1',
+                        'nama' => 'Mampu menyusun algoritma sederhana',
+                        'kompetensi_c' => 'C3',
+                        'kompetensi_a' => 'A2',
+                        'kompetensi_p' => 'P3',
+                        'indikator' => 'Menyusun flowchart yang benar',
+                        'evaluasi' => 'Kuis',
+                        'kode_cpmk' => 'CPMK-1',
+                        'nama_cpmk' => 'Mahasiswa mampu menjelaskan konsep dasar.',
+                    ],
+                ],
+            ],
+            [
+                'name' => 'Penugasan',
+                'columns' => ['kode', 'nama', 'bobot', 'kode_evaluasi'],
+                'required' => ['kode', 'nama', 'bobot', 'kode_evaluasi'],
+                'rows' => Penugasan::query()->where('mk_id', $mk->id)->where('semester_id', $semesterId)
+                    ->with('evaluasi:id,kode')
+                    ->orderBy('kode')
+                    ->get(['id', 'kode', 'nama', 'bobot', 'evaluasi_id'])
+                    ->map(fn ($item) => [
+                        'kode' => (string) ($item->kode ?? ''),
+                        'nama' => (string) ($item->nama ?? ''),
+                        'bobot' => (string) ($item->bobot ?? ''),
+                        'kode_evaluasi' => (string) ($item->evaluasi->kode ?? ''),
+                    ])->all(),
+                'examples' => [
+                    ['kode' => 'T1', 'nama' => 'Tugas Individu 1', 'bobot' => '10', 'kode_evaluasi' => 'EVAL-01'],
+                ],
+            ],
+        ];
+
+        foreach ($sheetDefinitions as $index => $definition) {
+            $sheet = $spreadsheet->createSheet($index);
+            $sheet->setTitle($definition['name']);
+
+            $columns = $definition['columns'];
+            $requiredColumns = $definition['required'];
+            $rows = !empty($definition['rows']) ? $definition['rows'] : $definition['examples'];
+
+            $columnLetters = [];
+            foreach ($columns as $columnIndex => $columnName) {
+                $letter = Coordinate::stringFromColumnIndex($columnIndex + 1);
+                $columnLetters[$columnName] = $letter;
+                $sheet->setCellValue($letter . '1', $columnName);
+                $sheet->getStyle($letter . '1')->getFont()->setBold(true);
+                $sheet->getColumnDimension($letter)->setWidth(max(16, strlen($columnName) + 3));
+            }
+
+            $rowIndex = 2;
+            foreach ($rows as $row) {
+                foreach ($columns as $columnName) {
+                    $sheet->setCellValue($columnLetters[$columnName] . $rowIndex, (string) ($row[$columnName] ?? ''));
+                }
+                $rowIndex++;
+            }
+
+            $lastDataRow = max(2, $rowIndex - 1);
+            foreach ($requiredColumns as $requiredColumn) {
+                if (!isset($columnLetters[$requiredColumn])) {
+                    continue;
+                }
+                $letter = $columnLetters[$requiredColumn];
+                $sheet->getStyle($letter . '2:' . $letter . $lastDataRow)
+                    ->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()
+                    ->setARGB('FFFFFF00');
+            }
+        }
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        return $spreadsheet;
+    }
+
+    private function mkBundleSubcpmkRows(Mk $mk, string $semesterId): array
+    {
+        return Subcpmk::query()
+            ->where('semester_id', $semesterId)
+            ->whereHas('joinCplCpmk', function ($query) use ($mk) {
+                $query->where('mk_id', $mk->id);
+            })
+            ->with(['joinCplCpmk.cpmk:id,kode,nama', 'joinCplCpmk.joinCplBk.cpl:id,kode'])
+            ->orderBy('kode')
+            ->get(['id', 'join_cpl_cpmk_id', 'kode', 'nama', 'kompetensi_c', 'kompetensi_a', 'kompetensi_p', 'indikator', 'evaluasi'])
+            ->map(function ($item) {
+                $cplKode = (string) ($item->joinCplCpmk?->joinCplBk?->cpl?->kode ?? '');
+                $cpmkKode = (string) ($item->joinCplCpmk?->cpmk?->kode ?? '');
+                $cpmkNama = (string) ($item->joinCplCpmk?->cpmk?->nama ?? '');
+
+                return [
+                    'kode_cpl' => $cplKode,
+                    'kode' => (string) ($item->kode ?? ''),
+                    'nama' => (string) ($item->nama ?? ''),
+                    'kompetensi_c' => (string) ($item->kompetensi_c ?? ''),
+                    'kompetensi_a' => (string) ($item->kompetensi_a ?? ''),
+                    'kompetensi_p' => (string) ($item->kompetensi_p ?? ''),
+                    'indikator' => (string) ($item->indikator ?? ''),
+                    'evaluasi' => (string) ($item->evaluasi ?? ''),
+                    'kode_cpmk' => $cpmkKode,
+                    'nama_cpmk' => $cpmkNama,
+                ];
+            })
+            ->all();
+    }
+
+    private function commitMkBundle(Spreadsheet $spreadsheet, Mk $mk, string $semesterId): array
+    {
+        $summary = [
+            'cpmks' => 0,
+            'subcpmks' => 0,
+            'penugasans' => 0,
+        ];
+
+        $this->importMkBundleSheet($spreadsheet, 'CPMK', ['kode', 'nama', 'deskripsi'], ['kode', 'nama'], function (array $row) use ($mk, &$summary) {
+            Cpmk::updateOrCreate(
+                [
+                    'mk_id' => $mk->id,
+                    'kode' => $this->required($row['kode'] ?? null, 'kode'),
+                ],
+                [
+                    'nama' => $this->required($row['nama'] ?? null, 'nama'),
+                    'deskripsi' => $row['deskripsi'] ?? null,
+                ]
+            );
+
+            $summary['cpmks']++;
+        });
+
+        $this->importMkBundleSheet(
+            $spreadsheet,
+            'SubCPMK',
+            ['kode_cpl', 'kode', 'nama', 'kompetensi_c', 'kompetensi_a', 'kompetensi_p', 'indikator', 'evaluasi', 'kode_cpmk', 'nama_cpmk'],
+            ['kode_cpl', 'kode', 'nama'],
+            function (array $row) use ($mk, $semesterId, &$summary) {
+                $kode = $this->required($row['kode'] ?? null, 'kode');
+                $nama = $this->required($row['nama'] ?? null, 'nama');
+                $kodeCpl = $this->required($row['kode_cpl'] ?? null, 'kode_cpl');
+
+                $cpl = Cpl::query()->where('kurikulum_id', $mk->kurikulum_id)->where('kode', $kodeCpl)->first();
+                if (!$cpl) {
+                    throw new \RuntimeException('CPL tidak ditemukan: ' . $kodeCpl);
+                }
+
+                $joinCplBkIds = JoinCplBk::query()
+                    ->where('kurikulum_id', $mk->kurikulum_id)
+                    ->where('cpl_id', $cpl->id)
+                    ->pluck('id');
+
+                if ($joinCplBkIds->isEmpty()) {
+                    throw new \RuntimeException('Relasi CPL >< BK tidak ditemukan untuk kode_cpl: ' . $kodeCpl);
+                }
+
+                $joinCplCpmkQuery = JoinCplCpmk::query()
+                    ->where('mk_id', $mk->id)
+                    ->whereIn('join_cpl_bk_id', $joinCplBkIds);
+
+                $kodeCpmk = trim((string) ($row['kode_cpmk'] ?? ''));
+                $namaCpmk = trim((string) ($row['nama_cpmk'] ?? ''));
+                if ($kodeCpmk !== '') {
+                    $cpmk = Cpmk::query()->where('mk_id', $mk->id)->where('kode', $kodeCpmk)->first();
+                    if ($cpmk) {
+                        $joinCplCpmkQuery->where('cpmk_id', $cpmk->id);
+                    }
+                } elseif ($namaCpmk !== '') {
+                    $cpmk = Cpmk::query()->where('mk_id', $mk->id)->where('nama', $namaCpmk)->first();
+                    if ($cpmk) {
+                        $joinCplCpmkQuery->where('cpmk_id', $cpmk->id);
+                    }
+                }
+
+                $joinCplCpmk = $joinCplCpmkQuery->first();
+                if (!$joinCplCpmk) {
+                    throw new \RuntimeException('Join CPL CPMK tidak ditemukan untuk SubCPMK: ' . $kode);
+                }
+
+                Subcpmk::updateOrCreate(
+                    [
+                        'join_cpl_cpmk_id' => $joinCplCpmk->id,
+                        'semester_id' => $semesterId,
+                        'kode' => $kode,
+                    ],
+                    [
+                        'nama' => $nama,
+                        'kompetensi_c' => $row['kompetensi_c'] ?? null,
+                        'kompetensi_a' => $row['kompetensi_a'] ?? null,
+                        'kompetensi_p' => $row['kompetensi_p'] ?? null,
+                        'indikator' => $row['indikator'] ?? null,
+                        'evaluasi' => $row['evaluasi'] ?? null,
+                    ]
+                );
+
+                $summary['subcpmks']++;
+            }
+        );
+
+        $this->importMkBundleSheet($spreadsheet, 'Penugasan', ['kode', 'nama', 'bobot', 'kode_evaluasi'], ['kode', 'nama', 'bobot', 'kode_evaluasi'], function (array $row) use ($mk, $semesterId, &$summary) {
+            $evaluasi = Evaluasi::query()->where('kode', $this->required($row['kode_evaluasi'] ?? null, 'kode_evaluasi'))->first();
+            if (!$evaluasi) {
+                throw new \RuntimeException('Evaluasi tidak ditemukan: ' . ($row['kode_evaluasi'] ?? ''));
+            }
+
+            Penugasan::updateOrCreate(
+                [
+                    'mk_id' => $mk->id,
+                    'semester_id' => $semesterId,
+                    'kode' => $this->required($row['kode'] ?? null, 'kode'),
+                ],
+                [
+                    'nama' => $this->required($row['nama'] ?? null, 'nama'),
+                    'bobot' => (float) $this->required($row['bobot'] ?? null, 'bobot'),
+                    'evaluasi_id' => $evaluasi->id,
+                ]
+            );
+
+            $summary['penugasans']++;
+        });
+
+        return $summary;
+    }
+
+    private function importMkBundleSheet(Spreadsheet $spreadsheet, string $sheetName, array $columns, array $requiredColumns, callable $handler): void
+    {
+        $sheet = $spreadsheet->getSheetByName($sheetName);
+        if (!$sheet) {
+            throw new \RuntimeException("Sheet '{$sheetName}' tidak ditemukan.");
+        }
+
+        $rows = $sheet->toArray(null, true, true, true);
+        $headerMap = $this->buildHeaderMap($rows[1] ?? []);
+
+        $missingHeaders = collect($columns)
+            ->filter(fn ($column) => !array_key_exists($column, $headerMap))
+            ->values()
+            ->all();
+
+        if (!empty($missingHeaders)) {
+            throw new \RuntimeException("Sheet '{$sheetName}' tidak memiliki kolom: " . implode(', ', $missingHeaders));
+        }
+
+        foreach ($rows as $index => $row) {
+            if ($index === 1) {
+                continue;
+            }
+
+            $normalized = [];
+            foreach ($columns as $column) {
+                $normalized[$column] = $this->cellValue($row[$headerMap[$column] ?? ''] ?? null);
+            }
+
+            if ($this->isEmptyRow($normalized)) {
+                continue;
+            }
+
+            foreach ($requiredColumns as $required) {
+                $this->required($normalized[$required] ?? null, $sheetName . '.' . $required . ' (baris ' . $index . ')');
+            }
+
+            $handler($normalized);
+        }
     }
 }
