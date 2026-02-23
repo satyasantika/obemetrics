@@ -54,6 +54,10 @@ class CplController extends Controller
     public function destroy(Kurikulum $kurikulum, Cpl $cpl)
     {
         $name = $cpl->nama;
+        if ($cpl->joinProfilCpls()->exists() || $cpl->joinCplBks()->exists()) {
+            return to_route('kurikulums.cpls.index', $kurikulum)
+                ->with('error','CPL: '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
+        }
         $cpl->delete();
         return to_route('kurikulums.cpls.index', $kurikulum)->with('warning','CPL: '.$name.' telah dihapus');
     }

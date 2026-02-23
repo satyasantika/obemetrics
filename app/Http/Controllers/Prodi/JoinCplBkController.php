@@ -43,6 +43,10 @@ class JoinCplBkController extends Controller
                     ->with('success', $bk->kode . ' telah diinteraksi dengan ' . $cpl->kode);
         } else {
             if ($joincplbk) {
+                if ($joincplbk->joinCplCpmks()->exists()) {
+                    return to_route('kurikulums.joincplbks.index',$request->kurikulum_id)
+                        ->with('error', 'Interaksi tidak dapat diubah karena sudah dipakai pada relasi CPL >< CPMK.');
+                }
                 $joincplbk->delete();
                 }
             return to_route('kurikulums.joincplbks.index',$request->kurikulum_id)

@@ -40,6 +40,15 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                @php
+                                    $lockedMkUserPair = \App\Models\KontrakMk::query()
+                                        ->where('mk_id', $mk->id)
+                                        ->whereNotNull('user_id')
+                                        ->pluck('user_id')
+                                        ->filter()
+                                        ->unique()
+                                        ->flip();
+                                @endphp
                                 @forelse ($join_prodi_users as $join_prodi_user)
                                     <tr style="vertical-align: text-top;">
                                         <th>
@@ -58,6 +67,7 @@
                                                         function($item) use ($mk, $join_prodi_user) {
                                                         return $item->mk_id === $mk->id && $item->user_id === $join_prodi_user->user_id;
                                                         });
+                                                    $isLocked = $cek && $lockedMkUserPair->has($join_prodi_user->user_id);
                                                     @endphp
                                                     <div class="form-check form-switch">
                                                         <input
@@ -67,8 +77,12 @@
                                                             id="is_linked_{{ $mk->id }}_{{ $join_prodi_user->user_id }}"
                                                             onchange="this.form.submit()"
                                                             @checked($cek)
+                                                            @disabled($isLocked)
                                                         >
                                                         <span class="badge text-success" style="display: {{ $cek ? 'inline' : 'none' }};">pengampu</span>
+                                                        @if ($isLocked)
+                                                            <span class="badge bg-secondary">terkunci</span>
+                                                        @endif
                                                     </div>
                                             </td>
                                             <td>
@@ -78,6 +92,7 @@
                                                         function($item) use ($mk, $join_prodi_user) {
                                                         return $item->mk_id === $mk->id && $item->user_id === $join_prodi_user->user_id;
                                                         });
+                                                    $isLockedKoordinator = $cek && $lockedMkUserPair->has($join_prodi_user->user_id);
                                                     @endphp
                                                     <div class="form-check form-switch">
                                                         <input
@@ -87,8 +102,12 @@
                                                             id="is_koordinator_{{ $mk->id }}_{{ $join_prodi_user->user_id }}"
                                                             onchange="this.form.submit()"
                                                             @checked($cek)
+                                                            @disabled($isLockedKoordinator)
                                                         >
                                                         <span class="badge text-success" style="display: {{ $cek ? 'inline' : 'none' }};">koordinator</span>
+                                                        @if ($isLockedKoordinator)
+                                                            <span class="badge bg-secondary">terkunci</span>
+                                                        @endif
                                                     </div>
                                                 </form>
                                             </td>

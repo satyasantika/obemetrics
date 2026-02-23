@@ -8,6 +8,7 @@ use App\Models\Kurikulum;
 use App\Models\JoinMkUser;
 use Illuminate\Http\Request;
 use App\Models\JoinProdiUser;
+use App\Models\KontrakMk;
 use App\Http\Controllers\Controller;
 
 class JoinMkUserController extends Controller
@@ -78,11 +79,27 @@ class JoinMkUserController extends Controller
                 return to_route('mks.users.index',$request->mk_id)
                     ->with('success', $user->name . ' menjadi koordinator mata kuliah ' . $mk->nama);
                 } else{
+                    $isUsed = KontrakMk::query()
+                        ->where('mk_id', $mk->id)
+                        ->where('user_id', $user->id)
+                        ->exists();
+                    if ($isUsed) {
+                        return to_route('mks.users.index',$request->mk_id)
+                            ->with('error', $user->name . ' tidak dapat dilepas karena data kontrak mata kuliah sudah digunakan.');
+                    }
                     $joinbkmk->delete();
                     return to_route('mks.users.index',$request->mk_id)
                         ->with('warning', $user->name . ' sudah tidak menjadi pengampu mata kuliah ' . $mk->nama);
                 }
             }else{
+                $isUsed = KontrakMk::query()
+                    ->where('mk_id', $mk->id)
+                    ->where('user_id', $user->id)
+                    ->exists();
+                if ($isUsed) {
+                    return to_route('mks.users.index',$request->mk_id)
+                        ->with('error', $user->name . ' tidak dapat dilepas karena data kontrak mata kuliah sudah digunakan.');
+                }
                 $joinbkmk->delete();
                 return to_route('mks.users.index',$request->mk_id)
                     ->with('warning', $user->name . ' sudah tidak menjadi pengampu mata kuliah ' . $mk->nama);

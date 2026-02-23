@@ -64,7 +64,19 @@
     </form>
 </div>
 
-@if ($kurikulum->id)
+@php
+    $canDeleteKurikulum = !$kurikulum->id || (
+        !$kurikulum->profils()->exists() &&
+        !$kurikulum->cpls()->exists() &&
+        !$kurikulum->bks()->exists() &&
+        !$kurikulum->mks()->exists() &&
+        !$kurikulum->joinProfilCpls()->exists() &&
+        !$kurikulum->joinCplBks()->exists() &&
+        !$kurikulum->joinBkMks()->exists() &&
+        !$kurikulum->joinMkUsers()->exists()
+    );
+@endphp
+@if ($kurikulum->id && $canDeleteKurikulum)
 <form id="delete-form" action="{{ route('prodis.kurikulums.destroy',[$prodi->id,$kurikulum->id]) }}" method="POST">
     @csrf
     @method('DELETE')
@@ -73,6 +85,9 @@
         <i class="bi bi-trash"></i>
     </button>
 </form>
+@elseif ($kurikulum->id)
+<hr>
+<span class="badge bg-secondary float-end">Data digunakan, tidak dapat dihapus</span>
 @endif
 <span class="text-danger">(*) Wajib diisi.</span></label>
 @endpush

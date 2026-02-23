@@ -177,7 +177,10 @@
     </form>
 </div>
 
-@if ($subcpmk->id)
+@php
+    $canDeleteSubcpmk = !$subcpmk->id || !$subcpmk->joinSubcpmkPenugasans()->exists();
+@endphp
+@if ($subcpmk->id && $canDeleteSubcpmk)
 <form id="delete-form" action="{{ route('mks.subcpmks.destroy',[$mk->id,$subcpmk->id]) }}" method="POST">
     @csrf
     @method('DELETE')
@@ -186,6 +189,9 @@
         <i class="bi bi-trash"></i>
     </button>
 </form>
+@elseif ($subcpmk->id)
+<hr>
+<span class="badge bg-secondary float-end">Data digunakan, tidak dapat dihapus</span>
 @endif
 <span class="text-danger">(*) Wajib diisi.</span></label>
 @endpush

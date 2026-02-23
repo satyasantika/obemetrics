@@ -6,6 +6,14 @@
 @endpush
 
 @push('body')
+@php
+    $prodiKurikulumIds = $prodi->kurikulums->pluck('id');
+    $mkIds = $prodi->kurikulums->pluck('mks')->flatten()->pluck('id');
+    $joinProdiLocked = $joinprodiuser->id
+        ? (\App\Models\JoinMkUser::where('user_id', $joinprodiuser->user_id)->whereIn('kurikulum_id', $prodiKurikulumIds)->exists()
+            || \App\Models\KontrakMk::where('user_id', $joinprodiuser->user_id)->whereIn('mk_id', $mkIds)->exists())
+        : false;
+@endphp
 <form id="formAction" action="{{ $joinprodiuser->id ? route('prodis.joinprodiusers.update',[$prodi->id,$joinprodiuser->id]) : route('prodis.joinprodiusers.store',$prodi->id) }}" method="post">
     @csrf
     @if ($joinprodiuser->id)
@@ -16,7 +24,7 @@
         <input type="hidden" name="prodi_id" value="{{ $prodi->id }}">
         <label for="user_id" class="col-md-4 col-form-label text-md-end">Pilih User</label>
         <div class="col-md-8">
-            <select id="user_id" class="form-control @error('user_id') is-invalid @enderror" name="user_id" required>
+            <select id="user_id" class="form-control @error('user_id') is-invalid @enderror" name="user_id" required @disabled($joinProdiLocked)>
                 @if (!$joinprodiuser->id)
                 <option value="">-- Pilih user --</option>
                 @endif
@@ -30,18 +38,21 @@
     <div class="row mb-3">
         <label for="status" class="col-md-4 col-form-label text-md-end">status Kantor</label>
         <div class="col-md-8">
-            <textarea name="status" rows="3" class="form-control" id="status">{{ $joinprodiuser->status }}</textarea>
+            <textarea name="status" rows="3" class="form-control" id="status" @disabled($joinProdiLocked)>{{ $joinprodiuser->status }}</textarea>
         </div>
     </div>
     {{-- submit Button --}}
     <div class="row mb-0">
         <div class="col-md-8 offset-md-4">
-            <button type="submit" for="formAction" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+            <button type="submit" for="formAction" class="btn btn-success btn-sm" @disabled($joinProdiLocked)><i class="bi bi-save"></i> Save</button>
             <a href="{{ route('prodis.joinprodiusers.index',$prodi->id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-circle"></i> Close</a>
+            @if ($joinProdiLocked)
+                <span class="badge bg-secondary">Data digunakan, tidak dapat diedit</span>
+            @endif
         </div>
     </div>
 </form>
-@if ($joinprodiuser->id)
+@if ($joinprodiuser->id && !$joinProdiLocked)
     <form id="delete-form" action="{{ route('prodis.joinprodiusers.destroy',[$prodi->id,$joinprodiuser->id]) }}" method="POST">
         @csrf
         @method('DELETE')
@@ -49,6 +60,8 @@
             <i class="bi bi-trash"></i>
         </button>
     </form>
+@elseif ($joinprodiuser->id)
+    <span class="badge bg-secondary float-end">Data digunakan, tidak dapat dihapus</span>
 @endif
 
 @endpush

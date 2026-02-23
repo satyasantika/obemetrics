@@ -85,7 +85,16 @@
     </form>
 </div>
 
-@if ($mk->id)
+@php
+    $canDeleteMk = !$mk->id || (
+        !$mk->joinBkMks()->exists() &&
+        !$mk->joinMkUsers()->exists() &&
+        !$mk->kontrakMks()->exists() &&
+        !$mk->cpmks()->exists() &&
+        !$mk->penugasans()->exists()
+    );
+@endphp
+@if ($mk->id && $canDeleteMk)
 <form id="delete-form" action="{{ route('kurikulums.mks.destroy',[$kurikulum->id,$mk->id]) }}" method="POST">
     @csrf
     @method('DELETE')
@@ -94,6 +103,9 @@
         <i class="bi bi-trash"></i>
     </button>
 </form>
+@elseif ($mk->id)
+<hr>
+<span class="badge bg-secondary float-end">Data digunakan, tidak dapat dihapus</span>
 @endif
 <span class="text-danger">(*) Wajib diisi.</span></label>
 @endpush

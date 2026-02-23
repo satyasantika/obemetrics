@@ -63,6 +63,16 @@ class MkController extends Controller
     public function destroy(Kurikulum $kurikulum, Mk $mk)
     {
         $name = $mk->nama;
+        if (
+            $mk->joinBkMks()->exists() ||
+            $mk->joinMkUsers()->exists() ||
+            $mk->kontrakMks()->exists() ||
+            $mk->cpmks()->exists() ||
+            $mk->penugasans()->exists()
+        ) {
+            return to_route('kurikulums.mks.index', $kurikulum)
+                ->with('error','Mata Kuliah: '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
+        }
         $mk->delete();
         return to_route('kurikulums.mks.index', $kurikulum)->with('warning','Mata Kuliah: '.$name.' telah dihapus');
     }

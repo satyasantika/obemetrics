@@ -47,6 +47,16 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                @php
+                                    $lockedBkMkPair = \App\Models\JoinCplCpmk::query()
+                                        ->whereIn('mk_id', $mks->pluck('id'))
+                                        ->with('joinCplBk:id,bk_id')
+                                        ->get()
+                                        ->mapWithKeys(function ($row) {
+                                            $bkId = optional($row->joinCplBk)->bk_id;
+                                            return $bkId ? [($bkId.'|'.$row->mk_id) => true] : [];
+                                        });
+                                @endphp
                                 @forelse ($mks as $mk)
                                     <tr style="vertical-align: text-top;">
                                         <th>
@@ -69,6 +79,7 @@
                                                         function($item) use ($bk, $mk) {
                                                         return $item->bk_id === $bk->id && $item->mk_id === $mk->id;
                                                         });
+                                                    $isLocked = $lockedBkMkPair->has($bk->id.'|'.$mk->id);
                                                     @endphp
                                                     <div class="form-check form-switch">
                                                         <input
@@ -78,10 +89,14 @@
                                                             id="is_linked_{{ $bk->id }}_{{ $mk->id }}"
                                                             onchange="this.form.submit()"
                                                             @checked($cek)
+                                                            @disabled($isLocked)
                                                         >
                                                     </div>
                                                 </form>
                                                 <span class="badge text-success" style="display: {{ $cek ? 'inline' : 'none' }};">{{ $cek ? $bk->kode : '' }}</span>
+                                                @if ($isLocked)
+                                                    <span class="badge bg-secondary">terkunci</span>
+                                                @endif
                                             </td>
                                         @empty
                                             <td></td>

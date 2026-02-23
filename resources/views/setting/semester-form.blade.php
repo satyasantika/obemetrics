@@ -45,7 +45,16 @@
     </div>
 </form>
 
-@if ($semester->id)
+@php
+    $canDeleteSemester = !$semester->id || (
+        !$semester->kontrakmks()->exists() &&
+        !\App\Models\Subcpmk::where('semester_id', $semester->id)->exists() &&
+        !\App\Models\Penugasan::where('semester_id', $semester->id)->exists() &&
+        !\App\Models\Nilai::where('semester_id', $semester->id)->exists() &&
+        !\App\Models\JoinSubcpmkPenugasan::where('semester_id', $semester->id)->exists()
+    );
+@endphp
+@if ($semester->id && $canDeleteSemester)
 <div class="col">
     <form id="delete-form" action="{{ route('semesters.destroy',$semester->id) }}" method="POST">
         @csrf
@@ -56,6 +65,8 @@
         </button>
     </form>
 </div>
+@elseif ($semester->id)
+<div class="col"><span class="badge bg-secondary float-end">Data digunakan, tidak dapat dihapus</span></div>
 @endif
 
 @endpush

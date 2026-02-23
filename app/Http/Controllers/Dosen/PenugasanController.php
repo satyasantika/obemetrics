@@ -60,6 +60,10 @@ class PenugasanController extends Controller
     public function destroy(Mk $mk, Penugasan $penugasan)
     {
         $nama = $penugasan->nama;
+        if ($penugasan->joinSubcpmkPenugasans()->exists() || $penugasan->nilais()->exists()) {
+            return to_route('mks.penugasans.index', $mk->id)
+                ->with('error', 'Tugas: ' . $nama . ' tidak dapat dihapus karena sudah digunakan pada tabel relasi/nilai.');
+        }
         $penugasan->delete();
 
         return to_route('mks.penugasans.index', $mk->id)->with('warning', 'Tugas: ' . $nama . ' telah dihapus.');

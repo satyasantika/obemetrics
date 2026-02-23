@@ -43,6 +43,13 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                @php
+                                    $lockedCplCpmkPair = \App\Models\JoinCplCpmk::query()
+                                        ->where('mk_id', $mk->id)
+                                        ->whereHas('subcpmks')
+                                        ->get()
+                                        ->mapWithKeys(fn ($row) => [($row->join_cpl_bk_id.'|'.$row->cpmk_id) => true]);
+                                @endphp
                                 @forelse ($cpmks as $cpmk)
                                     <tr style="vertical-align: text-top;">
                                         <td>
@@ -63,6 +70,7 @@
                                                         function($item) use ($joincplbk, $cpmk) {
                                                             return $item->join_cpl_bk_id === $joincplbk->id && $item->cpmk_id === $cpmk->id;
                                                         });
+                                                    $isLocked = $lockedCplCpmkPair->has($joincplbk->id.'|'.$cpmk->id);
                                                     @endphp
                                                     <div class="form-check form-switch">
                                                         <input
@@ -72,10 +80,14 @@
                                                             id="is_linked_{{ $joincplbk->id }}_{{ $cpmk->id }}"
                                                             onchange="this.form.submit()"
                                                             @checked($cek)
+                                                            @disabled($isLocked)
                                                         >
                                                     </div>
                                                 </form>
                                                 <span class="badge text-success" style="display: {{ $cek ? 'inline' : 'none' }};">{{ $cek ? $joincplbk->cpl->kode : '' }}</span>
+                                                @if ($isLocked)
+                                                    <span class="badge bg-secondary">terkunci</span>
+                                                @endif
                                             </td>
                                         @empty
                                             <td></td>

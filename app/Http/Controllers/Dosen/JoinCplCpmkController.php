@@ -46,6 +46,10 @@ class JoinCplCpmkController extends Controller
                     ->with('success', $cpmk->kode . ' telah diinteraksi dengan ' . $joincplbk->cpl->kode);
         } else {
             if ($joincplcpmk) {
+                if ($joincplcpmk->subcpmks()->exists()) {
+                    return to_route('mks.joincplcpmks.index',$request->mk_id)
+                            ->with('error', 'Interaksi tidak dapat diubah karena sudah dipakai pada data SubCPMK.');
+                }
                 $joincplcpmk->delete();
                 }
             return to_route('mks.joincplcpmks.index',$request->mk_id)

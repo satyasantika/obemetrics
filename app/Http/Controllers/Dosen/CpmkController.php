@@ -55,6 +55,10 @@ class CpmkController extends Controller
     public function destroy(Mk $mk, Cpmk $cpmk)
     {
         $name = $cpmk->nama;
+        if ($cpmk->joinCplCpmks()->exists() || $cpmk->subcpmks()->exists()) {
+            return to_route('mks.cpmks.index', $mk)
+                ->with('error','CPMK: '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
+        }
         $cpmk->delete();
         return to_route('mks.cpmks.index', $mk)->with('warning','CPMK: '.$name.' telah dihapus');
     }

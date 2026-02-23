@@ -57,7 +57,10 @@
     </div>
 </form>
 
-@if ($evaluasi->id)
+@php
+    $canDeleteEvaluasi = !$evaluasi->id || !$evaluasi->penugasans()->exists();
+@endphp
+@if ($evaluasi->id && $canDeleteEvaluasi)
 <div class="col">
     <form id="delete-form" action="{{ route('evaluasis.destroy',$evaluasi->id) }}" method="POST">
         @csrf
@@ -68,6 +71,8 @@
         </button>
     </form>
 </div>
+@elseif ($evaluasi->id)
+<div class="col"><span class="badge bg-secondary float-end">Data digunakan, tidak dapat dihapus</span></div>
 @endif
 
 @endpush

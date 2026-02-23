@@ -62,6 +62,15 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                @php
+                                    $usedPenugasanIds = \App\Models\Nilai::query()
+                                        ->where('mk_id', $mk->id)
+                                        ->where('semester_id', $selectedSemesterId)
+                                        ->pluck('penugasan_id')
+                                        ->filter()
+                                        ->unique()
+                                        ->flip();
+                                @endphp
                                 @forelse ($penugasans as $penugasan)
                                     <tr style="vertical-align: text-top;">
                                         <td>
@@ -82,6 +91,7 @@
                                                     $cellKey = $penugasan->id . '_' . $subcpmk->id;
                                                     $linkedObj = $linkByKey[$cellKey] ?? null;
                                                     $bobot = $linkedObj?->bobot;
+                                                    $isLocked = $linkedObj && $usedPenugasanIds->has($penugasan->id);
                                                 @endphp
                                                 <form action="{{ route('joinsubcpmkpenugasans.update',[$subcpmk->id,$penugasan->id]) }}" method="POST">
                                                     @csrf
@@ -106,9 +116,13 @@
                                                             step="0.01"
                                                             placeholder="bobot %"
                                                             value="{{ $bobot !== null ? $bobot : '' }}"
+                                                            @disabled($isLocked)
                                                         >
                                                         <span class="save-status small text-muted"></span>
                                                     </div>
+                                                    @if ($isLocked)
+                                                        <span class="badge bg-secondary mt-1">terkunci</span>
+                                                    @endif
                                                 </form>
                                             </td>
                                         @empty

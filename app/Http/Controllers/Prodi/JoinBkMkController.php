@@ -7,6 +7,7 @@ use App\Models\Bk;
 use App\Models\Kurikulum;
 use Illuminate\Http\Request;
 use App\Models\JoinBkMk;
+use App\Models\JoinCplCpmk;
 use App\Http\Controllers\Controller;
 
 class JoinBkMkController extends Controller
@@ -43,6 +44,17 @@ class JoinBkMkController extends Controller
                     ->with('success', $mk->kode . ' telah diinteraksi dengan ' . $bk->kode);
         } else {
             if ($joinbkmk) {
+                $isUsed = JoinCplCpmk::query()
+                    ->where('mk_id', $mk->id)
+                    ->whereHas('joinCplBk', function ($query) use ($bk) {
+                        $query->where('bk_id', $bk->id);
+                    })
+                    ->exists();
+
+                if ($isUsed) {
+                    return to_route('kurikulums.joinbkmks.index',$request->kurikulum_id)
+                        ->with('error', 'Interaksi tidak dapat diubah karena sudah dipakai pada relasi CPL >< CPMK.');
+                }
                 $joinbkmk->delete();
                 }
             return to_route('kurikulums.joinbkmks.index',$request->kurikulum_id)

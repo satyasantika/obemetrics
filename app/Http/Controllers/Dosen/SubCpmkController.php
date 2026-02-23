@@ -61,6 +61,10 @@ class SubCpmkController extends Controller
     public function destroy(Mk $mk, Subcpmk $subcpmk)
     {
         $subcpmk_data = $subcpmk->kode.' - '.$subcpmk->nama;
+        if ($subcpmk->joinSubcpmkPenugasans()->exists()) {
+            return to_route('mks.subcpmks.index', $mk)
+                ->with('error', $subcpmk_data.' tidak dapat dihapus karena sudah digunakan pada relasi SubCPMK >< Penugasan.');
+        }
         $subcpmk->delete();
         return to_route('mks.subcpmks.index', $mk)->with('warning',$subcpmk_data.' telah dihapus');
     }

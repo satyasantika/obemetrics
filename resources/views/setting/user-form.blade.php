@@ -80,7 +80,14 @@
 </form>
 @endif
 
-@if ($user->id)
+@php
+    $canDeleteUser = !$user->id || (
+        !$user->joinProdiUsers()->exists() &&
+        !$user->joinMkUsers()->exists() &&
+        !\App\Models\KontrakMk::where('user_id', $user->id)->exists()
+    );
+@endphp
+@if ($user->id && $canDeleteUser)
     <form id="delete-form" action="{{ route('users.destroy',$user->id) }}" method="POST">
         @csrf
         @method('DELETE')
@@ -88,6 +95,8 @@
             <i class="bi bi-trash"></i>
         </button>
     </form>
+@elseif ($user->id)
+    <span class="badge bg-secondary float-end">Data digunakan, tidak dapat dihapus</span>
 @endif
 
 @endpush

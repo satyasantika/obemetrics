@@ -6,6 +6,8 @@ use App\DataTables\AddJoinProdiUsersDataTable;
 use App\DataTables\JoinProdiUsersDataTable;
 use App\Http\Controllers\Controller;
 use App\Models\JoinProdiUser;
+use App\Models\KontrakMk;
+use App\Models\JoinMkUser;
 use App\Models\Prodi;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -49,6 +51,16 @@ class JoinProdiUserController extends Controller
 
     public function update(Request $request, Prodi $prodi, JoinProdiUser $joinprodiuser)
     {
+        $isUsed = JoinMkUser::query()
+            ->where('user_id', $joinprodiuser->user_id)
+            ->whereIn('kurikulum_id', $prodi->kurikulums()->pluck('id'))
+            ->exists();
+
+        if ($isUsed) {
+            return to_route('prodis.joinprodiusers.index',$prodi)
+                ->with('error','Relasi user-prodi tidak dapat diubah karena sudah dipakai pada relasi MK >< USER.');
+        }
+
         $namaProdi = strtoupper($joinprodiuser->prodi->nama);
         $namaUser = strtoupper($joinprodiuser->user->name);
         $data = $request->all();
@@ -59,6 +71,22 @@ class JoinProdiUserController extends Controller
 
     public function destroy(Prodi $prodi, JoinProdiUser $joinprodiuser)
     {
+        $kurikulumIds = $prodi->kurikulums()->pluck('id');
+        $isUsedInJoinMkUser = JoinMkUser::query()
+            ->where('user_id', $joinprodiuser->user_id)
+            ->whereIn('kurikulum_id', $kurikulumIds)
+            ->exists();
+
+        $isUsedInKontrak = KontrakMk::query()
+            ->where('user_id', $joinprodiuser->user_id)
+            ->whereIn('mk_id', $prodi->kurikulums()->with('mks:id,kurikulum_id')->get()->pluck('mks')->flatten()->pluck('id'))
+            ->exists();
+
+        if ($isUsedInJoinMkUser || $isUsedInKontrak) {
+            return to_route('prodis.joinprodiusers.index',$prodi)
+                ->with('error','Relasi user-prodi tidak dapat dihapus karena sudah digunakan pada data lainnya.');
+        }
+
         $namaProdi = strtoupper($joinprodiuser->prodi->nama);
         $namaUser = strtoupper($joinprodiuser->user->name);
         $joinprodiuser->delete();

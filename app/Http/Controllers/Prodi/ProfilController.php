@@ -54,6 +54,10 @@ class ProfilController extends Controller
     public function destroy(Kurikulum $kurikulum, Profil $profil)
     {
         $name = strtoupper($profil->nama);
+        if ($profil->profil_indikators()->exists() || $profil->joinProfilCpls()->exists()) {
+            return to_route('kurikulums.profils.index', $kurikulum)
+                ->with('error','Profil '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
+        }
         $profil->delete();
         return to_route('kurikulums.profils.index', $kurikulum)->with('warning','Profil '.$name.' telah dihapus');
     }

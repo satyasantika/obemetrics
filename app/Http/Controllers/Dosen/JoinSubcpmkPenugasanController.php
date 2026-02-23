@@ -6,6 +6,7 @@ use App\Models\Mk;
 use App\Models\Penugasan;
 use App\Models\Subcpmk;
 use App\Models\JoinSubcpmkPenugasan;
+use App\Models\Nilai;
 use App\Models\Semester;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -111,6 +112,28 @@ class JoinSubcpmkPenugasanController extends Controller
 
         if (!$hasBobotValue) {
             if ($existing) {
+                $isUsed = Nilai::query()
+                    ->where('mk_id', $mkId)
+                    ->where('penugasan_id', $penugasan->id)
+                    ->where('semester_id', $semesterId)
+                    ->exists();
+
+                if ($isUsed) {
+                    $message = 'Relasi tidak dapat dihapus karena nilai penugasan sudah digunakan.';
+
+                    if ($request->expectsJson() || $request->ajax()) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $message,
+                            'linked' => true,
+                            'bobot' => (float) ($existing->bobot ?? 0),
+                        ], 422);
+                    }
+
+                    return to_route('mks.joinsubcpmkpenugasans.index', ['mk' => $mkId, 'semester_id' => $semesterId])
+                        ->with('error', $message);
+                }
+
                 $existing->delete();
             }
 

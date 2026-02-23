@@ -46,6 +46,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                @php
+                                    $usedCplIds = \App\Models\JoinCplBk::query()
+                                        ->where('kurikulum_id', $kurikulum->id)
+                                        ->pluck('cpl_id')
+                                        ->filter()
+                                        ->unique()
+                                        ->flip();
+                                @endphp
                                 @forelse ($cpls as $cpl)
                                     <tr style="vertical-align: text-top;">
                                         <td>
@@ -67,6 +75,7 @@
                                                         function($item) use ($profil, $cpl) {
                                                         return $item->profil_id === $profil->id && $item->cpl_id === $cpl->id;
                                                         });
+                                                    $isLocked = $cek && $usedCplIds->has($cpl->id);
                                                     @endphp
                                                     <div class="form-check form-switch">
                                                         <input
@@ -76,11 +85,15 @@
                                                             id="is_linked_{{ $profil->id }}_{{ $cpl->id }}"
                                                             onchange="this.form.submit()"
                                                             @checked($cek)
+                                                            @disabled($isLocked)
                                                         >
                                                         <label class="form-check-label" for="is_linked_{{ $profil->id }}_{{ $cpl->id }}">
                                                             <span class="badge text-success" style="display: {{ $cek ? 'inline' : 'none' }};"><i class="bi bi-check-circle-fill"></i></span>
                                                         </label>
                                                     </div>
+                                                    @if ($isLocked)
+                                                        <span class="badge bg-secondary">terkunci</span>
+                                                    @endif
                                                 </form>
                                             </td>
                                         @empty

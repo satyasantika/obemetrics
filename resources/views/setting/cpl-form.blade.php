@@ -62,7 +62,10 @@
     </form>
 </div>
 
-@if ($cpl->id)
+@php
+    $canDeleteCpl = !$cpl->id || (!$cpl->joinProfilCpls()->exists() && !$cpl->joinCplBks()->exists());
+@endphp
+@if ($cpl->id && $canDeleteCpl)
 <form id="delete-form" action="{{ route('kurikulums.cpls.destroy',[$kurikulum->id,$cpl->id]) }}" method="POST">
     @csrf
     @method('DELETE')
@@ -71,6 +74,9 @@
         <i class="bi bi-trash"></i>
     </button>
 </form>
+@elseif ($cpl->id)
+<hr>
+<span class="badge bg-secondary float-end">Data digunakan, tidak dapat dihapus</span>
 @endif
 <span class="text-danger">(*) Wajib diisi.</span></label>
 @endpush
