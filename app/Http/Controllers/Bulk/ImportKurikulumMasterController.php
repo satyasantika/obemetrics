@@ -20,8 +20,13 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -30,6 +35,11 @@ class ImportKurikulumMasterController extends Controller
     private const TARGETS = [
         'kurikulum_bundle' => [
             'label' => 'Master Kurikulum (Profil, CPL, BK, MK)',
+            'columns' => [],
+            'required' => [],
+        ],
+        'join_kurikulum_bundle' => [
+            'label' => 'Interaksi Kurikulum (Profil-CPL, CPL-BK, BK-MK)',
             'columns' => [],
             'required' => [],
         ],
@@ -134,6 +144,32 @@ class ImportKurikulumMasterController extends Controller
                     ->with('success', "Import master kurikulum berhasil: {$result['profils']} profil, {$result['cpls']} CPL, {$result['bks']} BK, {$result['mks']} MK diproses.");
             } catch (\Throwable $e) {
                 return back()->with('error', 'Gagal memproses import master kurikulum: ' . $e->getMessage());
+            }
+        }
+
+        if ($target === 'join_kurikulum_bundle') {
+            try {
+                $spreadsheet = IOFactory::load($request->file('file')->getPathname());
+                $result = DB::transaction(function () use ($spreadsheet, $kurikulum) {
+                    return $this->commitJoinKurikulumBundle($spreadsheet, $kurikulum);
+                });
+
+                $success = "Import interaksi master berhasil: Profil >< CPL ({$result['join_profil_cpls']['linked']} aktif), CPL >< BK ({$result['join_cpl_bks']['linked']} aktif), BK >< MK ({$result['join_bk_mks']['linked']} aktif).";
+
+                $redirect = redirect()->to($this->resolveReturnUrl($request))
+                    ->with('success', $success);
+
+                $removed = ($result['join_profil_cpls']['removed'] ?? 0)
+                    + ($result['join_cpl_bks']['removed'] ?? 0)
+                    + ($result['join_bk_mks']['removed'] ?? 0);
+
+                if ($removed > 0) {
+                    $redirect->with('danger', "{$removed} interaksi dibuang karena sel pada template dikosongkan.");
+                }
+
+                return $redirect;
+            } catch (\Throwable $e) {
+                return back()->with('error', 'Gagal memproses import interaksi master: ' . $e->getMessage());
             }
         }
 
@@ -302,6 +338,19 @@ class ImportKurikulumMasterController extends Controller
             ]);
         }
 
+        if ($target === 'join_kurikulum_bundle') {
+            $spreadsheet = $this->buildJoinKurikulumBundleTemplate($kurikulum);
+            $writer = new Xlsx($spreadsheet);
+            $waktuDownload = now()->format('YmdHis');
+            $fileName = 'import' . $waktuDownload . '-interaksi-master-kurikulum-prodi-' . Str::slug((string) ($kurikulum->prodi->jenjang . '-' . $kurikulum->prodi->nama ?? 'kurikulum'), '-') . '.xlsx';
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        }
+
         if ($target === 'join_profil_cpls') {
             $profils = $kurikulum->profils()->orderBy('nama')->get();
             $cpls = $kurikulum->cpls()->orderBy('kode')->get();
@@ -350,6 +399,10 @@ class ImportKurikulumMasterController extends Controller
                 }
 
                 $rowIndex++;
+            }
+
+            if ($profils->count() > 0 && $cpls->count() > 0) {
+                $this->applyInteractionValidation($sheet, 2, 1 + $profils->count(), 3, 2 + $cpls->count());
             }
 
             $writer = new Xlsx($spreadsheet);
@@ -413,6 +466,10 @@ class ImportKurikulumMasterController extends Controller
                 $rowIndex++;
             }
 
+            if ($bks->count() > 0 && $cpls->count() > 0) {
+                $this->applyInteractionValidation($sheet, 2, 1 + $bks->count(), 3, 2 + $cpls->count());
+            }
+
             $writer = new Xlsx($spreadsheet);
             $waktuDownload = now()->format('YmdHis');
             $fileName = 'import' . $waktuDownload . '-interaksi-cpl-bk-prodi-' . Str::slug((string) ($kurikulum->prodi->jenjang . '-' . $kurikulum->prodi->nama ?? 'kurikulum'), '-') . '.xlsx';
@@ -472,6 +529,10 @@ class ImportKurikulumMasterController extends Controller
                 }
 
                 $rowIndex++;
+            }
+
+            if ($bks->count() > 0 && $mks->count() > 0) {
+                $this->applyInteractionValidation($sheet, 2, 1 + $bks->count(), 3, 2 + $mks->count());
             }
 
             $writer = new Xlsx($spreadsheet);
@@ -1454,6 +1515,251 @@ class ImportKurikulumMasterController extends Controller
         $spreadsheet->setActiveSheetIndex(0);
 
         return $spreadsheet;
+    }
+
+    private function buildJoinKurikulumBundleTemplate(Kurikulum $kurikulum): Spreadsheet
+    {
+        $spreadsheet = new Spreadsheet();
+        $spreadsheet->removeSheetByIndex(0);
+
+        $sheetProfilCpl = $spreadsheet->createSheet(0);
+        $sheetProfilCpl->setTitle('JOIN_PROFIL_CPL');
+        $this->fillJoinProfilCplSheet($sheetProfilCpl, $kurikulum, true);
+
+        $sheetCplBk = $spreadsheet->createSheet(1);
+        $sheetCplBk->setTitle('JOIN_CPL_BK');
+        $this->fillJoinCplBkSheet($sheetCplBk, $kurikulum, true);
+
+        $sheetBkMk = $spreadsheet->createSheet(2);
+        $sheetBkMk->setTitle('JOIN_BK_MK');
+        $this->fillJoinBkMkSheet($sheetBkMk, $kurikulum, true);
+
+        $spreadsheet->setActiveSheetIndex(0);
+
+        return $spreadsheet;
+    }
+
+    private function commitJoinKurikulumBundle(Spreadsheet $spreadsheet, Kurikulum $kurikulum): array
+    {
+        $sheetProfilCpl = $spreadsheet->getSheetByName('JOIN_PROFIL_CPL');
+        $sheetCplBk = $spreadsheet->getSheetByName('JOIN_CPL_BK');
+        $sheetBkMk = $spreadsheet->getSheetByName('JOIN_BK_MK');
+
+        if (!$sheetProfilCpl || !$sheetCplBk || !$sheetBkMk) {
+            throw new \RuntimeException('Template gabungan tidak valid. Pastikan sheet JOIN_PROFIL_CPL, JOIN_CPL_BK, dan JOIN_BK_MK tersedia.');
+        }
+
+        return [
+            'join_profil_cpls' => $this->saveJoinProfilCplMatrix($sheetProfilCpl->toArray(null, true, true, true), $kurikulum),
+            'join_cpl_bks' => $this->saveJoinCplBkMatrix($sheetCplBk->toArray(null, true, true, true), $kurikulum),
+            'join_bk_mks' => $this->saveJoinBkMkMatrix($sheetBkMk->toArray(null, true, true, true), $kurikulum),
+        ];
+    }
+
+    private function fillJoinProfilCplSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
+    {
+        $profils = $kurikulum->profils()->orderBy('nama')->get();
+        $cpls = $kurikulum->cpls()->orderBy('kode')->get();
+
+        $linkedMap = JoinProfilCpl::query()
+            ->where('kurikulum_id', $kurikulum->id)
+            ->whereIn('profil_id', $profils->pluck('id'))
+            ->whereIn('cpl_id', $cpls->pluck('id'))
+            ->get()
+            ->keyBy(fn ($row) => $row->cpl_id . '_' . $row->profil_id);
+
+        $sheet->setCellValue('A1', 'CPL');
+        $sheet->getStyle('A1')->getFont()->setBold(true);
+
+        $lastColumn = Coordinate::stringFromColumnIndex(1 + $profils->count());
+        $sheet->mergeCells('B1:' . $lastColumn . '1');
+        $sheet->setCellValue('B1', 'PROFIL LULUSAN');
+        $sheet->getStyle('B1')->getFont()->setBold(true);
+
+        $columnIndex = 2;
+        foreach ($profils as $profil) {
+            $column = Coordinate::stringFromColumnIndex($columnIndex);
+            $sheet->setCellValue($column . '2', trim((string) ($profil->nama . "\n" . ($profil->deskripsi ?? ''))));
+            $sheet->getStyle($column . '2')->getAlignment()->setWrapText(true);
+            $sheet->getStyle($column . '2')->getFont()->setBold(true);
+            $sheet->getColumnDimension($column)->setWidth(28);
+            $columnIndex++;
+        }
+
+        $sheet->getColumnDimension('A')->setWidth(36);
+
+        $rowIndex = 3;
+        foreach ($cpls as $cpl) {
+            $sheet->setCellValue('A' . $rowIndex, trim((string) ($cpl->kode . "\n" . $cpl->nama)));
+            $sheet->getStyle('A' . $rowIndex)->getAlignment()->setWrapText(true);
+
+            $columnIndex = 2;
+            foreach ($profils as $profil) {
+                $column = Coordinate::stringFromColumnIndex($columnIndex);
+                $isLinked = $linkedMap->has($cpl->id . '_' . $profil->id);
+                $sheet->setCellValue($column . $rowIndex, $isLinked ? 'V' : '');
+                $columnIndex++;
+            }
+
+            $rowIndex++;
+        }
+
+        if ($withValidation && $profils->count() > 0 && $cpls->count() > 0) {
+            $this->applyInteractionValidation($sheet, 2, 1 + $profils->count(), 3, 2 + $cpls->count());
+        }
+    }
+
+    private function fillJoinCplBkSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
+    {
+        $bks = $kurikulum->bks()->orderBy('kode')->get();
+        $cpls = $kurikulum->cpls()->orderBy('kode')->get();
+
+        $linkedMap = JoinCplBk::query()
+            ->where('kurikulum_id', $kurikulum->id)
+            ->whereIn('bk_id', $bks->pluck('id'))
+            ->whereIn('cpl_id', $cpls->pluck('id'))
+            ->get()
+            ->keyBy(fn ($row) => $row->cpl_id . '_' . $row->bk_id);
+
+        $sheet->setCellValue('A1', 'CAPAIAN PEMBELAJARAN LULUSAN');
+        $sheet->getStyle('A1')->getFont()->setBold(true);
+
+        $lastColumn = Coordinate::stringFromColumnIndex(1 + $bks->count());
+        $sheet->mergeCells('B1:' . $lastColumn . '1');
+        $sheet->setCellValue('B1', 'BAHAN KAJIAN');
+        $sheet->getStyle('B1')->getFont()->setBold(true);
+
+        $columnIndex = 2;
+        foreach ($bks as $bk) {
+            $column = Coordinate::stringFromColumnIndex($columnIndex);
+            $sheet->setCellValue($column . '2', trim((string) ($bk->kode . "\n" . $bk->nama)));
+            $sheet->getStyle($column . '2')->getAlignment()->setWrapText(true);
+            $sheet->getStyle($column . '2')->getFont()->setBold(true);
+            $sheet->getColumnDimension($column)->setWidth(20);
+            $columnIndex++;
+        }
+
+        $sheet->getColumnDimension('A')->setWidth(36);
+
+        $rowIndex = 3;
+        foreach ($cpls as $cpl) {
+            $sheet->setCellValue('A' . $rowIndex, trim((string) ($cpl->kode . "\n" . $cpl->nama)));
+            $sheet->getStyle('A' . $rowIndex)->getAlignment()->setWrapText(true);
+
+            $columnIndex = 2;
+            foreach ($bks as $bk) {
+                $column = Coordinate::stringFromColumnIndex($columnIndex);
+                $isLinked = $linkedMap->has($cpl->id . '_' . $bk->id);
+                $sheet->setCellValue($column . $rowIndex, $isLinked ? 'V' : '');
+                $columnIndex++;
+            }
+
+            $rowIndex++;
+        }
+
+        if ($withValidation && $bks->count() > 0 && $cpls->count() > 0) {
+            $this->applyInteractionValidation($sheet, 2, 1 + $bks->count(), 3, 2 + $cpls->count());
+        }
+    }
+
+    private function fillJoinBkMkSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
+    {
+        $bks = $kurikulum->bks()->orderBy('kode')->get();
+        $mks = $kurikulum->mks()->orderBy('kode')->get();
+
+        $linkedMap = JoinBkMk::query()
+            ->where('kurikulum_id', $kurikulum->id)
+            ->whereIn('bk_id', $bks->pluck('id'))
+            ->whereIn('mk_id', $mks->pluck('id'))
+            ->get()
+            ->keyBy(fn ($row) => $row->mk_id . '_' . $row->bk_id);
+
+        $sheet->setCellValue('A1', 'MATA KULIAH');
+        $sheet->getStyle('A1')->getFont()->setBold(true);
+
+        $lastColumn = Coordinate::stringFromColumnIndex(1 + $bks->count());
+        $sheet->mergeCells('B1:' . $lastColumn . '1');
+        $sheet->setCellValue('B1', 'BAHAN KAJIAN');
+        $sheet->getStyle('B1')->getFont()->setBold(true);
+
+        $columnIndex = 2;
+        foreach ($bks as $bk) {
+            $column = Coordinate::stringFromColumnIndex($columnIndex);
+            $sheet->setCellValue($column . '2', trim((string) ($bk->kode . "\n" . $bk->nama)));
+            $sheet->getStyle($column . '2')->getAlignment()->setWrapText(true);
+            $sheet->getStyle($column . '2')->getFont()->setBold(true);
+            $sheet->getColumnDimension($column)->setWidth(20);
+            $columnIndex++;
+        }
+
+        $sheet->getColumnDimension('A')->setWidth(36);
+
+        $rowIndex = 3;
+        foreach ($mks as $mk) {
+            $sheet->setCellValue('A' . $rowIndex, trim((string) ($mk->kode . "\n" . $mk->nama)));
+            $sheet->getStyle('A' . $rowIndex)->getAlignment()->setWrapText(true);
+
+            $columnIndex = 2;
+            foreach ($bks as $bk) {
+                $column = Coordinate::stringFromColumnIndex($columnIndex);
+                $isLinked = $linkedMap->has($mk->id . '_' . $bk->id);
+                $sheet->setCellValue($column . $rowIndex, $isLinked ? 'V' : '');
+                $columnIndex++;
+            }
+
+            $rowIndex++;
+        }
+
+        if ($withValidation && $bks->count() > 0 && $mks->count() > 0) {
+            $this->applyInteractionValidation($sheet, 2, 1 + $bks->count(), 3, 2 + $mks->count());
+        }
+    }
+
+    private function applyInteractionValidation($sheet, int $startColumn, int $endColumn, int $startRow, int $endRow): void
+    {
+        if ($endColumn < $startColumn || $endRow < $startRow) {
+            return;
+        }
+
+        $startColumnLetter = Coordinate::stringFromColumnIndex($startColumn);
+        $endColumnLetter = Coordinate::stringFromColumnIndex($endColumn);
+
+        $sheet->getStyle($startColumnLetter . $startRow . ':' . $endColumnLetter . $endRow)
+            ->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('FFFFFF00');
+
+        $sheet->getStyle($startColumnLetter . $startRow . ':' . $endColumnLetter . $endRow)
+            ->getBorders()
+            ->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN)
+            ->setColor(new Color('FF000000'));
+
+        $sheet->getStyle($startColumnLetter . $startRow . ':' . $endColumnLetter . $endRow)
+            ->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Alignment::VERTICAL_CENTER);
+
+        $validationTemplate = new DataValidation();
+        $validationTemplate->setType(DataValidation::TYPE_LIST);
+        $validationTemplate->setErrorStyle(DataValidation::STYLE_STOP);
+        $validationTemplate->setAllowBlank(true);
+        $validationTemplate->setShowDropDown(true);
+        $validationTemplate->setShowInputMessage(true);
+        $validationTemplate->setShowErrorMessage(true);
+        $validationTemplate->setErrorTitle('Input tidak valid');
+        $validationTemplate->setError('Pilih hanya "V" atau kosongkan sel.');
+        $validationTemplate->setPromptTitle('Pilih interaksi');
+        $validationTemplate->setPrompt('Pilih "V" untuk interaksi aktif.');
+        $validationTemplate->setFormula1('"V"');
+
+        for ($row = $startRow; $row <= $endRow; $row++) {
+            for ($column = $startColumn; $column <= $endColumn; $column++) {
+                $columnLetter = Coordinate::stringFromColumnIndex($column);
+                $sheet->getCell($columnLetter . $row)->setDataValidation(clone $validationTemplate);
+            }
+        }
     }
 
     private function commitKurikulumBundle(Spreadsheet $spreadsheet, Kurikulum $kurikulum): array
