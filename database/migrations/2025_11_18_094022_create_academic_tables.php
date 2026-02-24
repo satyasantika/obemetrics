@@ -142,6 +142,15 @@ return new class extends Migration
             $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->timestamps();
         });
+        // interaksi cpl-mk
+        Schema::create('join_cpl_mks', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
+            $table->foreignUuid('join_cpl_bk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->double('bobot')->nullable();
+            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->timestamps();
+        });
         // interaksi mk-dosen
         Schema::create('join_mk_users', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
@@ -321,6 +330,13 @@ return new class extends Migration
             $table->dropForeign('join_mk_users_semester_id_foreign');
         });
         Schema::dropIfExists('join_mk_users');
+        // interaksi cpl-mk
+        Schema::table('join_cpl_mks', function (Blueprint $table) {
+            $table->dropForeign('join_cpl_mks_join_cpl_id_foreign');
+            $table->dropForeign('join_cpl_mks_mk_id_foreign');
+            $table->dropForeign('join_cpl_mks_kurikulum_id_foreign');
+        });
+        Schema::dropIfExists('join_cpl_mks');
         // interaksi bk-mk
         Schema::table('join_bk_mks', function (Blueprint $table) {
             $table->dropForeign('join_bk_mks_bk_id_foreign');

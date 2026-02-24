@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class JoinCplMk extends Model
+{
+    use HasFactory, HasUuids;
+    protected $guarded = ['id'];
+
+    public function kurikulum(): BelongsTo
+    {
+        return $this->belongsTo(Kurikulum::class);
+    }
+
+    public function joinCplBk(): BelongsTo
+    {
+        return $this->belongsTo(JoinCplBk::class, 'join_cpl_bk_id');
+    }
+
+    public function mk(): BelongsTo
+    {
+        return $this->belongsTo(Mk::class);
+    }
+}
