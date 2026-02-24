@@ -6,6 +6,8 @@ use App\Models\Profil;
 use Illuminate\Http\Request;
 use App\Models\ProfilIndikator;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class ProfilIndikatorController extends Controller
 {
@@ -50,7 +52,41 @@ class ProfilIndikatorController extends Controller
     {
         $name_indikator = $profilindikator->nama;
         $name_profil = strtoupper($profil->nama);
+
+        $isUsedAsForeignKey = $this->isReferencedAsForeignKey($profilindikator->id);
+
+        if ($isUsedAsForeignKey) {
+            return to_route('kurikulums.profils.index', $profil->kurikulum)
+                ->with('error', 'Indikator: '.$name_indikator.' dari Profil '.$name_profil.' tidak dapat dihapus karena sudah digunakan sebagai foreign key.');
+        }
+
         $profilindikator->delete();
         return to_route('kurikulums.profils.index', $profil->kurikulum)->with('warning','Indikator: '.$name_indikator.' dari Profil '.$name_profil.' telah dihapus');
+    }
+
+    private function isReferencedAsForeignKey(string $profilIndikatorId): bool
+    {
+        try {
+            $references = DB::table('information_schema.KEY_COLUMN_USAGE')
+                ->where('REFERENCED_TABLE_SCHEMA', DB::getDatabaseName())
+                ->where('REFERENCED_TABLE_NAME', 'profil_indikators')
+                ->whereNotNull('TABLE_NAME')
+                ->whereNotNull('COLUMN_NAME')
+                ->get(['TABLE_NAME', 'COLUMN_NAME']);
+
+            foreach ($references as $reference) {
+                $isUsed = DB::table($reference->TABLE_NAME)
+                    ->where($reference->COLUMN_NAME, $profilIndikatorId)
+                    ->exists();
+
+                if ($isUsed) {
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (Throwable $exception) {
+            return false;
+        }
     }
 }

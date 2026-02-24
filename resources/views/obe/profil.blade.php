@@ -114,10 +114,26 @@
                                             </div>
                                         </div>
                                         <div class="modal-footer">
+                                            @php
+                                                $canDeleteProfil = !in_array((string) $profil->id, $nonDeletableProfilIds ?? [], true);
+                                            @endphp
+                                            @if ($canDeleteProfil)
+                                                <button type="button" class="btn btn-outline-danger btn-sm me-auto" onclick="if(confirm('Yakin akan menghapus profil {{ $profil->kode }}: {{ $profil->nama }}?')){ document.getElementById('delete-profil-{{ $profil->id }}').submit(); }">
+                                                    <i class="bi bi-trash"></i> Hapus
+                                                </button>
+                                            @else
+                                                <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+                                            @endif
                                             <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                                             <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
                                         </div>
                                     </form>
+                                    @if ($canDeleteProfil)
+                                        <form id="delete-profil-{{ $profil->id }}" action="{{ route('kurikulums.profils.destroy',[$kurikulum->id,$profil->id]) }}" method="POST" class="d-none">
+                                            @csrf
+                                            @method('DELETE')
+                                        </form>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -147,26 +163,10 @@
                                             </div>
                                         </div>
                                         <div class="modal-footer">
-                                            @php
-                                                $canDeleteProfil = !$profil->profil_indikators()->exists() && !$profil->joinProfilCpls()->exists();
-                                            @endphp
-                                            @if ($canDeleteProfil)
-                                                <button type="button" class="btn btn-outline-danger btn-sm me-auto" onclick="if(confirm('Yakin akan menghapus profil {{ $profil->kode }}: {{ $profil->nama }}?')){ document.getElementById('delete-profil-{{ $profil->id }}').submit(); }">
-                                                    <i class="bi bi-trash"></i> Hapus
-                                                </button>
-                                            @else
-                                                <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
-                                            @endif
                                             <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                                             <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
                                         </div>
                                     </form>
-                                    @if ($canDeleteProfil)
-                                        <form id="delete-profil-{{ $profil->id }}" action="{{ route('kurikulums.profils.destroy',[$kurikulum->id,$profil->id]) }}" method="POST" class="d-none">
-                                            @csrf
-                                            @method('DELETE')
-                                        </form>
-                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -198,10 +198,26 @@
                                             </div>
                                         </div>
                                         <div class="modal-footer">
+                                            @php
+                                                $canDeleteProfilIndikator = !in_array((string) $profilindikator->id, $nonDeletableProfilIndikatorIds ?? [], true);
+                                            @endphp
+                                            @if ($canDeleteProfilIndikator)
+                                                <button type="button" class="btn btn-outline-danger btn-sm me-auto" onclick="if(confirm('Yakin akan menghapus indikator {{ $profilindikator->nama }}?')){ document.getElementById('delete-profilindikator-{{ $profilindikator->id }}').submit(); }">
+                                                    <i class="bi bi-trash"></i> Hapus
+                                                </button>
+                                            @else
+                                                <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+                                            @endif
                                             <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                                             <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
                                         </div>
                                     </form>
+                                    @if ($canDeleteProfilIndikator)
+                                        <form id="delete-profilindikator-{{ $profilindikator->id }}" action="{{ route('profils.profilindikators.destroy',[$profil->id,$profilindikator->id]) }}" method="POST" class="d-none">
+                                            @csrf
+                                            @method('DELETE')
+                                        </form>
+                                    @endif
                                 </div>
                             </div>
                         </div>

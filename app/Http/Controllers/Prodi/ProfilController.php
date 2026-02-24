@@ -6,6 +6,8 @@ use App\Models\Profil;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Kurikulum;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class ProfilController extends Controller
 {
@@ -19,8 +21,53 @@ class ProfilController extends Controller
 
     public function index(Kurikulum $kurikulum)
     {
-        $profils = Profil::where('kurikulum_id',$kurikulum->id)->get();
-        return view('obe.profil', compact('kurikulum','profils'));
+        $profils = Profil::where('kurikulum_id', $kurikulum->id)->get();
+
+        $nonDeletableProfilIds = Profil::query()
+            ->where('kurikulum_id', $kurikulum->id)
+            ->where(function ($query) {
+                $query->whereHas('profil_indikators')
+                    ->orWhereHas('joinProfilCpls');
+            })
+            ->pluck('id')
+            ->map(fn ($id) => (string) $id)
+            ->all();
+
+        $nonDeletableProfilIndikatorIds = $this->collectNonDeletableProfilIndikatorIds();
+
+        return view('obe.profil', compact(
+            'kurikulum',
+            'profils',
+            'nonDeletableProfilIds',
+            'nonDeletableProfilIndikatorIds'
+        ));
+    }
+
+    private function collectNonDeletableProfilIndikatorIds(): array
+    {
+        try {
+            $references = DB::table('information_schema.KEY_COLUMN_USAGE')
+                ->where('REFERENCED_TABLE_SCHEMA', DB::getDatabaseName())
+                ->where('REFERENCED_TABLE_NAME', 'profil_indikators')
+                ->whereNotNull('TABLE_NAME')
+                ->whereNotNull('COLUMN_NAME')
+                ->get(['TABLE_NAME', 'COLUMN_NAME']);
+
+            $usedIds = collect();
+            foreach ($references as $reference) {
+                $usedIds = $usedIds->merge(
+                    DB::table($reference->TABLE_NAME)
+                        ->whereNotNull($reference->COLUMN_NAME)
+                        ->pluck($reference->COLUMN_NAME)
+                        ->map(fn ($id) => (string) $id)
+                        ->all()
+                );
+            }
+
+            return $usedIds->unique()->values()->all();
+        } catch (Throwable $exception) {
+            return [];
+        }
     }
 
     public function create(Kurikulum $kurikulum)
