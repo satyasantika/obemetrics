@@ -154,18 +154,6 @@ class JoinCplMkController extends Controller
                 ], 422);
             }
 
-            $isLocked = JoinCplCpmk::query()
-                ->where('mk_id', $mk->id)
-                ->where('join_cpl_bk_id', $selectedCplBkId)
-                ->exists();
-
-            if ($isLocked) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Interaksi terkunci karena sudah dipakai pada relasi CPL >< CPMK.',
-                ], 422);
-            }
-
             $relationQuery = JoinCplMk::query()
                 ->where('mk_id', $mk->id)
                 ->where('kurikulum_id', $kurikulumId)
@@ -179,7 +167,26 @@ class JoinCplMkController extends Controller
             $hasBobotValue = $bobotValue !== null && trim((string) $bobotValue) !== '';
             $bobot = $hasBobotValue ? (float) $bobotValue : null;
 
-            if (!$hasBobotValue || $bobot <= 0) {
+            if ($hasBobotValue && ($bobot < 0 || $bobot > 100)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Bobot harus di antara 0 sampai 100.',
+                ], 422);
+            }
+
+            $isLocked = JoinCplCpmk::query()
+                ->where('mk_id', $mk->id)
+                ->where('join_cpl_bk_id', $selectedCplBkId)
+                ->exists();
+
+            if ($isLocked && !$hasBobotValue) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'bobot tidak boleh kosong saat status dipakai.',
+                ], 422);
+            }
+
+            if (!$hasBobotValue) {
                 if ($existingRows->isNotEmpty()) {
                     JoinCplMk::query()
                         ->whereIn('id', $existingRows->pluck('id'))

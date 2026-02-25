@@ -83,7 +83,7 @@
                                                 @elseif (!$isAvailable)
                                                     <span class="text-muted">-</span>
                                                 @else
-                                                    <form action="{{ route('joincplmks.update', ['cpl' => $column['cpl_id'], 'mk' => $mk->id]) }}" method="POST">
+                                                    <form action="{{ route('joincplmks.update', ['cpl' => $column['cpl_id'], 'mk' => $mk->id]) }}" method="POST" data-is-locked="{{ $isLocked ? '1' : '0' }}">
                                                         @csrf
                                                         @method('PUT')
                                                         <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
@@ -92,15 +92,16 @@
                                                             <span class="badge {{ $isLinked ? 'bg-success' : 'bg-white text-dark' }} link-status-badge">
                                                                 {{ $isLinked ? 'Terkait' : 'x' }}
                                                             </span>
+                                                            @if (!$isLocked)
                                                             <button
                                                                 type="button"
                                                                 class="btn btn-outline-danger btn-sm py-0 px-2 clear-bobot-btn {{ $isLinked ? '' : 'd-none' }}"
                                                                 title="Hapus relasi CPL-BK-MK"
                                                                 aria-label="Hapus relasi"
-                                                                @disabled($isLocked)
                                                             >
                                                                 <i class="bi bi-x-lg"></i>
                                                             </button>
+                                                            @endif
                                                         </div>
                                                         <div class="d-flex align-items-center gap-1">
                                                             <input
@@ -113,7 +114,6 @@
                                                                 placeholder="bobot %"
                                                                 value="{{ $bobot !== null ? $bobot : '' }}"
                                                                 title="{{ $column['cpl_kode'] }} - BK {{ $column['bk_kode'] }}"
-                                                                @disabled($isLocked)
                                                             >
                                                             <span class="save-status small text-muted"></span>
                                                         </div>
@@ -121,7 +121,7 @@
                                                 @endif
                                                 @if ($isLocked)
                                                     <div class="mt-1">
-                                                        <span class="badge bg-secondary">terkunci</span>
+                                                        <span class="badge bg-secondary">dipakai</span>
                                                     </div>
                                                 @endif
                                             </td>
@@ -156,23 +156,54 @@ document.addEventListener('DOMContentLoaded', function () {
         const statusEl = form.querySelector('.save-status');
         const badge = form.querySelector('.link-status-badge');
         const clearBtn = form.querySelector('.clear-bobot-btn');
+        const isLocked = form.getAttribute('data-is-locked') === '1';
+        let lastSavedValue = (input.value || '').trim();
         let isSubmitting = false;
 
         if (!input) {
             return;
         }
 
+        const setStatus = function (text, tone) {
+            if (!statusEl) {
+                return;
+            }
+
+            statusEl.textContent = text;
+            statusEl.className = 'save-status small text-' + tone;
+
+            if (tone === 'success') {
+                setTimeout(function () {
+                    statusEl.textContent = '';
+                    statusEl.className = 'save-status small text-muted';
+                }, 1200);
+            }
+        };
+
         const submitLive = function () {
             if (isSubmitting || input.disabled) {
                 return;
             }
 
+            const rawValue = (input.value || '').trim();
+            if (rawValue !== '') {
+                const numericValue = Number(rawValue);
+                if (!Number.isFinite(numericValue) || numericValue < 0 || numericValue > 100) {
+                    setStatus('Gagal menyimpan: bobot harus 0–100.', 'danger');
+                    return;
+                }
+            }
+
+            if (isLocked && rawValue === '') {
+                input.value = lastSavedValue;
+                setStatus('Gagal menyimpan: bobot tidak boleh kosong saat status dipakai.', 'danger');
+                updateMkTotal(form.closest('tr'));
+                return;
+            }
+
             isSubmitting = true;
 
-            if (statusEl) {
-                statusEl.textContent = 'menyimpan...';
-                statusEl.className = 'save-status small text-muted';
-            }
+            setStatus('Menyimpan...', 'muted');
 
             if (clearBtn) {
                 clearBtn.disabled = true;
@@ -191,23 +222,26 @@ document.addEventListener('DOMContentLoaded', function () {
             })
             .then(function (response) {
                 if (!response.ok) {
-                    return response.json().then(function (payload) {
-                        throw new Error(payload.message || 'Gagal menyimpan');
-                    }).catch(function () {
-                        throw new Error('Gagal menyimpan');
+                    return response.text().then(function (bodyText) {
+                        let message = 'Gagal menyimpan';
+
+                        if (bodyText) {
+                            try {
+                                const payload = JSON.parse(bodyText);
+                                message = payload?.message || message;
+                            } catch (_) {
+                                message = message;
+                            }
+                        }
+
+                        throw new Error(message);
                     });
                 }
 
                 return response.json();
             })
             .then(function (result) {
-                if (statusEl) {
-                    statusEl.textContent = 'tersimpan';
-                    statusEl.className = 'save-status small text-success';
-                    setTimeout(function () {
-                        statusEl.textContent = '';
-                    }, 1200);
-                }
+                setStatus('Tersimpan', 'success');
 
                 if (badge) {
                     const linked = !!result.linked;
@@ -221,17 +255,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (!result.linked) {
                     input.value = '';
+                    lastSavedValue = '';
                 } else if (typeof result.bobot !== 'undefined' && result.bobot !== null) {
                     input.value = result.bobot;
+                    lastSavedValue = String(result.bobot);
                 }
 
                 updateMkTotal(form.closest('tr'));
             })
             .catch(function (error) {
-                if (statusEl) {
-                    statusEl.textContent = error?.message || 'gagal';
-                    statusEl.className = 'save-status small text-danger';
-                }
+                input.value = lastSavedValue;
+                const rawMessage = String(error?.message || 'Terjadi kesalahan').trim();
+                const formattedMessage = /^gagal menyimpan\s*:/i.test(rawMessage)
+                    ? rawMessage
+                    : ('Gagal menyimpan: ' + rawMessage);
+                setStatus(formattedMessage, 'danger');
+                updateMkTotal(form.closest('tr'));
             })
             .finally(function () {
                 isSubmitting = false;
@@ -281,6 +320,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (clearBtn) {
             clearBtn.addEventListener('click', function () {
+                if (isLocked) {
+                    setStatus('Gagal menyimpan: bobot tidak boleh kosong saat status dipakai.', 'danger');
+                    return;
+                }
+
                 input.value = '';
                 submitLive();
             });
