@@ -40,7 +40,7 @@ class ImportKurikulumMasterController extends Controller
             'required' => [],
         ],
         'join_kurikulum_bundle' => [
-            'label' => 'Interaksi Kurikulum (Profil-CPL, CPL-BK, BK-MK)',
+            'label' => 'Interaksi Kurikulum (Profil-CPL-BK)',
             'columns' => [],
             'required' => [],
         ],
@@ -193,7 +193,6 @@ class ImportKurikulumMasterController extends Controller
                     'join_profil_cpls' => 'Interaksi Profil >< CPL',
                     'join_cpl_bks' => 'Interaksi CPL >< BK',
                     'join_cpl_mks' => 'Interaksi CPL >< MK',
-                    default => 'Interaksi BK >< MK',
                 };
 
                 $redirect = redirect()->to($this->resolveReturnUrl($request))
@@ -1690,10 +1689,6 @@ class ImportKurikulumMasterController extends Controller
         $sheetCplBk->setTitle('JOIN_CPL_BK');
         $this->fillJoinCplBkSheet($sheetCplBk, $kurikulum, true);
 
-        $sheetCplMk = $spreadsheet->createSheet(2);
-        $sheetCplMk->setTitle('JOIN_CPL_MK');
-        $this->fillJoinCplMkByBkSheet($sheetCplMk, $kurikulum, true);
-
         $spreadsheet->setActiveSheetIndex(0);
 
         return $spreadsheet;
@@ -1703,17 +1698,14 @@ class ImportKurikulumMasterController extends Controller
     {
         $sheetProfilCpl = $spreadsheet->getSheetByName('JOIN_PROFIL_CPL');
         $sheetCplBk = $spreadsheet->getSheetByName('JOIN_CPL_BK');
-        $sheetCplMk = $spreadsheet->getSheetByName('JOIN_CPL_MK')
-            ?? $spreadsheet->getSheetByName('JOIN_BK_MK');
 
-        if (!$sheetProfilCpl || !$sheetCplBk || !$sheetCplMk) {
-            throw new \RuntimeException('Template gabungan tidak valid. Pastikan sheet JOIN_PROFIL_CPL, JOIN_CPL_BK, dan JOIN_CPL_MK tersedia.');
+        if (!$sheetProfilCpl || !$sheetCplBk) {
+            throw new \RuntimeException('Template gabungan tidak valid. Pastikan sheet JOIN_PROFIL_CPL dan JOIN_CPL_BK tersedia.');
         }
 
         return [
             'join_profil_cpls' => $this->saveJoinProfilCplMatrix($sheetProfilCpl->toArray(null, true, true, true), $kurikulum),
             'join_cpl_bks' => $this->saveJoinCplBkMatrix($sheetCplBk->toArray(null, true, true, true), $kurikulum),
-            'join_cpl_mks' => $this->saveJoinCplMkFromBkMatrix($sheetCplMk->toArray(null, true, true, true), $kurikulum),
         ];
     }
 
@@ -1820,210 +1812,6 @@ class ImportKurikulumMasterController extends Controller
 
         if ($withValidation && $bks->count() > 0 && $cpls->count() > 0) {
             $this->applyInteractionValidation($sheet, 2, 1 + $bks->count(), 3, 2 + $cpls->count());
-        }
-    }
-
-    private function fillJoinCplMkByBkSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
-    {
-        $bks = $kurikulum->bks()->orderBy('kode')->get();
-        $mks = $kurikulum->mks()->orderBy('kode')->get();
-
-        $linkedMap = $this->buildBkMkLinkedMap($kurikulum, $bks, $mks);
-
-        $sheet->setCellValue('A1', 'MATA KULIAH');
-        $sheet->getStyle('A1')->getFont()->setBold(true);
-
-        $lastColumn = Coordinate::stringFromColumnIndex(1 + $bks->count());
-        $sheet->mergeCells('B1:' . $lastColumn . '1');
-        $sheet->setCellValue('B1', 'BAHAN KAJIAN');
-        $sheet->getStyle('B1')->getFont()->setBold(true);
-
-        $columnIndex = 2;
-        foreach ($bks as $bk) {
-            $column = Coordinate::stringFromColumnIndex($columnIndex);
-            $sheet->setCellValue($column . '2', trim((string) ($bk->kode . "\n" . $bk->nama)));
-            $sheet->getStyle($column . '2')->getAlignment()->setWrapText(true);
-            $sheet->getStyle($column . '2')->getFont()->setBold(true);
-            $sheet->getColumnDimension($column)->setWidth(20);
-            $columnIndex++;
-        }
-
-        $sheet->getColumnDimension('A')->setWidth(36);
-
-        $rowIndex = 3;
-        foreach ($mks as $mk) {
-            $sheet->setCellValue('A' . $rowIndex, trim((string) ($mk->kode . "\n" . $mk->nama)));
-            $sheet->getStyle('A' . $rowIndex)->getAlignment()->setWrapText(true);
-
-            $columnIndex = 2;
-            foreach ($bks as $bk) {
-                $column = Coordinate::stringFromColumnIndex($columnIndex);
-                $isLinked = $linkedMap->has($mk->id . '_' . $bk->id);
-                $sheet->setCellValue($column . $rowIndex, $isLinked ? 'V' : '');
-                $columnIndex++;
-            }
-
-            $rowIndex++;
-        }
-
-        if ($withValidation && $bks->count() > 0 && $mks->count() > 0) {
-            $this->applyInteractionValidation($sheet, 2, 1 + $bks->count(), 3, 2 + $mks->count());
-        }
-    }
-
-    private function buildBkMkLinkedMap(Kurikulum $kurikulum, $bks, $mks)
-    {
-        $joinCplBkRows = JoinCplBk::query()
-            ->where('kurikulum_id', $kurikulum->id)
-            ->whereIn('bk_id', $bks->pluck('id'))
-            ->get(['id', 'bk_id']);
-
-        if ($joinCplBkRows->isEmpty()) {
-            return collect();
-        }
-
-        return JoinCplMk::query()
-            ->where('kurikulum_id', $kurikulum->id)
-            ->whereIn('mk_id', $mks->pluck('id'))
-            ->whereIn('join_cpl_bk_id', $joinCplBkRows->pluck('id'))
-            ->with('joinCplBk:id,bk_id')
-            ->get()
-            ->mapWithKeys(function ($row) {
-                $bkId = optional($row->joinCplBk)->bk_id;
-
-                return $bkId
-                    ? [($row->mk_id . '_' . $bkId) => true]
-                    : [];
-            });
-    }
-
-    private function fillJoinCplMkSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
-    {
-        $cpls = $kurikulum->cpls()->with(['joinCplBks.bk'])->orderBy('kode')->get();
-        $mks = $kurikulum->mks()->orderBy('semester')->orderBy('kode')->get();
-
-        $columns = [];
-        $columnIndex = 2;
-
-        $sheet->setCellValue('A1', 'MATA KULIAH');
-        $sheet->mergeCells('A1:A2');
-        $sheet->getStyle('A1')->getFont()->setBold(true);
-        $sheet->getColumnDimension('A')->setWidth(36);
-
-        foreach ($cpls as $cpl) {
-            $joinRows = $cpl->joinCplBks
-                ->filter(fn ($item) => $item->bk)
-                ->sortBy(fn ($item) => (string) $item->bk->kode)
-                ->values();
-
-            if ($joinRows->isEmpty()) {
-                continue;
-            }
-
-            $startColumn = $columnIndex;
-            foreach ($joinRows as $joinCplBk) {
-                $columnLetter = Coordinate::stringFromColumnIndex($columnIndex);
-                $sheet->setCellValue($columnLetter . '2', $joinCplBk->bk->kode);
-                $sheet->getStyle($columnLetter . '2')->getFont()->setBold(true);
-                $sheet->getStyle($columnLetter . '2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                $sheet->getColumnDimension($columnLetter)->setWidth(16);
-
-                $columns[$columnLetter] = [
-                    'cpl' => $cpl,
-                    'join_cpl_bk' => $joinCplBk,
-                ];
-
-                $columnIndex++;
-            }
-
-            $endColumn = $columnIndex - 1;
-            $startLetter = Coordinate::stringFromColumnIndex($startColumn);
-            $endLetter = Coordinate::stringFromColumnIndex($endColumn);
-
-            if ($startColumn === $endColumn) {
-                $sheet->setCellValue($startLetter . '1', (string) $cpl->kode);
-            } else {
-                $sheet->mergeCells($startLetter . '1:' . $endLetter . '1');
-                $sheet->setCellValue($startLetter . '1', (string) $cpl->kode);
-            }
-
-            $sheet->getStyle($startLetter . '1')->getFont()->setBold(true);
-            $sheet->getStyle($startLetter . '1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        }
-
-        $joinCplBkIds = collect($columns)->pluck('join_cpl_bk.id')->filter()->values();
-        $mkIds = $mks->pluck('id')->values();
-
-        $linkedMap = JoinCplMk::query()
-            ->where('kurikulum_id', $kurikulum->id)
-            ->whereIn('mk_id', $mkIds)
-            ->whereIn('join_cpl_bk_id', $joinCplBkIds)
-            ->get()
-            ->keyBy(fn ($row) => $row->mk_id . '_' . $row->join_cpl_bk_id);
-
-        $rowIndex = 3;
-        foreach ($mks as $mk) {
-            $sheet->setCellValue('A' . $rowIndex, trim((string) ($mk->kode . "\n" . $mk->nama)));
-            $sheet->getStyle('A' . $rowIndex)->getAlignment()->setWrapText(true);
-
-            foreach ($columns as $columnLetter => $columnMeta) {
-                $joinCplBk = $columnMeta['join_cpl_bk'];
-                $linkedRow = $linkedMap->get($mk->id . '_' . $joinCplBk->id);
-                $sheet->setCellValue($columnLetter . $rowIndex, $linkedRow?->bobot !== null ? (float) $linkedRow->bobot : '');
-            }
-
-            $rowIndex++;
-        }
-
-        if ($withValidation && count($columns) > 0 && $mks->count() > 0) {
-            $startColumn = Coordinate::columnIndexFromString(array_key_first($columns));
-            $endColumn = Coordinate::columnIndexFromString(array_key_last($columns));
-
-            $startColumnLetter = Coordinate::stringFromColumnIndex($startColumn);
-            $endColumnLetter = Coordinate::stringFromColumnIndex($endColumn);
-            $startRow = 3;
-            $endRow = 2 + $mks->count();
-
-            $range = $startColumnLetter . $startRow . ':' . $endColumnLetter . $endRow;
-
-            $sheet->getStyle($range)
-                ->getBorders()
-                ->getAllBorders()
-                ->setBorderStyle(Border::BORDER_THIN)
-                ->setColor(new Color('FF000000'));
-
-            $sheet->getStyle($range)
-                ->getAlignment()
-                ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-                ->setVertical(Alignment::VERTICAL_CENTER);
-
-            $numericValidationTemplate = new DataValidation();
-            $numericValidationTemplate->setType(DataValidation::TYPE_DECIMAL);
-            $numericValidationTemplate->setOperator(DataValidation::OPERATOR_BETWEEN);
-            $numericValidationTemplate->setErrorStyle(DataValidation::STYLE_STOP);
-            $numericValidationTemplate->setAllowBlank(true);
-            $numericValidationTemplate->setShowInputMessage(true);
-            $numericValidationTemplate->setShowErrorMessage(true);
-            $numericValidationTemplate->setErrorTitle('Input tidak valid');
-            $numericValidationTemplate->setError('Masukkan nilai bobot 0 sampai 100.');
-            $numericValidationTemplate->setPromptTitle('Input bobot');
-            $numericValidationTemplate->setPrompt('Isi bobot numerik antara 0 hingga 100.');
-            $numericValidationTemplate->setFormula1('0');
-            $numericValidationTemplate->setFormula2('100');
-
-            for ($row = $startRow; $row <= $endRow; $row++) {
-                foreach ($columns as $columnLetter => $columnMeta) {
-                    $cell = $columnLetter . $row;
-
-                    $sheet->getStyle($cell)
-                        ->getFill()
-                        ->setFillType(Fill::FILL_SOLID)
-                        ->getStartColor()
-                        ->setARGB('FFFFFF00');
-
-                    $sheet->getCell($cell)->setDataValidation(clone $numericValidationTemplate);
-                }
-            }
         }
     }
 
