@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Bulk;
 use App\Http\Controllers\Controller;
 use App\Models\Bk;
 use App\Models\Cpl;
-use App\Models\JoinBkMk;
 use App\Models\JoinCplBk;
 use App\Models\JoinCplCpmk;
 use App\Models\JoinCplMk;
@@ -194,7 +193,7 @@ class ImportKurikulumMasterController extends Controller
                 $result = match ($target) {
                     'join_profil_cpls' => $this->saveJoinProfilCplMatrix($rows, $kurikulum),
                     'join_cpl_bks' => $this->saveJoinCplBkMatrix($rows, $kurikulum),
-                    'join_bk_mks' => $this->saveJoinBkMkMatrix($rows, $kurikulum),
+                    'join_bk_mks' => $this->saveJoinCplMkFromBkMatrix($rows, $kurikulum),
                     'join_cpl_mks' => $this->saveJoinCplMkMatrix($rows, $kurikulum),
                 };
 
@@ -503,12 +502,7 @@ class ImportKurikulumMasterController extends Controller
             $bks = $kurikulum->bks()->orderBy('kode')->get();
             $mks = $kurikulum->mks()->orderBy('kode')->get();
 
-            $linkedMap = JoinBkMk::query()
-                ->where('kurikulum_id', $kurikulum->id)
-                ->whereIn('bk_id', $bks->pluck('id'))
-                ->whereIn('mk_id', $mks->pluck('id'))
-                ->get()
-                ->keyBy(fn ($row) => $row->mk_id . '_' . $row->bk_id);
+            $linkedMap = $this->buildBkMkLinkedMap($kurikulum, $bks, $mks);
 
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
@@ -742,10 +736,25 @@ class ImportKurikulumMasterController extends Controller
                     throw new \RuntimeException('BK/MK tidak ditemukan untuk relasi.');
                 }
 
-                JoinBkMk::updateOrCreate(
-                    ['kurikulum_id' => $kurikulum->id, 'bk_id' => $bk->id, 'mk_id' => $mk->id],
-                    []
-                );
+                $joinCplBkIds = JoinCplBk::query()
+                    ->where('kurikulum_id', $kurikulum->id)
+                    ->where('bk_id', $bk->id)
+                    ->pluck('id');
+
+                if ($joinCplBkIds->isEmpty()) {
+                    throw new \RuntimeException('Tidak ada relasi CPL >< BK untuk BK: ' . $kodeBk);
+                }
+
+                foreach ($joinCplBkIds as $joinCplBkId) {
+                    JoinCplMk::updateOrCreate(
+                        [
+                            'kurikulum_id' => $kurikulum->id,
+                            'mk_id' => $mk->id,
+                            'join_cpl_bk_id' => $joinCplBkId,
+                        ],
+                        []
+                    );
+                }
                 return;
 
             case 'mahasiswas':
@@ -1334,7 +1343,7 @@ class ImportKurikulumMasterController extends Controller
         ];
     }
 
-    private function saveJoinBkMkMatrix(array $rows, Kurikulum $kurikulum): array
+    private function saveJoinCplMkFromBkMatrix(array $rows, Kurikulum $kurikulum): array
     {
         $headerRow = $rows[2] ?? [];
         $bkByColumn = [];
@@ -1406,36 +1415,75 @@ class ImportKurikulumMasterController extends Controller
             throw new \RuntimeException('Tidak ada baris MK pada template interaksi.');
         }
 
-        $existingRows = JoinBkMk::query()
+        $joinCplBkRows = JoinCplBk::query()
+            ->where('kurikulum_id', $kurikulum->id)
+            ->whereIn('bk_id', $scopeBkIds)
+            ->get(['id', 'bk_id']);
+
+        $joinCplBkIdsByBk = $joinCplBkRows
+            ->groupBy('bk_id')
+            ->map(fn ($items) => $items->pluck('id')->values());
+
+        $lockedPairMap = JoinCplCpmk::query()
+            ->whereIn('mk_id', $scopeMkIds)
+            ->whereIn('join_cpl_bk_id', $joinCplBkRows->pluck('id'))
+            ->with('joinCplBk:id,bk_id')
+            ->get()
+            ->mapWithKeys(function ($row) {
+                $bkId = optional($row->joinCplBk)->bk_id;
+
+                return $bkId
+                    ? [($row->mk_id . '_' . $bkId) => true]
+                    : [];
+            });
+
+        $existingRows = JoinCplMk::query()
             ->where('kurikulum_id', $kurikulum->id)
             ->whereIn('mk_id', $scopeMkIds)
-            ->whereIn('bk_id', $scopeBkIds)
+            ->whereIn('join_cpl_bk_id', $joinCplBkRows->pluck('id'))
+            ->with('joinCplBk:id,bk_id')
             ->get();
 
         $desiredKeys = array_keys($desiredPairs);
         $removed = 0;
+        $lockedSkipped = 0;
         foreach ($existingRows as $existingRow) {
-            $key = $existingRow->mk_id . '_' . $existingRow->bk_id;
+            $bkId = optional($existingRow->joinCplBk)->bk_id;
+            if (!$bkId) {
+                continue;
+            }
+
+            $key = $existingRow->mk_id . '_' . $bkId;
             if (!in_array($key, $desiredKeys, true)) {
+                if ($lockedPairMap->has($key)) {
+                    $lockedSkipped++;
+                    continue;
+                }
+
                 $existingRow->delete();
                 $removed++;
             }
         }
 
         foreach ($desiredPairs as $pair) {
-            JoinBkMk::updateOrCreate(
-                [
-                    'kurikulum_id' => $pair['kurikulum_id'],
-                    'mk_id' => $pair['mk_id'],
-                    'bk_id' => $pair['bk_id'],
-                ],
-                []
-            );
+            $joinCplBkIds = $joinCplBkIdsByBk->get($pair['bk_id'], collect());
+
+            foreach ($joinCplBkIds as $joinCplBkId) {
+                JoinCplMk::updateOrCreate(
+                    [
+                        'kurikulum_id' => $pair['kurikulum_id'],
+                        'mk_id' => $pair['mk_id'],
+                        'join_cpl_bk_id' => $joinCplBkId,
+                    ],
+                    []
+                );
+            }
         }
 
         return [
             'linked' => count($desiredPairs),
             'removed' => $removed,
+            'locked_skipped' => $lockedSkipped,
         ];
     }
 
@@ -1532,17 +1580,6 @@ class ImportKurikulumMasterController extends Controller
             foreach ($joinCplBkByColumn as $columnLetter => $joinCplBk) {
                 $raw = trim((string) ($row[$columnLetter] ?? ''));
                 if ($raw === '') {
-                    continue;
-                }
-
-                $isAvailable = JoinBkMk::query()
-                    ->where('kurikulum_id', $kurikulum->id)
-                    ->where('mk_id', $mk->id)
-                    ->where('bk_id', $joinCplBk->bk_id)
-                    ->exists();
-
-                if (!$isAvailable) {
-                    $skippedUnavailableInputs++;
                     continue;
                 }
 
@@ -1754,7 +1791,7 @@ class ImportKurikulumMasterController extends Controller
 
         $sheetBkMk = $spreadsheet->createSheet(2);
         $sheetBkMk->setTitle('JOIN_BK_MK');
-        $this->fillJoinBkMkSheet($sheetBkMk, $kurikulum, true);
+        $this->fillJoinCplMkByBkSheet($sheetBkMk, $kurikulum, true);
 
         $spreadsheet->setActiveSheetIndex(0);
 
@@ -1774,7 +1811,7 @@ class ImportKurikulumMasterController extends Controller
         return [
             'join_profil_cpls' => $this->saveJoinProfilCplMatrix($sheetProfilCpl->toArray(null, true, true, true), $kurikulum),
             'join_cpl_bks' => $this->saveJoinCplBkMatrix($sheetCplBk->toArray(null, true, true, true), $kurikulum),
-            'join_bk_mks' => $this->saveJoinBkMkMatrix($sheetBkMk->toArray(null, true, true, true), $kurikulum),
+            'join_bk_mks' => $this->saveJoinCplMkFromBkMatrix($sheetBkMk->toArray(null, true, true, true), $kurikulum),
         ];
     }
 
@@ -1884,17 +1921,12 @@ class ImportKurikulumMasterController extends Controller
         }
     }
 
-    private function fillJoinBkMkSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
+    private function fillJoinCplMkByBkSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
     {
         $bks = $kurikulum->bks()->orderBy('kode')->get();
         $mks = $kurikulum->mks()->orderBy('kode')->get();
 
-        $linkedMap = JoinBkMk::query()
-            ->where('kurikulum_id', $kurikulum->id)
-            ->whereIn('bk_id', $bks->pluck('id'))
-            ->whereIn('mk_id', $mks->pluck('id'))
-            ->get()
-            ->keyBy(fn ($row) => $row->mk_id . '_' . $row->bk_id);
+        $linkedMap = $this->buildBkMkLinkedMap($kurikulum, $bks, $mks);
 
         $sheet->setCellValue('A1', 'MATA KULIAH');
         $sheet->getStyle('A1')->getFont()->setBold(true);
@@ -1935,6 +1967,32 @@ class ImportKurikulumMasterController extends Controller
         if ($withValidation && $bks->count() > 0 && $mks->count() > 0) {
             $this->applyInteractionValidation($sheet, 2, 1 + $bks->count(), 3, 2 + $mks->count());
         }
+    }
+
+    private function buildBkMkLinkedMap(Kurikulum $kurikulum, $bks, $mks)
+    {
+        $joinCplBkRows = JoinCplBk::query()
+            ->where('kurikulum_id', $kurikulum->id)
+            ->whereIn('bk_id', $bks->pluck('id'))
+            ->get(['id', 'bk_id']);
+
+        if ($joinCplBkRows->isEmpty()) {
+            return collect();
+        }
+
+        return JoinCplMk::query()
+            ->where('kurikulum_id', $kurikulum->id)
+            ->whereIn('mk_id', $mks->pluck('id'))
+            ->whereIn('join_cpl_bk_id', $joinCplBkRows->pluck('id'))
+            ->with('joinCplBk:id,bk_id')
+            ->get()
+            ->mapWithKeys(function ($row) {
+                $bkId = optional($row->joinCplBk)->bk_id;
+
+                return $bkId
+                    ? [($row->mk_id . '_' . $bkId) => true]
+                    : [];
+            });
     }
 
     private function fillJoinCplMkSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
@@ -2001,12 +2059,6 @@ class ImportKurikulumMasterController extends Controller
             ->get()
             ->keyBy(fn ($row) => $row->mk_id . '_' . $row->join_cpl_bk_id);
 
-        $joinBkMap = JoinBkMk::query()
-            ->where('kurikulum_id', $kurikulum->id)
-            ->whereIn('mk_id', $mkIds)
-            ->get(['mk_id', 'bk_id'])
-            ->mapWithKeys(fn ($row) => [($row->bk_id . '_' . $row->mk_id) => true]);
-
         $rowIndex = 3;
         foreach ($mks as $mk) {
             $sheet->setCellValue('A' . $rowIndex, trim((string) ($mk->kode . "\n" . $mk->nama)));
@@ -2014,13 +2066,6 @@ class ImportKurikulumMasterController extends Controller
 
             foreach ($columns as $columnLetter => $columnMeta) {
                 $joinCplBk = $columnMeta['join_cpl_bk'];
-                $isAvailable = $joinBkMap->has($joinCplBk->bk_id . '_' . $mk->id);
-
-                if (!$isAvailable) {
-                    $sheet->setCellValue($columnLetter . $rowIndex, '');
-                    continue;
-                }
-
                 $linkedRow = $linkedMap->get($mk->id . '_' . $joinCplBk->id);
                 $sheet->setCellValue($columnLetter . $rowIndex, $linkedRow?->bobot !== null ? (float) $linkedRow->bobot : '');
             }
@@ -2064,34 +2109,9 @@ class ImportKurikulumMasterController extends Controller
             $numericValidationTemplate->setFormula1('0');
             $numericValidationTemplate->setFormula2('100');
 
-            $unavailableValidationTemplate = new DataValidation();
-            $unavailableValidationTemplate->setType(DataValidation::TYPE_CUSTOM);
-            $unavailableValidationTemplate->setErrorStyle(DataValidation::STYLE_STOP);
-            $unavailableValidationTemplate->setAllowBlank(true);
-            $unavailableValidationTemplate->setShowInputMessage(true);
-            $unavailableValidationTemplate->setShowErrorMessage(true);
-            $unavailableValidationTemplate->setErrorTitle('Sel non-interaksi');
-            $unavailableValidationTemplate->setError('Sel ini bukan interaksi join_cpl_bk dengan MK, input akan diabaikan saat import.');
-            $unavailableValidationTemplate->setPromptTitle('Tidak dapat diisi');
-            $unavailableValidationTemplate->setPrompt('Kosongkan sel ini. Hanya sel kuning (interaksi valid) yang boleh diisi 0-100.');
-
             for ($row = $startRow; $row <= $endRow; $row++) {
-                $mk = $mks[$row - 3] ?? null;
-                if (!$mk) {
-                    continue;
-                }
-
                 foreach ($columns as $columnLetter => $columnMeta) {
-                    $joinCplBk = $columnMeta['join_cpl_bk'];
-                    $isAvailable = $joinBkMap->has($joinCplBk->bk_id . '_' . $mk->id);
                     $cell = $columnLetter . $row;
-
-                    if (!$isAvailable) {
-                        $validation = clone $unavailableValidationTemplate;
-                        $validation->setFormula1('LEN(TRIM(' . $cell . '))=0');
-                        $sheet->getCell($cell)->setDataValidation($validation);
-                        continue;
-                    }
 
                     $sheet->getStyle($cell)
                         ->getFill()

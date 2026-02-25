@@ -47,16 +47,6 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @php
-                                    $lockedBkMkPair = \App\Models\JoinCplCpmk::query()
-                                        ->whereIn('mk_id', $mks->pluck('id'))
-                                        ->with('joinCplBk:id,bk_id')
-                                        ->get()
-                                        ->mapWithKeys(function ($row) {
-                                            $bkId = optional($row->joinCplBk)->bk_id;
-                                            return $bkId ? [($bkId.'|'.$row->mk_id) => true] : [];
-                                        });
-                                @endphp
                                 @forelse ($mks as $mk)
                                     <tr style="vertical-align: text-top;">
                                         <th>
@@ -74,12 +64,9 @@
                                                     <input type="hidden" name="mk_id" value="{{ $mk->id }}">
                                                     <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
                                                     @php
-                                                    $linkedBkMk = \App\Models\JoinBkMk::where('kurikulum_id',$kurikulum->id)->get();
-                                                    $cek = $linkedBkMk->contains(
-                                                        function($item) use ($bk, $mk) {
-                                                        return $item->bk_id === $bk->id && $item->mk_id === $mk->id;
-                                                        });
-                                                    $isLocked = $lockedBkMkPair->has($bk->id.'|'.$mk->id);
+                                                    $pairKey = $bk->id . '|' . $mk->id;
+                                                    $cek = $linkedPairMap->has($pairKey);
+                                                    $isLocked = $lockedPairMap->has($pairKey);
                                                     @endphp
                                                     <div class="form-check form-switch">
                                                         <input

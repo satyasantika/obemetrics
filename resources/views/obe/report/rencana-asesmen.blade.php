@@ -28,7 +28,7 @@
                                     <tr>
                                         <th width="40%">CAPAIAN PEMBELAJARAN LULUSAN</th>
                                         <th>ASPEK MATA KULIAH</th>
-                                        <th class="text-end">BOBOT</th>
+                                        <th class="text-end">KONTRIBUSI MK</th>
                                     </tr>
                                 </thead>
 
@@ -37,9 +37,8 @@
 
                                     @php
                                         // Kumpulkan MK yang terkait CPL ini, pastikan unik
-                                        $matkuls = $cpl->joinCplBks
-                                            ->pluck('bk.joinBkMks')->flatten()
-                                            ->pluck('mk')->unique('id');
+                                        $matkuls = $mksPerCpl->get($cpl->id, collect());
+                                        $bobotPersenMk = $bobotPersenPerCplMk->get($cpl->id, collect());
 
                                         $totalSks = $matkuls->sum('sks');
                                         $rowspan  = max(1, $matkuls->count());
@@ -60,7 +59,7 @@
                                                 {{ $firstMk->nama }}
                                             </td>
                                             <td class="text-end">
-                                                {{ $totalSks > 0 ? number_format($firstMk->sks / $totalSks * 100, 2) : '0.00' }}%
+                                                {{ number_format((float) ($bobotPersenMk->get($firstMk->id) ?? 0), 2) }}%
                                             </td>
                                         @else
                                             {{-- Tidak ada MK terkait --}}
@@ -78,7 +77,7 @@
                                                     {{ $mk->nama }}
                                                 </td>
                                                 <td class="text-end">
-                                                    {{ $totalSks > 0 ? number_format($mk->sks / $totalSks * 100, 2) : '0.00' }}%
+                                                    {{ number_format((float) ($bobotPersenMk->get($mk->id) ?? 0), 2) }}%
                                                 </td>
                                             </tr>
                                         @endforeach

@@ -87,7 +87,7 @@
 
 @php
     $canDeleteMk = !$mk->id || (
-        !$mk->joinBkMks()->exists() &&
+        !$mk->joinCplMks()->exists() &&
         !$mk->joinMkUsers()->exists() &&
         !$mk->kontrakMks()->exists() &&
         !$mk->cpmks()->exists() &&

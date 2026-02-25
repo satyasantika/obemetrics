@@ -365,7 +365,7 @@ class ImportMkMasterController extends Controller
         }
 
         if ($target === 'join_cpl_cpmks') {
-            $joinCplBks = $mk->joinBkMks->pluck('bk.joinCplBks')->flatten()->unique('id')->values();
+            $joinCplBks = $mk->joinCplMks->pluck('joinCplBk')->flatten()->filter()->unique('id')->values();
             $cpmks = $mk->cpmks()->orderBy('kode')->get();
 
             $linkedMap = JoinCplCpmk::query()
@@ -927,7 +927,7 @@ class ImportMkMasterController extends Controller
 
     private function saveJoinCplCpmkMatrix(array $rows, Mk $mk): array
     {
-        $joinCplBks = $mk->joinBkMks->pluck('bk.joinCplBks')->flatten()->unique('id')->values();
+        $joinCplBks = $mk->joinCplMks->pluck('joinCplBk')->flatten()->filter()->unique('id')->values();
         if ($joinCplBks->isEmpty()) {
             throw new \RuntimeException('Data relasi CPL >< BK belum tersedia untuk MK ini.');
         }

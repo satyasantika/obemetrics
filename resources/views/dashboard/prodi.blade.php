@@ -131,7 +131,7 @@
                                                     !$kurikulumModal->mks()->exists() &&
                                                     !$kurikulumModal->joinProfilCpls()->exists() &&
                                                     !$kurikulumModal->joinCplBks()->exists() &&
-                                                    !$kurikulumModal->joinBkMks()->exists() &&
+                                                    !$kurikulumModal->joinCplMks()->exists() &&
                                                     !$kurikulumModal->joinMkUsers()->exists();
                                             @endphp
                                             @if ($canDeleteKurikulum)

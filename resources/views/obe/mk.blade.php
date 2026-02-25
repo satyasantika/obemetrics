@@ -208,7 +208,7 @@
                 <div class="modal-footer">
                     @php
                         $canDeleteMk =
-                            !$mk->joinBkMks()->exists() &&
+                            !$mk->joinCplMks()->exists() &&
                             !$mk->joinMkUsers()->exists() &&
                             !$mk->kontrakMks()->exists() &&
                             !$mk->cpmks()->exists() &&

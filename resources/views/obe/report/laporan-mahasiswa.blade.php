@@ -30,7 +30,8 @@
                                     <tr>
                                         <th>NPM</th>
                                         <th>NAMA</th>
-                                        <th>SKS KONTRAK</th>
+                                        <th>SKS DIKONTRAK</th>
+                                        <th>NILAI ANGKA</th>
                                         <th>NILAI HURUF</th>
                                         <th>BOBOT HURUF</th>
                                         <th>IPK</th>
@@ -43,6 +44,7 @@
                                         <td>{{ $mahasiswa['nim'] ?? '-' }}</td>
                                         <td>{{ $mahasiswa['nama'] ?? '-' }}</td>
                                         <td class="text-end">{{ $mahasiswa['sks_kontrak'] ?? 0 }}</td>
+                                        <td class="text-center">{{ $mahasiswa['nilai_angka'] ?? '-' }}</td>
                                         <td class="text-center">{{ $mahasiswa['nilai_huruf'] ?? '-' }}</td>
                                         <td class="text-end">{{ number_format((float) ($mahasiswa['bobot_huruf'] ?? 0), 2) }}</td>
                                         <td class="text-end">{{ number_format((float) ($mahasiswa['ipk'] ?? 0), 2) }}</td>
@@ -55,7 +57,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ 7 }}"><span class="bg-warning text-dark p-2">
+                                        <td colspan="{{ 8 }}"><span class="bg-warning text-dark p-2">
                                             Belum ada data mahasiswa untuk kurikulum ini.</span>
                                         </td>
                                     </tr>
@@ -147,8 +149,10 @@ document.addEventListener('DOMContentLoaded', function () {
             pageLength: 10,
             order: [[0, 'asc']],
             columnDefs: [
-                { orderable: false, targets: 6 }
-            ]
+                { orderable: false, targets: 7 }
+            ],
+            lengthMenu: [[10, 25, 50, 100, 200, 500, -1],
+                            [10, 25, 50, 100, 200, 500, "All"]],
         });
     }
 

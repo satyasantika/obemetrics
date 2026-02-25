@@ -32,7 +32,7 @@
                                             Rerata Nilai Angkatan dan Jumlah
                                         </th>
                                         <th rowspan="3" class="align-middle text-center">Rerata Nilai</th>
-                                        <th rowspan="3" class="align-middle text-end">BOBOT</th>
+                                        <th rowspan="3" class="align-middle text-end">Bobot Kontribusi MK ke CPL</th>
                                         <th rowspan="3" class="align-middle text-center">Ketercapaian CPL</th>
                                     </tr>
                                     <tr>
@@ -52,7 +52,8 @@
                                 @forelse ($cpls as $cpl)
                                     @php
                                         // Kumpulan MK yang terkait CPL ini (pastikan unik per id)
-                                        $matkuls   = $cpl->joinCplBks->pluck('bk.joinBkMks')->flatten()->pluck('mk')->unique('id');
+                                        $matkuls   = $mksPerCpl->get($cpl->id, collect());
+                                        $bobotPersenMk = $bobotPersenPerCplMk->get($cpl->id, collect());
                                         $rowspan   = max(1, $matkuls->count());
                                         $totalSks  = $matkuls->sum('sks');
                                     @endphp
@@ -89,11 +90,11 @@
                                                         <small>{{ $cpl->nama }}</small>
                                                     </td>
                                                 @endif
-
                                                 {{-- Aspek Mata Kuliah --}}
                                                 <td>
                                                     <span class="badge bg-primary text-white">{{ $matkul->sks }} SKS</span>
                                                     {{ $matkul->nama }}
+                                                    {{-- <span class="badge bg-secondary text-white">Bobot {{ $matkul->joinCplMk->joinCplBk->cpl->kode ?? 0 }}: {{ $matkul->joinCplMk->bobot ?? 0 }}%</span> --}}
                                                 </td>
 
                                                 {{-- Kolom dinamis per angkatan: Rerata & N --}}
@@ -134,9 +135,9 @@
                                                     {{-- Kolom Bobot (persen) untuk tiap baris MK: --}}
                                                     @php
                                                     $bobotFraksi = optional($bobotFraksiPerCplMk->get($cpl->id))?->get($matkul->id) ?? 0;
-                                                    $bobotPersen = $bobotFraksi * 100; // tampilkan persen
+                                                    $bobotPersen = (float) ($bobotPersenMk->get($matkul->id) ?? ($bobotFraksi * 100));
                                                     @endphp
-                                                    {{ $totalSks ? number_format($bobotPersen, 2) : '0.00' }}%
+                                                    {{ number_format($bobotPersen, 2) }}%
                                                 </td>
 
                                                 @if ($i === 0)

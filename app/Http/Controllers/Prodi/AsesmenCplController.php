@@ -15,13 +15,27 @@ class AsesmenCplController extends Controller
 
     public function rencanaAsesmen(Kurikulum $kurikulum)
     {
+        $cpls = $kurikulum->cpls;
+        $mksPerCpl = $this->resolveMksPerCpl($kurikulum);
+        $bobotPersenPerCplMk = $this->resolveBobotPersenPerCplMk($kurikulum, $mksPerCpl);
+
         return view('obe.report.rencana-asesmen')
                 ->with('kurikulum', $kurikulum)
-                ->with('cpls', $kurikulum->cpls)
+            ->with('cpls', $cpls)
+            ->with('mksPerCpl', $mksPerCpl)
+            ->with('bobotPersenPerCplMk', $bobotPersenPerCplMk)
                 ->with('mks', $kurikulum->mks);
     }
     public function analisisAsesmen(Kurikulum $kurikulum)
     {
+        $cpls = $kurikulum->cpls;
+        $mksPerCpl = $this->resolveMksPerCpl($kurikulum);
+        $bobotFraksiPerCplMk = $this->resolveBobotFraksiPerCplMk($kurikulum, $mksPerCpl);
+
+        $bobotPersenPerCplMk = $bobotFraksiPerCplMk->map(function ($fraksiPerMk) {
+            return $fraksiPerMk->map(fn ($fraksi) => (float) $fraksi * 100);
+        });
+
         $angkatan = $kurikulum->mks->pluck('kontrakMks')
             ->flatten()
             ->pluck('mahasiswa.angkatan')
@@ -122,10 +136,8 @@ class AsesmenCplController extends Controller
         });
 
         // MK per CPL (unik) + total SKS per CPL
-        $mkPerCpl = collect($kurikulum->cpls)->mapWithKeys(function ($cpl) {
-            $mks = $cpl->joinCplBks
-                ->pluck('bk.joinBkMks')->flatten()
-                ->pluck('mk')->unique('id');
+        $mkPerCpl = collect($cpls)->mapWithKeys(function ($cpl) use ($mksPerCpl) {
+            $mks = $mksPerCpl->get($cpl->id, collect());
 
             $totalSks = $mks->sum('sks');
 
@@ -135,15 +147,6 @@ class AsesmenCplController extends Controller
             ]];
         });
 
-        $bobotFraksiPerCplMk = $mkPerCpl->map(function ($bag) {
-            $mks = $bag['mks'];
-            $totalSks = $bag['total_sks'];
-
-            return $mks->mapWithKeys(function ($mk) use ($totalSks) {
-                $w = $totalSks > 0 ? ($mk->sks / $totalSks) : 0.0; // fraksi 0..1
-                return [$mk->id => $w];
-            });
-        });
         // Akses: $bobotFraksiPerCplMk[cpl_id][mk_id] = w (0..1)
 
         $avgPerCplPerMk = $statPerCplMk
@@ -187,8 +190,9 @@ class AsesmenCplController extends Controller
 
         return view('obe.report.analisis-asesmen')
             ->with('kurikulum', $kurikulum)
-            ->with('cpls', $kurikulum->cpls)
+            ->with('cpls', $cpls)
             ->with('mks', $kurikulum->mks)
+            ->with('mksPerCpl', $mksPerCpl)
             ->with('nilais', $nilais)
             ->with('angkatan', $angkatan)
             ->with('statPerCplMkAngkatan', $statPerCplMkAngkatan)
@@ -197,35 +201,39 @@ class AsesmenCplController extends Controller
             ->with('ketercapaianCpl', $ketercapaianCpl)
             ->with('mkPerCpl', $mkPerCpl)
             ->with('bobotFraksiPerCplMk', $bobotFraksiPerCplMk)
+                ->with('bobotPersenPerCplMk', $bobotPersenPerCplMk)
             ->with('nilaiCplTertimbang', $nilaiCplTertimbang);
     }
 
     public function spyderwebCpl(Kurikulum $kurikulum)
     {
-        $cpls = $kurikulum->cpls()
-            ->with('joinCplBks.bk.joinBkMks.mk.kontrakMks')
-            ->get();
+        $cpls = $kurikulum->cpls()->get();
+        $mksPerCpl = $this->resolveMksPerCpl($kurikulum);
 
         $mks = $kurikulum->mks;
 
-        $chartPerCpl = $cpls->mapWithKeys(function ($cpl) use ($kurikulum) {
-            $matkuls = $cpl->joinCplBks
-                ->pluck('bk.joinBkMks')
-                ->flatten()
-                ->pluck('mk')
-                ->filter(fn ($mk) => (string) $mk->kurikulum_id === (string) $kurikulum->id)
-                ->unique('id')
-                ->sortBy('nama')
-                ->values();
+        $allMkIds = $mksPerCpl
+            ->flatten(1)
+            ->pluck('id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $avgNilaiPerMk = KontrakMk::query()
+            ->whereIn('mk_id', $allMkIds)
+            ->whereNotNull('nilai_angka')
+            ->selectRaw('mk_id, AVG(nilai_angka) as rerata')
+            ->groupBy('mk_id')
+            ->pluck('rerata', 'mk_id');
+
+        $chartPerCpl = $cpls->mapWithKeys(function ($cpl) use ($mksPerCpl, $avgNilaiPerMk) {
+            $matkuls = $mksPerCpl->get($cpl->id, collect());
 
             $labels = $matkuls->map(fn ($mk) => $mk->nama)->values();
             $data = $matkuls
-                ->map(function ($mk) {
-                    $rerata = $mk->kontrakMks
-                        ->whereNotNull('nilai_angka')
-                        ->avg('nilai_angka');
-
-                    return $rerata !== null ? round((float) $rerata, 2) : 0;
+                ->map(function ($mk) use ($avgNilaiPerMk) {
+                    $rerata = $avgNilaiPerMk->get($mk->id);
+                    return $rerata !== null ? round((float) $rerata, 2) : 0.0;
                 })
                 ->values();
 
@@ -321,9 +329,8 @@ class AsesmenCplController extends Controller
             return $angkaToHuruf($kontrak->nilai_angka ?? null);
         };
 
-        $cpls = $kurikulum->cpls()
-            ->with('joinCplBks.bk.joinBkMks.mk')
-            ->get();
+        $cpls = $kurikulum->cpls()->get();
+        $mksPerCpl = $this->resolveMksPerCpl($kurikulum);
 
         $profils = $kurikulum->profils()->get();
         $joinProfilCplsByProfil = $kurikulum->joinProfilCpls()
@@ -345,7 +352,7 @@ class AsesmenCplController extends Controller
 
         $byMahasiswa = $kontrakMks->groupBy('mahasiswa_id');
 
-        $detailPerMahasiswa = $byMahasiswa->map(function ($kontraks, $mahasiswaId) use ($cpls, $profils, $joinProfilCplsByProfil, $target, $resolveHuruf, $hurufToBobot, $poinToHuruf, $gradePointMap) {
+        $detailPerMahasiswa = $byMahasiswa->map(function ($kontraks, $mahasiswaId) use ($cpls, $mksPerCpl, $profils, $joinProfilCplsByProfil, $target, $resolveHuruf, $hurufToBobot, $poinToHuruf, $gradePointMap) {
             $mahasiswa = $kontraks->first()->mahasiswa;
 
             $totalSks = (int) $kontraks->sum(fn ($kontrak) => (int) optional($kontrak->mk)->sks);
@@ -392,14 +399,8 @@ class AsesmenCplController extends Controller
                 ->groupBy('mk_id')
                 ->map(fn ($items) => round((float) $items->avg('nilai_angka'), 2));
 
-            $cplScores = $cpls->map(function ($cpl) use ($kontrakByMk, $target) {
-                $mksCpl = $cpl->joinCplBks
-                    ->pluck('bk.joinBkMks')
-                    ->flatten()
-                    ->pluck('mk')
-                    ->filter()
-                    ->unique('id')
-                    ->values();
+            $cplScores = $cpls->map(function ($cpl) use ($mksPerCpl, $kontrakByMk, $target) {
+                $mksCpl = $mksPerCpl->get($cpl->id, collect());
 
                 $totalSksCpl = (float) $mksCpl->sum(fn ($mk) => (int) ($mk->sks ?? 0));
 
@@ -474,5 +475,120 @@ class AsesmenCplController extends Controller
             ->with('mahasiswas', $mahasiswas)
             ->with('detailPerMahasiswa', $detailPerMahasiswa)
             ->with('target', $target);
+    }
+
+    private function resolveMksPerCpl(Kurikulum $kurikulum)
+    {
+        return $kurikulum->joinCplMks()
+            ->with([
+                'mk',
+                'joinCplBk:id,cpl_id',
+            ])
+            ->get()
+            ->filter(function ($joinCplMk) use ($kurikulum) {
+                return $joinCplMk->mk !== null
+                    && $joinCplMk->joinCplBk !== null
+                    && !empty($joinCplMk->joinCplBk->cpl_id)
+                    && (string) $joinCplMk->mk->kurikulum_id === (string) $kurikulum->id;
+            })
+            ->groupBy(fn ($joinCplMk) => (string) $joinCplMk->joinCplBk->cpl_id)
+            ->map(function ($items) {
+                return $items
+                    ->pluck('mk')
+                    ->filter()
+                    ->unique('id')
+                    ->sortBy('nama')
+                    ->values();
+            });
+    }
+
+    private function resolveBobotFraksiPerCplMk(Kurikulum $kurikulum, $mksPerCpl)
+    {
+        $rows = $kurikulum->joinCplMks()
+            ->with([
+                'mk:id,kurikulum_id,sks',
+                'joinCplBk:id,cpl_id',
+            ])
+            ->get()
+            ->filter(function ($joinCplMk) use ($kurikulum) {
+                return $joinCplMk->mk !== null
+                    && $joinCplMk->joinCplBk !== null
+                    && !empty($joinCplMk->joinCplBk->cpl_id)
+                    && (string) $joinCplMk->mk->kurikulum_id === (string) $kurikulum->id;
+            });
+
+        // Kumpulkan "kontribusi CPL" per MK per CPL, dengan penjumlahan bobot mapping (jika ada multipel baris per MK)
+        $rawBobotByCplMk = $rows
+            ->groupBy(fn ($row) => (string) $row->joinCplBk->cpl_id)
+            ->map(function ($rowsPerCpl) {
+                return $rowsPerCpl
+                    ->groupBy('mk_id')
+                    ->map(fn ($rowsPerMk) => (float) $rowsPerMk->sum(function ($item) {
+                        // Catatan: jika bobot disimpan 0..100, atau 0..1, skala akan dieliminasi oleh normalisasi.
+                        return max(0.0, (float) ($item->bobot ?? 0));
+                    }));
+            });
+
+        return $mksPerCpl->mapWithKeys(function ($mks, $cplId) use ($rawBobotByCplMk) {
+            $rawPerMk = $rawBobotByCplMk->get($cplId, collect());
+
+            // Apakah ada SATU saja MK yang memiliki informasi kontribusi ke CPL?
+            $hasAnyMapping = ((float) $rawPerMk->sum()) > 0.0;
+
+            // Hitung bobot efektif: SKS × (kontribusi CPL)
+            // - Jika ada mapping di CPL tsb, MK tanpa catatan dianggap 1.0 (100%) agar tidak lenyap.
+            // - Jika tidak ada mapping sama sekali, kita fallback ke SKS murni.
+            $eff = $mks->mapWithKeys(function ($mk) use ($rawPerMk, $hasAnyMapping) {
+                $sks = max(0.0, (float) ($mk->sks ?? 0));
+                if ($hasAnyMapping) {
+                    $kontribusi = (float) ($rawPerMk->get($mk->id) ?? 1.0); // default 100% jika mapping CPL tersedia tapi MK ini tidak dicatat
+                } else {
+                    $kontribusi = 1.0; // tidak ada data mapping sama sekali → perlakukan semua MK setara kontribusinya, dan SKS yang membedakan
+                }
+                $efektif = $sks * $kontribusi;
+                return [$mk->id => $efektif];
+            });
+
+            $totalEff = (float) $eff->sum();
+
+            if ($totalEff > 0) {
+                $fraksi = $eff->map(fn ($v) => $v / $totalEff);
+                return [$cplId => $fraksi];
+            }
+
+            // Fallback 1: jika semua SKS nol, pakai pemerataan
+            $count = $mks->count();
+            $fraksiMerata = $count > 0 ? (1 / $count) : 0.0;
+            $fraksi = $mks->mapWithKeys(function ($mk) use ($fraksiMerata) {
+                return [$mk->id => $fraksiMerata];
+            });
+
+            return [$cplId => $fraksi];
+        });
+    }
+
+    private function resolveBobotPersenPerCplMk(Kurikulum $kurikulum, $mksPerCpl)
+    {
+        $fraksiPerCplMk = $this->resolveBobotFraksiPerCplMk($kurikulum, $mksPerCpl);
+
+        return $fraksiPerCplMk->map(function ($fraksiPerMk, $cplId) use ($mksPerCpl) {
+            $mks = $mksPerCpl->get($cplId, collect())->values();
+            $persenPerMk = collect();
+            $akumulasi = 0.0;
+            $lastIndex = max(0, $mks->count() - 1);
+
+            foreach ($mks as $index => $mk) {
+                $mkId = $mk->id;
+                if ($index === $lastIndex) {
+                    $nilai = max(0.0, round(100 - $akumulasi, 2)); // menutup sisa pembulatan
+                } else {
+                    $nilai = round(((float) ($fraksiPerMk->get($mkId) ?? 0.0)) * 100, 2);
+                    $akumulasi += $nilai;
+                }
+                $persenPerMk->put($mkId, $nilai);
+            }
+
+            return $persenPerMk;
+        });
     }
 }

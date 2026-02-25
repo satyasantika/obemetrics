@@ -58,7 +58,7 @@
 </div>
 
 @php
-    $canDeleteBk = !$bk->id || (!$bk->joinCplBks()->exists() && !$bk->joinBkMks()->exists());
+    $canDeleteBk = !$bk->id || (!$bk->joinCplBks()->exists() && !$bk->joinCplMks()->exists());
 @endphp
 @if ($bk->id && $canDeleteBk)
 <form id="delete-form" action="{{ route('kurikulums.bks.destroy',[$kurikulum->id,$bk->id]) }}" method="POST">

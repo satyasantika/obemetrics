@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Dosen;
 
 use App\Models\Mk;
-use App\Models\Cpl;
 use App\Models\Cpmk;
-use App\Models\JoinBkMk;
 use App\Models\JoinCplBk;
 use App\Models\JoinCplCpmk;
 use Illuminate\Http\Request;
@@ -21,7 +19,13 @@ class JoinCplCpmkController extends Controller
 
     public function index(Mk $mk)
     {
-        $joincplbks = $mk->joinBkMks->pluck('bk.joinCplBks')->flatten()->unique('id');
+        $joincplbks = $mk->joinCplMks()
+            ->with('joinCplBk')
+            ->get()
+            ->pluck('joinCplBk')
+            ->filter()
+            ->unique('id')
+            ->values();
 
         return view('obe.cpl-cpmk')
                 ->with('mk', $mk)

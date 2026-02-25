@@ -72,7 +72,7 @@
         !$kurikulum->mks()->exists() &&
         !$kurikulum->joinProfilCpls()->exists() &&
         !$kurikulum->joinCplBks()->exists() &&
-        !$kurikulum->joinBkMks()->exists() &&
+            !$kurikulum->joinCplMks()->exists() &&
         !$kurikulum->joinMkUsers()->exists()
     );
 @endphp

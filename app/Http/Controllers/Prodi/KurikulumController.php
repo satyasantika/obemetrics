@@ -61,7 +61,7 @@ class KurikulumController extends Controller
             || $kurikulum->mks()->exists()
             || $kurikulum->joinProfilCpls()->exists()
             || $kurikulum->joinCplBks()->exists()
-            || $kurikulum->joinBkMks()->exists()
+            || $kurikulum->joinCplMks()->exists()
             || $kurikulum->joinMkUsers()->exists();
 
         if ($isUsed) {

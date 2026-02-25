@@ -19,7 +19,7 @@ class JoinCplMk extends Model
 
     public function joinCplBk(): BelongsTo
     {
-        return $this->belongsTo(JoinCplBk::class, 'join_cpl_bk_id');
+        return $this->belongsTo(JoinCplBk::class);
     }
 
     public function mk(): BelongsTo

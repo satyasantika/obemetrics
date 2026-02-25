@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Prodi;
 
 use App\Models\Cpl;
-use App\Models\JoinBkMk;
 use App\Models\JoinCplCpmk;
 use App\Models\JoinCplMk;
 use App\Models\Kurikulum;
@@ -78,24 +77,11 @@ class JoinCplMkController extends Controller
             ->whereIn('mk_id', $mks->pluck('id'))
             ->get();
 
-        $joinCplBkById = JoinCplBk::query()
-            ->where('kurikulum_id', $kurikulum->id)
-            ->whereIn('id', $cplBkColumns->pluck('join_cpl_bk_id')->filter()->values())
-            ->pluck('bk_id', 'id');
-
-        $availableBkMkMap = JoinBkMk::query()
-            ->where('kurikulum_id', $kurikulum->id)
-            ->whereIn('mk_id', $mks->pluck('id'))
-            ->get(['mk_id', 'bk_id'])
-            ->mapWithKeys(fn ($row) => [($row->bk_id . '|' . $row->mk_id) => true]);
-
         $availablePairMap = collect();
 
-        foreach ($joinCplBkById as $joinCplBkId => $bkId) {
+        foreach ($cplBkColumns->pluck('join_cpl_bk_id')->filter()->unique() as $joinCplBkId) {
             foreach ($mks as $mk) {
-                if ($availableBkMkMap->has($bkId . '|' . $mk->id)) {
-                    $availablePairMap->put($joinCplBkId . '|' . $mk->id, true);
-                }
+                $availablePairMap->put($joinCplBkId . '|' . $mk->id, true);
             }
         }
 
@@ -168,19 +154,6 @@ class JoinCplMkController extends Controller
                 ], 422);
             }
 
-            $isEligible = JoinBkMk::query()
-                ->where('kurikulum_id', $kurikulumId)
-                ->where('mk_id', $mk->id)
-                ->where('bk_id', $joinCplBk->bk_id)
-                ->exists();
-
-            if (!$isEligible) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Interaksi tidak dapat dibuat karena jalur BK ke mata kuliah tidak tersedia.',
-                ], 422);
-            }
-
             $isLocked = JoinCplCpmk::query()
                 ->where('mk_id', $mk->id)
                 ->where('join_cpl_bk_id', $selectedCplBkId)
@@ -248,13 +221,6 @@ class JoinCplMkController extends Controller
         $eligibleJoinCplBkIds = JoinCplBk::query()
             ->where('kurikulum_id', $kurikulumId)
             ->where('cpl_id', $cpl->id)
-            ->whereIn(
-                'bk_id',
-                JoinBkMk::query()
-                    ->where('kurikulum_id', $kurikulumId)
-                    ->where('mk_id', $mk->id)
-                    ->pluck('bk_id')
-            )
             ->pluck('id');
 
         $existingRows = JoinCplMk::query()

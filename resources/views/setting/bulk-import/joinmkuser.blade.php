@@ -152,6 +152,8 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#preview-table').DataTable({
             pageLength: 10,
             order: [],
+            lengthMenu: [[10, 25, 50, 100, 200, 500, -1],
+                            [10, 25, 50, 100, 200, 500, "All"]],
         });
     }
 });

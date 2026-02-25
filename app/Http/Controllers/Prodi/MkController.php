@@ -59,7 +59,7 @@ class MkController extends Controller
     {
         $name = $mk->nama;
         if (
-            $mk->joinBkMks()->exists() ||
+            $mk->joinCplMks()->exists() ||
             $mk->joinMkUsers()->exists() ||
             $mk->kontrakMks()->exists() ||
             $mk->cpmks()->exists() ||

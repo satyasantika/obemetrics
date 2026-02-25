@@ -136,7 +136,7 @@
                 </div>
                 <div class="modal-footer">
                     @php
-                        $canDeleteBk = !$bk->joinCplBks()->exists() && !$bk->joinBkMks()->exists();
+                        $canDeleteBk = !$bk->joinCplBks()->exists() && !$bk->joinCplMks()->exists();
                     @endphp
                     @if ($canDeleteBk)
                         <button type="button" class="btn btn-outline-danger btn-sm me-auto" onclick="if(confirm('Yakin akan menghapus BK {{ $bk->kode }}?')){ document.getElementById('delete-bk-{{ $bk->id }}').submit(); }"><i class="bi bi-trash"></i> Hapus</button>

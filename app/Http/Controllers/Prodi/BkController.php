@@ -55,7 +55,7 @@ class BkController extends Controller
     public function destroy(Kurikulum $kurikulum, Bk $bk)
     {
         $name = $bk->nama;
-        if ($bk->joinCplBks()->exists() || $bk->joinBkMks()->exists()) {
+        if ($bk->joinCplBks()->exists() || $bk->joinCplMks()->exists()) {
             return to_route('kurikulums.bks.index', $kurikulum)
                 ->with('error','BK: '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
         }
