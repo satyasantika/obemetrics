@@ -43,10 +43,6 @@ class JoinProfilCplController extends Controller
                     ->with('success', $cpl->kode . ' telah diset untuk profil ' . $profil->nama);
         } else {
             if ($joinprofilcpl) {
-                if ($cpl->joinCplBks()->exists()) {
-                    return to_route('kurikulums.joinprofilcpls.index',$request->kurikulum_id)
-                        ->with('error', 'Interaksi tidak dapat diubah karena CPL sudah dipakai pada relasi CPL >< BK.');
-                }
                 $joinprofilcpl->delete();
                 }
             return to_route('kurikulums.joinprofilcpls.index',$request->kurikulum_id)
