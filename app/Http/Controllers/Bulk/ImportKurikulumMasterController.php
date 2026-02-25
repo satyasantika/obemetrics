@@ -81,7 +81,7 @@ class ImportKurikulumMasterController extends Controller
             'requires_semester' => false,
         ],
         'join_cpl_mks' => [
-            'label' => 'Interaksi CPL >< MK',
+            'label' => 'Interaksi CPL-MK',
             'columns' => [],
             'required' => [],
             'requires_semester' => false,
@@ -1493,10 +1493,6 @@ class ImportKurikulumMasterController extends Controller
                     throw new \RuntimeException('Nilai bobot harus di antara 0 sampai 100 pada baris ' . $rowIndex . ', kolom ' . $columnLetter . '.');
                 }
 
-                if ($bobot <= 0) {
-                    continue;
-                }
-
                 $desiredPairs[$mk->id . '_' . $joinCplBk->id] = [
                     'kurikulum_id' => $kurikulum->id,
                     'mk_id' => $mk->id,
@@ -1812,6 +1808,154 @@ class ImportKurikulumMasterController extends Controller
 
         if ($withValidation && $bks->count() > 0 && $cpls->count() > 0) {
             $this->applyInteractionValidation($sheet, 2, 1 + $bks->count(), 3, 2 + $cpls->count());
+        }
+    }
+
+    private function fillJoinCplMkSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
+    {
+        $cpls = $kurikulum->cpls()
+            ->with(['joinCplBks.bk'])
+            ->orderBy('kode')
+            ->get();
+
+        $mks = $kurikulum->mks()
+            ->orderBy('semester')
+            ->orderBy('kode')
+            ->get();
+
+        $cplHeaderGroups = collect();
+        $cplBkColumns = collect();
+
+        foreach ($cpls as $cpl) {
+            $bkColumns = $cpl->joinCplBks
+                ->filter(fn ($join) => $join->bk)
+                ->sortBy(fn ($join) => (string) $join->bk->kode)
+                ->values();
+
+            if ($bkColumns->isEmpty()) {
+                continue;
+            }
+
+            $cplHeaderGroups->push([
+                'cpl_kode' => $cpl->kode,
+                'cpl_nama' => $cpl->nama,
+                'colspan' => $bkColumns->count(),
+            ]);
+
+            foreach ($bkColumns as $join) {
+                $cplBkColumns->push([
+                    'join_cpl_bk_id' => $join->id,
+                    'bk_kode' => $join->bk->kode,
+                    'bk_nama' => $join->bk->nama,
+                ]);
+            }
+        }
+
+        if ($cplBkColumns->isEmpty()) {
+            throw new \RuntimeException('Belum ada relasi CPL >< BK. Tambahkan relasi CPL >< BK terlebih dahulu sebelum mengunduh template interaksi CPL >< MK.');
+        }
+
+        $linkedRows = JoinCplMk::query()
+            ->where('kurikulum_id', $kurikulum->id)
+            ->whereIn('mk_id', $mks->pluck('id'))
+            ->whereIn('join_cpl_bk_id', $cplBkColumns->pluck('join_cpl_bk_id'))
+            ->get()
+            ->keyBy(fn ($row) => $row->mk_id . '_' . $row->join_cpl_bk_id);
+
+        $sheet->setCellValue('A1', 'MATA KULIAH');
+        $sheet->getStyle('A1')->getFont()->setBold(true);
+        $sheet->getColumnDimension('A')->setWidth(36);
+
+        $columnIndex = 2;
+        foreach ($cplHeaderGroups as $group) {
+            $startColumn = Coordinate::stringFromColumnIndex($columnIndex);
+            $endColumn = Coordinate::stringFromColumnIndex($columnIndex + $group['colspan'] - 1);
+
+            $sheet->mergeCells($startColumn . '1:' . $endColumn . '1');
+            $sheet->setCellValue($startColumn . '1', trim((string) ($group['cpl_kode'] . "\n" . $group['cpl_nama'])));
+            $sheet->getStyle($startColumn . '1')->getAlignment()->setWrapText(true)->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+            $sheet->getStyle($startColumn . '1')->getFont()->setBold(true);
+
+            $columnIndex += $group['colspan'];
+        }
+
+        $columnIndex = 2;
+        foreach ($cplBkColumns as $column) {
+            $columnLetter = Coordinate::stringFromColumnIndex($columnIndex);
+            $sheet->setCellValue($columnLetter . '2', $column['bk_kode']);
+            $sheet->getStyle($columnLetter . '2')->getAlignment()->setWrapText(true)->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+            $sheet->getStyle($columnLetter . '2')->getFont()->setBold(true);
+            $sheet->getColumnDimension($columnLetter)->setWidth(14);
+            $columnIndex++;
+        }
+
+        $rowIndex = 3;
+        foreach ($mks as $mk) {
+            $sheet->setCellValue('A' . $rowIndex, trim((string) ($mk->kode . "\n" . $mk->nama)));
+            $sheet->getStyle('A' . $rowIndex)->getAlignment()->setWrapText(true);
+
+            $columnIndex = 2;
+            foreach ($cplBkColumns as $column) {
+                $columnLetter = Coordinate::stringFromColumnIndex($columnIndex);
+                $pairKey = $mk->id . '_' . $column['join_cpl_bk_id'];
+                $bobot = $linkedRows->has($pairKey) ? $linkedRows->get($pairKey)->bobot : null;
+                $sheet->setCellValue($columnLetter . $rowIndex, $bobot !== null ? (float) $bobot : '');
+                $columnIndex++;
+            }
+
+            $rowIndex++;
+        }
+
+        if ($withValidation && $mks->count() > 0 && $cplBkColumns->count() > 0) {
+            $this->applyNumericRangeValidation($sheet, 2, 1 + $cplBkColumns->count(), 3, 2 + $mks->count());
+        }
+    }
+
+    private function applyNumericRangeValidation($sheet, int $startColumn, int $endColumn, int $startRow, int $endRow): void
+    {
+        if ($endColumn < $startColumn || $endRow < $startRow) {
+            return;
+        }
+
+        $startColumnLetter = Coordinate::stringFromColumnIndex($startColumn);
+        $endColumnLetter = Coordinate::stringFromColumnIndex($endColumn);
+
+        $sheet->getStyle($startColumnLetter . $startRow . ':' . $endColumnLetter . $endRow)
+            ->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()
+            ->setARGB('FFFFFF00');
+
+        $sheet->getStyle($startColumnLetter . $startRow . ':' . $endColumnLetter . $endRow)
+            ->getBorders()
+            ->getAllBorders()
+            ->setBorderStyle(Border::BORDER_THIN)
+            ->setColor(new Color('FF000000'));
+
+        $sheet->getStyle($startColumnLetter . $startRow . ':' . $endColumnLetter . $endRow)
+            ->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Alignment::VERTICAL_CENTER);
+
+        $validationTemplate = new DataValidation();
+        $validationTemplate->setType(DataValidation::TYPE_DECIMAL);
+        $validationTemplate->setErrorStyle(DataValidation::STYLE_STOP);
+        $validationTemplate->setOperator(DataValidation::OPERATOR_BETWEEN);
+        $validationTemplate->setFormula1('0');
+        $validationTemplate->setFormula2('100');
+        $validationTemplate->setAllowBlank(true);
+        $validationTemplate->setShowInputMessage(true);
+        $validationTemplate->setShowErrorMessage(true);
+        $validationTemplate->setErrorTitle('Input tidak valid');
+        $validationTemplate->setError('Isi dengan angka pada rentang 0 sampai 100.');
+        $validationTemplate->setPromptTitle('Input bobot interaksi CPL >< MK');
+        $validationTemplate->setPrompt('Isi angka 0 sampai 100, atau kosongkan sel untuk menghapus interaksi.');
+
+        for ($row = $startRow; $row <= $endRow; $row++) {
+            for ($column = $startColumn; $column <= $endColumn; $column++) {
+                $columnLetter = Coordinate::stringFromColumnIndex($column);
+                $sheet->getCell($columnLetter . $row)->setDataValidation(clone $validationTemplate);
+            }
         }
     }
 

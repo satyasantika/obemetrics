@@ -137,7 +137,7 @@ return new class extends Migration
         // interaksi cpl-mk
         Schema::create('join_cpl_mks', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->foreignUuid('join_cpl_bk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('join_cpl_bk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->double('bobot')->default(100)->nullable();
             $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
