@@ -80,12 +80,6 @@ class ImportKurikulumMasterController extends Controller
             'required' => ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan'],
             'requires_semester' => false,
         ],
-        'join_bk_mks' => [
-            'label' => 'Mata Kuliah untuk Bahan Kajian',
-            'columns' => ['kode_bk', 'nama_bk', 'kode_mk', 'nama_mk'],
-            'required' => ['kode_bk', 'kode_mk'],
-            'requires_semester' => false,
-        ],
         'join_cpl_mks' => [
             'label' => 'Interaksi CPL >< MK',
             'columns' => [],
@@ -161,14 +155,13 @@ class ImportKurikulumMasterController extends Controller
                     return $this->commitJoinKurikulumBundle($spreadsheet, $kurikulum);
                 });
 
-                $success = "Import interaksi master berhasil: Profil >< CPL ({$result['join_profil_cpls']['linked']} aktif), CPL >< BK ({$result['join_cpl_bks']['linked']} aktif), BK >< MK ({$result['join_bk_mks']['linked']} aktif).";
+                $success = "Import interaksi master berhasil: Profil >< CPL ({$result['join_profil_cpls']['linked']} aktif), CPL >< BK ({$result['join_cpl_bks']['linked']} aktif) aktif).";
 
                 $redirect = redirect()->to($this->resolveReturnUrl($request))
                     ->with('success', $success);
 
                 $removed = ($result['join_profil_cpls']['removed'] ?? 0)
-                    + ($result['join_cpl_bks']['removed'] ?? 0)
-                    + ($result['join_bk_mks']['removed'] ?? 0);
+                    + ($result['join_cpl_bks']['removed'] ?? 0);
 
                 if ($removed > 0) {
                     $redirect->with('danger', "{$removed} interaksi dibuang karena sel pada template dikosongkan.");
@@ -189,11 +182,10 @@ class ImportKurikulumMasterController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray(null, true, true, true);
 
-            if (in_array($target, ['join_profil_cpls', 'join_cpl_bks', 'join_bk_mks', 'join_cpl_mks'], true)) {
+            if (in_array($target, ['join_profil_cpls', 'join_cpl_bks', 'join_cpl_mks'], true)) {
                 $result = match ($target) {
                     'join_profil_cpls' => $this->saveJoinProfilCplMatrix($rows, $kurikulum),
                     'join_cpl_bks' => $this->saveJoinCplBkMatrix($rows, $kurikulum),
-                    'join_bk_mks' => $this->saveJoinCplMkFromBkMatrix($rows, $kurikulum),
                     'join_cpl_mks' => $this->saveJoinCplMkMatrix($rows, $kurikulum),
                 };
 
@@ -498,66 +490,6 @@ class ImportKurikulumMasterController extends Controller
             ]);
         }
 
-        if ($target === 'join_bk_mks') {
-            $bks = $kurikulum->bks()->orderBy('kode')->get();
-            $mks = $kurikulum->mks()->orderBy('kode')->get();
-
-            $linkedMap = $this->buildBkMkLinkedMap($kurikulum, $bks, $mks);
-
-            $spreadsheet = new Spreadsheet();
-            $sheet = $spreadsheet->getActiveSheet();
-
-            $sheet->setCellValue('A1', 'MATA KULIAH');
-            $sheet->getStyle('A1')->getFont()->setBold(true);
-
-            $lastColumn = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(1 + $bks->count());
-            $sheet->mergeCells('B1:' . $lastColumn . '1');
-            $sheet->setCellValue('B1', 'BAHAN KAJIAN');
-            $sheet->getStyle('B1')->getFont()->setBold(true);
-
-            $columnIndex = 2;
-            foreach ($bks as $bk) {
-                $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
-                $sheet->setCellValue($column . '2', trim((string) ($bk->kode . "\n" . $bk->nama)));
-                $sheet->getStyle($column . '2')->getAlignment()->setWrapText(true);
-                $sheet->getStyle($column . '2')->getFont()->setBold(true);
-                $sheet->getColumnDimension($column)->setWidth(20);
-                $columnIndex++;
-            }
-
-            $sheet->getColumnDimension('A')->setWidth(36);
-
-            $rowIndex = 3;
-            foreach ($mks as $mk) {
-                $sheet->setCellValue('A' . $rowIndex, trim((string) ($mk->kode . "\n" . $mk->nama)));
-                $sheet->getStyle('A' . $rowIndex)->getAlignment()->setWrapText(true);
-
-                $columnIndex = 2;
-                foreach ($bks as $bk) {
-                    $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
-                    $isLinked = $linkedMap->has($mk->id . '_' . $bk->id);
-                    $sheet->setCellValue($column . $rowIndex, $isLinked ? 'V' : '');
-                    $columnIndex++;
-                }
-
-                $rowIndex++;
-            }
-
-            if ($bks->count() > 0 && $mks->count() > 0) {
-                $this->applyInteractionValidation($sheet, 2, 1 + $bks->count(), 3, 2 + $mks->count());
-            }
-
-            $writer = new Xlsx($spreadsheet);
-            $waktuDownload = now()->format('YmdHis');
-            $fileName = 'import' . $waktuDownload . '-interaksi-bk-mk-prodi-' . Str::slug((string) ($kurikulum->prodi->jenjang . '-' . $kurikulum->prodi->nama ?? 'kurikulum'), '-') . '.xlsx';
-
-            return response()->streamDownload(function () use ($writer) {
-                $writer->save('php://output');
-            }, $fileName, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            ]);
-        }
-
         if ($target === 'join_cpl_mks') {
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
@@ -724,37 +656,6 @@ class ImportKurikulumMasterController extends Controller
                         'deskripsi' => $row['deskripsi'] ?? null,
                     ]
                 );
-                return;
-
-            case 'join_bk_mks':
-                $kodeBk = $this->required($row['kode_bk'] ?? null, 'kode_bk');
-                $kodeMk = $this->required($row['kode_mk'] ?? null, 'kode_mk');
-
-                $bk = Bk::query()->where('kurikulum_id', $kurikulum->id)->where('kode', $kodeBk)->first();
-                $mk = Mk::query()->where('kurikulum_id', $kurikulum->id)->where('kode', $kodeMk)->first();
-                if (!$bk || !$mk) {
-                    throw new \RuntimeException('BK/MK tidak ditemukan untuk relasi.');
-                }
-
-                $joinCplBkIds = JoinCplBk::query()
-                    ->where('kurikulum_id', $kurikulum->id)
-                    ->where('bk_id', $bk->id)
-                    ->pluck('id');
-
-                if ($joinCplBkIds->isEmpty()) {
-                    throw new \RuntimeException('Tidak ada relasi CPL >< BK untuk BK: ' . $kodeBk);
-                }
-
-                foreach ($joinCplBkIds as $joinCplBkId) {
-                    JoinCplMk::updateOrCreate(
-                        [
-                            'kurikulum_id' => $kurikulum->id,
-                            'mk_id' => $mk->id,
-                            'join_cpl_bk_id' => $joinCplBkId,
-                        ],
-                        []
-                    );
-                }
                 return;
 
             case 'mahasiswas':
@@ -1789,9 +1690,9 @@ class ImportKurikulumMasterController extends Controller
         $sheetCplBk->setTitle('JOIN_CPL_BK');
         $this->fillJoinCplBkSheet($sheetCplBk, $kurikulum, true);
 
-        $sheetBkMk = $spreadsheet->createSheet(2);
-        $sheetBkMk->setTitle('JOIN_BK_MK');
-        $this->fillJoinCplMkByBkSheet($sheetBkMk, $kurikulum, true);
+        $sheetCplMk = $spreadsheet->createSheet(2);
+        $sheetCplMk->setTitle('JOIN_CPL_MK');
+        $this->fillJoinCplMkByBkSheet($sheetCplMk, $kurikulum, true);
 
         $spreadsheet->setActiveSheetIndex(0);
 
@@ -1802,16 +1703,17 @@ class ImportKurikulumMasterController extends Controller
     {
         $sheetProfilCpl = $spreadsheet->getSheetByName('JOIN_PROFIL_CPL');
         $sheetCplBk = $spreadsheet->getSheetByName('JOIN_CPL_BK');
-        $sheetBkMk = $spreadsheet->getSheetByName('JOIN_BK_MK');
+        $sheetCplMk = $spreadsheet->getSheetByName('JOIN_CPL_MK')
+            ?? $spreadsheet->getSheetByName('JOIN_BK_MK');
 
-        if (!$sheetProfilCpl || !$sheetCplBk || !$sheetBkMk) {
-            throw new \RuntimeException('Template gabungan tidak valid. Pastikan sheet JOIN_PROFIL_CPL, JOIN_CPL_BK, dan JOIN_BK_MK tersedia.');
+        if (!$sheetProfilCpl || !$sheetCplBk || !$sheetCplMk) {
+            throw new \RuntimeException('Template gabungan tidak valid. Pastikan sheet JOIN_PROFIL_CPL, JOIN_CPL_BK, dan JOIN_CPL_MK tersedia.');
         }
 
         return [
             'join_profil_cpls' => $this->saveJoinProfilCplMatrix($sheetProfilCpl->toArray(null, true, true, true), $kurikulum),
             'join_cpl_bks' => $this->saveJoinCplBkMatrix($sheetCplBk->toArray(null, true, true, true), $kurikulum),
-            'join_bk_mks' => $this->saveJoinCplMkFromBkMatrix($sheetBkMk->toArray(null, true, true, true), $kurikulum),
+            'join_cpl_mks' => $this->saveJoinCplMkFromBkMatrix($sheetCplMk->toArray(null, true, true, true), $kurikulum),
         ];
     }
 
