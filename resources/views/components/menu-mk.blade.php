@@ -21,6 +21,22 @@
     if (!$isDataTab && !$isPenilaianTab && !$isLaporanTab) {
         $isDataTab = true;
     }
+
+    $cpmkExists = $mk->cpmks()->exists();
+    $joinCplCpmkExists = $mk->joinCplCpmks()->exists();
+    $subcpmkExists = $mk->joinCplCpmks()->whereHas('subcpmks')->exists();
+
+    $penugasanExists = $mk->penugasans()->exists();
+    $joinSubcpmkPenugasanExists = $mk->joinsubcpmkpenugasans()->exists();
+    $nilaiExists = $mk->nilais()->exists();
+
+    $dataComplete = $cpmkExists && $joinCplCpmkExists && $subcpmkExists;
+    $penilaianComplete = $penugasanExists && $joinSubcpmkPenugasanExists && $nilaiExists;
+
+    $warningDataIncomplete = 'Data CPMK, SubCPMK, dan relasi CPL-CPMK belum lengkap. Silakan upload datanya terlebih dahulu.';
+    $warningPenugasanIncomplete = 'Lengkapi data tagihan penugasan mata kuliah ini.';
+    $warningNilaiIncomplete = 'Silakan lengkapi nilai terlebih dahulu.';
+
 @endphp
 
 <ul class="nav nav-tabs" id="{{ $tabId }}-tab" role="tablist">
@@ -43,40 +59,77 @@
 
 <div class="tab-content border border-top-0 rounded-bottom p-2" id="{{ $tabId }}-tabContent">
     <div class="tab-pane fade {{ $isDataTab ? 'show active' : '' }}" id="{{ $tabId }}-data" role="tabpanel" aria-labelledby="{{ $tabId }}-data-tab" tabindex="0">
-        <a href="{{ route('mks.cpmks.index',[$mk->id]) }}" class="btn btn-sm {{ $isCpmk ? 'btn-primary' : 'btn-outline-primary' }} mt-1">
-            <i class="bi bi-sliders"></i> CPMK
-        </a>
-        <a href="{{ route('mks.joincplcpmks.index',[$mk->id]) }}" class="btn btn-sm {{ $isJoinCplCpmk ? 'btn-primary' : 'btn-outline-primary' }} mt-1">
-            <i class="bi bi-link-45deg"></i> Set CPL >< CPMK
-        </a>
-        <a href="{{ route('mks.subcpmks.index',[$mk->id]) }}" class="btn btn-sm {{ $isSubcpmk ? 'btn-primary' : 'btn-outline-primary' }} mt-1">
-            <i class="bi bi-list-nested"></i> SubCPMK
-        </a>
-        <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'mk_bundle', 'return_url' => url()->current()]) }}" class="btn btn-outline-success btn-sm float-end"><i class="bi bi-upload"></i> Import Data Master</a>
+        @if ($dataComplete)
+        <x-menu-link :href="route('mks.cpmks.index', [$mk->id])" :active="$isCpmk" icon="bi bi-sliders" class="mt-1">
+            CPMK
+        </x-menu-link>
+        <x-menu-link :href="route('mks.joincplcpmks.index', [$mk->id])" :active="$isJoinCplCpmk" icon="bi bi-link-45deg" class="mt-1">
+            Set CPL >< CPMK
+        </x-menu-link>
+        <x-menu-link :href="route('mks.subcpmks.index', [$mk->id])" :active="$isSubcpmk" icon="bi bi-list-nested" class="mt-1">
+            SubCPMK
+        </x-menu-link>
+        @else
+        {{-- jika data belum lengkap, upload data master --}}
+        <x-menu-warning :message="$warningDataIncomplete" />
+        @endif
+        <x-menu-link :href="route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'mk_bundle', 'return_url' => url()->current()])" :active="false" variant="success" icon="bi bi-upload" class="mt-1 {{ !$dataComplete ? '' : 'float-end' }}">
+            Import Data Master
+        </x-menu-link>
     </div>
     <div class="tab-pane fade {{ $isPenilaianTab ? 'show active' : '' }}" id="{{ $tabId }}-penilaian" role="tabpanel" aria-labelledby="{{ $tabId }}-penilaian-tab" tabindex="0">
-        <a href="{{ route('mks.penugasans.index',[$mk->id]) }}" class="btn btn-sm {{ $isPenugasan ? 'btn-primary' : 'btn-outline-primary' }} mt-1">
-            <i class="bi bi-list-task"></i> Tagihan Tugas
-        </a>
-        <a href="{{ route('mks.joinsubcpmkpenugasans.index',[$mk->id]) }}" class="btn btn-sm {{ $isJoinSubcpmkPenugasan ? 'btn-primary' : 'btn-outline-primary' }} mt-1">
-            <i class="bi bi-link-45deg"></i> Set SubCPMK >< Tugas
-        </a>
-        <a href="{{ route('mks.nilais.index',[$mk->id]) }}" class="btn btn-sm {{ $isNilai ? 'btn-primary' : 'btn-outline-primary' }} mt-1">
-            <i class="bi bi-clipboard-check"></i> Pengisian Nilai
-        </a>
-        <a href="{{ route('mks.workclouds.index',[$mk->id]) }}" class="btn btn-sm {{ $isWorkcloud ? 'btn-primary' : 'btn-outline-primary' }} mt-1">
-            <i class="bi bi-cloud-upload"></i> Portofolio Penilaian
-        </a>
+        {{-- jika data belum lengkap, upload data master --}}
+        @if (!$dataComplete)
+        <x-menu-warning :message="$warningDataIncomplete" />
+        @else
+            @if (!$penugasanExists)
+            {{-- jika data sudah ada, tetapi belum lengkap tagihan tugasnya --}}
+            <x-menu-warning :message="$warningPenugasanIncomplete" />
+            @elseif(!$nilaiExists)
+            {{-- jika data sudah ada, tetapi belum lengkap nilai --}}
+            <x-menu-warning :message="$warningNilaiIncomplete" />
+            @endif
+            {{-- jika penugasan sudah ada, tampilkan menu untuk set subcpmk-penugasan dan pengisian nilai --}}
+            <x-menu-link :href="route('mks.penugasans.index', [$mk->id])" :active="$isPenugasan" icon="bi bi-list-task" class="mt-1">
+                Tagihan Tugas
+            </x-menu-link>
+            <x-menu-link :href="route('mks.joinsubcpmkpenugasans.index', [$mk->id])" :active="$isJoinSubcpmkPenugasan" icon="bi bi-link-45deg" class="mt-1">
+                Set SubCPMK >< Tugas
+            </x-menu-link>
+        @endif
+        @if($penugasanExists)
+        <x-menu-link :href="route('mks.nilais.index', [$mk->id])" :active="$isNilai" icon="bi bi-clipboard-check" class="mt-1">
+            Pengisian Nilai
+        </x-menu-link>
+        @endif
+        {{-- jika sudah ada penilaian --}}
+        @if ($penilaianComplete)
+        <x-menu-link :href="route('mks.workclouds.index', [$mk->id])" :active="$isWorkcloud" icon="bi bi-cloud-upload" class="mt-1">
+            Portofolio Penilaian
+        </x-menu-link>
+        @endif
     </div>
     <div class="tab-pane fade {{ $isLaporanTab ? 'show active' : '' }}" id="{{ $tabId }}-laporan" role="tabpanel" aria-labelledby="{{ $tabId }}-laporan-tab" tabindex="0">
-        <a href="{{ route('mks.achievements.index',[$mk->id]) }}" class="btn btn-sm {{ $isAchievement ? 'btn-primary' : 'btn-outline-primary' }} mt-1">
-            <i class="bi bi-graph-up"></i> Evaluasi Ketercapaian CPL
-        </a>
-        <a href="{{ route('mks.ketercapaians.index',[$mk->id]) }}" class="btn btn-sm {{ $isKetercapaian ? 'btn-primary' : 'btn-outline-primary' }} mt-1">
-            <i class="bi bi-graph-up"></i> Evaluasi Ketercapaian CPL 2.0
-        </a>
-        <a href="{{ route('mks.spyderweb',[$mk->id]) }}" class="btn btn-sm {{ $isSpyderweb ? 'btn-primary' : 'btn-outline-primary' }} mt-1">
-            <i class="bi bi-graph-up"></i> Jaring Laba-laba Pencapaian Mahasiswa
-        </a>
+        {{-- jika data belum lengkap, upload data master --}}
+        @if (!$dataComplete)
+        <x-menu-warning :message="$warningDataIncomplete" />
+        @elseif (!$penugasanExists)
+        {{-- jika data sudah ada, tetapi belum lengkap tagihan tugasnya --}}
+        <x-menu-warning :message="$warningPenugasanIncomplete" />
+        @elseif(!$nilaiExists)
+        {{-- jika data sudah ada, tetapi belum lengkap nilai --}}
+        <x-menu-warning :message="$warningNilaiIncomplete" />
+        @else
+        {{-- jika data sudah lengkap, tampilkan menu laporan evaluasi ketercapaian CPL --}}
+        <x-menu-link :href="route('mks.achievements.index', [$mk->id])" :active="$isAchievement" icon="bi bi-graph-up" class="mt-1">
+            Evaluasi Ketercapaian CPL
+        </x-menu-link>
+        <x-menu-link :href="route('mks.ketercapaians.index', [$mk->id])" :active="$isKetercapaian" icon="bi bi-graph-up" class="mt-1">
+            Evaluasi Ketercapaian CPL 2.0
+        </x-menu-link>
+        <x-menu-link :href="route('mks.spyderweb', [$mk->id])" :active="$isSpyderweb" icon="bi bi-graph-up" class="mt-1">
+            Jaring Laba-laba Pencapaian Mahasiswa
+        </x-menu-link>
+        @endif
     </div>
 </div>
