@@ -42,54 +42,62 @@ Route::middleware('auth')->group(function () {
     Route::resource('kontrakmks', App\Http\Controllers\Setting\KontrakMkController::class);
 
     // Ruang Prodi
-    Route::resource('prodis.kurikulums', App\Http\Controllers\Prodi\KurikulumController::class)->except('index','show');
-    Route::resource('kurikulums.profils', App\Http\Controllers\Prodi\ProfilController::class)->except('show');
-    Route::resource('profils.profilindikators', App\Http\Controllers\Prodi\ProfilIndikatorController::class)->except('index','show');
-    Route::resource('kurikulums.cpls', App\Http\Controllers\Prodi\CplController::class)->except('show');
-    Route::resource('kurikulums.bks', App\Http\Controllers\Prodi\BkController::class)->except('show');
-    Route::resource('kurikulums.mks', App\Http\Controllers\Prodi\MkController::class)->except('show');
-    // Profil >< CPL
-    Route::get('kurikulums/{kurikulum}/joinprofilcpls', [App\Http\Controllers\Prodi\JoinProfilCplController::class,'index'])->name('kurikulums.joinprofilcpls.index');
-    Route::put('joinprofilcpls/{profil}/{cpl}', [App\Http\Controllers\Prodi\JoinProfilCplController::class, 'update'])->name('joinprofilcpls.update');
-    // CPL >< BK
-    Route::get('kurikulums/{kurikulum}/joincplbks', [App\Http\Controllers\Prodi\JoinCplBkController::class,'index'])->name('kurikulums.joincplbks.index');
-    Route::put('joincplbks/{cpl}/{bk}', [App\Http\Controllers\Prodi\JoinCplBkController::class, 'update'])->name('joincplbks.update');
-    // CPL >< MK
-    Route::get('kurikulums/{kurikulum}/joincplmks', [App\Http\Controllers\Prodi\JoinCplMkController::class,'index'])->name('kurikulums.joincplmks.index');
-    Route::put('joincplmks/{cpl}/{mk}', [App\Http\Controllers\Prodi\JoinCplMkController::class, 'update'])->name('joincplmks.update');
-    // Asesmen CPL
-    Route::get('kurikulums/{kurikulum}/rencana-asesmen', [App\Http\Controllers\Prodi\AsesmenCplController::class,'rencanaAsesmen'])->name('kurikulums.rencana-asesmen');
-    Route::get('kurikulums/{kurikulum}/analisis-asesmen', [App\Http\Controllers\Prodi\AsesmenCplController::class,'analisisAsesmen'])->name('kurikulums.analisis-asesmen');
-    Route::get('kurikulums/{kurikulum}/spyderweb-cpl', [App\Http\Controllers\Prodi\AsesmenCplController::class,'spyderwebCpl'])->name('kurikulums.spyderweb-cpl');
-    Route::get('kurikulums/{kurikulum}/laporan-kmahasiswa', [App\Http\Controllers\Prodi\AsesmenCplController::class,'laporanMahasiswa'])->name('kurikulums.laporan-mahasiswa');
-    // Dosen >< MK
-    Route::resource('mks.users', App\Http\Controllers\Prodi\JoinMkUserController::class)->only('index','update');
+    Route::middleware('ensure.kurikulum.access')->group(function () {
+        Route::resource('prodis.kurikulums', App\Http\Controllers\Prodi\KurikulumController::class)->except('index','show');
+        Route::resource('kurikulums.profils', App\Http\Controllers\Prodi\ProfilController::class)->except('show');
+        Route::resource('kurikulums.cpls', App\Http\Controllers\Prodi\CplController::class)->except('show');
+        Route::resource('kurikulums.bks', App\Http\Controllers\Prodi\BkController::class)->except('show');
+        Route::resource('kurikulums.mks', App\Http\Controllers\Prodi\MkController::class)->except('show');
+        Route::resource('profils.profilindikators', App\Http\Controllers\Prodi\ProfilIndikatorController::class)->except('index','show');
+        // Profil >< CPL
+        Route::get('kurikulums/{kurikulum}/joinprofilcpls', [App\Http\Controllers\Prodi\JoinProfilCplController::class,'index'])->name('kurikulums.joinprofilcpls.index');
+        Route::put('joinprofilcpls/{profil}/{cpl}', [App\Http\Controllers\Prodi\JoinProfilCplController::class, 'update'])->name('joinprofilcpls.update');
+        // CPL >< BK
+        Route::get('kurikulums/{kurikulum}/joincplbks', [App\Http\Controllers\Prodi\JoinCplBkController::class,'index'])->name('kurikulums.joincplbks.index');
+        Route::put('joincplbks/{cpl}/{bk}', [App\Http\Controllers\Prodi\JoinCplBkController::class, 'update'])->name('joincplbks.update');
+        // CPL >< MK
+        Route::get('kurikulums/{kurikulum}/joincplmks', [App\Http\Controllers\Prodi\JoinCplMkController::class,'index'])->name('kurikulums.joincplmks.index');
+        Route::put('joincplmks/{cpl}/{mk}', [App\Http\Controllers\Prodi\JoinCplMkController::class, 'update'])->name('joincplmks.update');
+        // Asesmen CPL
+        Route::get('kurikulums/{kurikulum}/rencana-asesmen', [App\Http\Controllers\Prodi\AsesmenCplController::class,'rencanaAsesmen'])->name('kurikulums.rencana-asesmen');
+        Route::get('kurikulums/{kurikulum}/analisis-asesmen', [App\Http\Controllers\Prodi\AsesmenCplController::class,'analisisAsesmen'])->name('kurikulums.analisis-asesmen');
+        Route::get('kurikulums/{kurikulum}/spyderweb-cpl', [App\Http\Controllers\Prodi\AsesmenCplController::class,'spyderwebCpl'])->name('kurikulums.spyderweb-cpl');
+        Route::get('kurikulums/{kurikulum}/laporan-kmahasiswa', [App\Http\Controllers\Prodi\AsesmenCplController::class,'laporanMahasiswa'])->name('kurikulums.laporan-mahasiswa');
+        // Dosen >< MK
+        Route::resource('mks.users', App\Http\Controllers\Prodi\JoinMkUserController::class)
+            ->only('index','update');
+    });
 
     // Ruang Dosen
-    Route::resource('mks.cpmks', App\Http\Controllers\Dosen\CpmkController::class)->except('show');
-    Route::resource('mks.subcpmks', App\Http\Controllers\Dosen\SubCpmkController::class)->except('show');
-    // CPL >< BK
-    Route::get('mks/{mk}/joincplcpmks', [App\Http\Controllers\Dosen\JoinCplCpmkController::class,'index'])->name('mks.joincplcpmks.index');
-    Route::put('joincplcpmks/{joincplbk}/{cpmk}', [App\Http\Controllers\Dosen\JoinCplCpmkController::class, 'update'])->name('joincplcpmks.update');
-    // Tugas Mata Kuliah
-    Route::resource('mks.penugasans', App\Http\Controllers\Dosen\PenugasanController::class)->except('show');
-    Route::get('mks/{mk}/joinsubcpmkpenugasans', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class,'index'])->name('mks.joinsubcpmkpenugasans.index');
-    Route::put('joinsubcpmkpenugasans/{subcpmk}/{penugasan}', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class, 'update'])->name('joinsubcpmkpenugasans.update');
-    // Penilaian Mata Kuliah
-    Route::put('mks/{mk}/nilais/live-update', [App\Http\Controllers\Dosen\NilaiController::class, 'liveUpdate'])->name('mks.nilais.live-update');
-    Route::resource('mks.nilais', App\Http\Controllers\Dosen\NilaiController::class)->except('show');
-    Route::get('mks/{mk}/workclouds/export-kelas', [App\Http\Controllers\Dosen\WorkcloudController::class, 'exportKelas'])->name('mks.workclouds.export-kelas');
-    Route::resource('mks.workclouds', App\Http\Controllers\Dosen\WorkcloudController::class)->only('index');
-    Route::resource('mks.achievements', App\Http\Controllers\Dosen\AchievementController::class)->only('index');
-    Route::resource('mks.ketercapaians', App\Http\Controllers\Dosen\KetercapaianController::class)->only('index');
-    Route::get('mks/{mk}/spyderweb', [App\Http\Controllers\Dosen\KetercapaianController::class, 'spyderWeb'])->name('mks.spyderweb');
+    Route::middleware('ensure.mk.access')->group(function () {
+        // CPMK & SubCPMK
+        Route::resource('mks.cpmks', App\Http\Controllers\Dosen\CpmkController::class)->except('show');
+        Route::resource('mks.subcpmks', App\Http\Controllers\Dosen\SubCpmkController::class)->except('show');
+        // CPL >< BK
+        Route::get('mks/{mk}/joincplcpmks', [App\Http\Controllers\Dosen\JoinCplCpmkController::class,'index'])->name('mks.joincplcpmks.index');
+        Route::put('joincplcpmks/{joincplbk}/{cpmk}', [App\Http\Controllers\Dosen\JoinCplCpmkController::class, 'update'])->name('joincplcpmks.update');
+        // Tugas Mata Kuliah
+        Route::resource('mks.penugasans', App\Http\Controllers\Dosen\PenugasanController::class)->except('show');
+        Route::get('mks/{mk}/joinsubcpmkpenugasans', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class,'index'])->name('mks.joinsubcpmkpenugasans.index');
+        Route::put('joinsubcpmkpenugasans/{subcpmk}/{penugasan}', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class, 'update'])->name('joinsubcpmkpenugasans.update');
+        // Penilaian Mata Kuliah
+        Route::put('mks/{mk}/nilais/live-update', [App\Http\Controllers\Dosen\NilaiController::class, 'liveUpdate'])->name('mks.nilais.live-update');
+        Route::resource('mks.nilais', App\Http\Controllers\Dosen\NilaiController::class)->except('show');
+        Route::get('mks/{mk}/workclouds/export-kelas', [App\Http\Controllers\Dosen\WorkcloudController::class, 'exportKelas'])->name('mks.workclouds.export-kelas');
+        Route::resource('mks.workclouds', App\Http\Controllers\Dosen\WorkcloudController::class)->only('index');
+        Route::resource('mks.achievements', App\Http\Controllers\Dosen\AchievementController::class)->only('index');
+        Route::resource('mks.ketercapaians', App\Http\Controllers\Dosen\KetercapaianController::class)->only('index');
+        Route::get('mks/{mk}/spyderweb', [App\Http\Controllers\Dosen\KetercapaianController::class, 'spyderWeb'])->name('mks.spyderweb');
+    });
 
     // Bulk Upload Nilai MK
-    Route::get('setting/import/nilais/{mk}', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'importNilaiForm'])->name('setting.import.nilais');
-    Route::post('setting/import/nilais/{mk}', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'importNilai'])->name('setting.import.nilais');
-    Route::post('setting/import/nilais/{mk}/commit', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'commitNilai'])->name('setting.import.nilais.commit');
-    Route::get('setting/import/nilais/{mk}/template', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'downloadTemplate'])->name('setting.import.nilais.template');
-    Route::post('setting/import/nilais/{mk}/clear', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'clearPreview'])->name('setting.import.nilais.clear');
+    Route::middleware('ensure.mk.access')->group(function () {
+        Route::get('setting/import/nilais/{mk}', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'importNilaiForm'])->name('setting.import.nilais');
+        Route::post('setting/import/nilais/{mk}', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'importNilai'])->name('setting.import.nilais');
+        Route::post('setting/import/nilais/{mk}/commit', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'commitNilai'])->name('setting.import.nilais.commit');
+        Route::get('setting/import/nilais/{mk}/template', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'downloadTemplate'])->name('setting.import.nilais.template');
+        Route::post('setting/import/nilais/{mk}/clear', [App\Http\Controllers\Bulk\ImportNilaiController::class, 'clearPreview'])->name('setting.import.nilais.clear');
+    });
 
     // Bulk Upload Mahasiswa
     Route::get('setting/import/mahasiswas', [App\Http\Controllers\Bulk\ImportMahasiswaController::class, 'importMahasiswaForm'])->name('setting.import.mahasiswas');
@@ -113,11 +121,13 @@ Route::middleware('auth')->group(function () {
     Route::post('setting/import/joinprodiusers/clear', [App\Http\Controllers\Bulk\ImportJoinProdiUserController::class, 'clearPreview'])->name('setting.import.joinprodiusers.clear');
 
     // Bulk Upload Pengampu Mata Kuliah
-    Route::get('setting/import/joinmkusers', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'importJoinMkUserForm'])->name('setting.import.joinmkusers');
-    Route::post('setting/import/joinmkusers', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'importJoinMkUser'])->name('setting.import.joinmkusers');
-    Route::post('setting/import/joinmkusers/commit', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'commitJoinMkUser'])->name('setting.import.joinmkusers.commit');
-    Route::get('setting/import/joinmkusers/template', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'downloadTemplate'])->name('setting.import.joinmkusers.template');
-    Route::post('setting/import/joinmkusers/clear', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'clearPreview'])->name('setting.import.joinmkusers.clear');
+    Route::middleware('ensure.kurikulum.access')->group(function () {
+        Route::get('setting/import/joinmkusers', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'importJoinMkUserForm'])->name('setting.import.joinmkusers');
+        Route::post('setting/import/joinmkusers', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'importJoinMkUser'])->name('setting.import.joinmkusers');
+        Route::post('setting/import/joinmkusers/commit', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'commitJoinMkUser'])->name('setting.import.joinmkusers.commit');
+        Route::get('setting/import/joinmkusers/template', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'downloadTemplate'])->name('setting.import.joinmkusers.template');
+        Route::post('setting/import/joinmkusers/clear', [App\Http\Controllers\Bulk\ImportJoinMkUserController::class, 'clearPreview'])->name('setting.import.joinmkusers.clear');
+    });
 
     // Bulk Upload Kontrak MK
     Route::get('setting/import/kontrakmks', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'importKontrakMkForm'])->name('setting.import.kontrakmks');
@@ -126,19 +136,23 @@ Route::middleware('auth')->group(function () {
     Route::get('setting/import/kontrakmks/template', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'downloadTemplate'])->name('setting.import.kontrakmks.template');
     Route::post('setting/import/kontrakmks/clear', [App\Http\Controllers\Bulk\ImportKontrakMkController::class, 'clearPreview'])->name('setting.import.kontrakmks.clear');
 
-    // Bulk Upload Data Kurikulum (Tugas 1-8)
-    Route::get('setting/import/kurikulum-master/{kurikulum}', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'form'])->name('setting.import.kurikulum-master');
-    Route::post('setting/import/kurikulum-master/{kurikulum}', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'import'])->name('setting.import.kurikulum-master.upload');
-    Route::post('setting/import/kurikulum-master/{kurikulum}/commit', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'commit'])->name('setting.import.kurikulum-master.commit');
-    Route::get('setting/import/kurikulum-master/{kurikulum}/template', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'template'])->name('setting.import.kurikulum-master.template');
-    Route::post('setting/import/kurikulum-master/{kurikulum}/clear', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'clear'])->name('setting.import.kurikulum-master.clear');
+    // Bulk Upload Data Kurikulum
+    Route::middleware('ensure.kurikulum.access')->group(function () {
+        Route::get('setting/import/kurikulum-master/{kurikulum}', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'form'])->name('setting.import.kurikulum-master');
+        Route::post('setting/import/kurikulum-master/{kurikulum}', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'import'])->name('setting.import.kurikulum-master.upload');
+        Route::post('setting/import/kurikulum-master/{kurikulum}/commit', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'commit'])->name('setting.import.kurikulum-master.commit');
+        Route::get('setting/import/kurikulum-master/{kurikulum}/template', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'template'])->name('setting.import.kurikulum-master.template');
+        Route::post('setting/import/kurikulum-master/{kurikulum}/clear', [App\Http\Controllers\Bulk\ImportKurikulumMasterController::class, 'clear'])->name('setting.import.kurikulum-master.clear');
+    });
 
-    // Bulk Upload Data MK (Tugas 9-13)
-    Route::get('setting/import/mk-master/{mk}', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'form'])->name('setting.import.mk-master');
-    Route::post('setting/import/mk-master/{mk}', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'import'])->name('setting.import.mk-master.upload');
-    Route::post('setting/import/mk-master/{mk}/commit', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'commit'])->name('setting.import.mk-master.commit');
-    Route::get('setting/import/mk-master/{mk}/template', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'template'])->name('setting.import.mk-master.template');
-    Route::post('setting/import/mk-master/{mk}/clear', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'clear'])->name('setting.import.mk-master.clear');
+    // Bulk Upload Data MK
+    Route::middleware('ensure.mk.access')->group(function () {
+        Route::get('setting/import/mk-master/{mk}', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'form'])->name('setting.import.mk-master');
+        Route::post('setting/import/mk-master/{mk}', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'import'])->name('setting.import.mk-master.upload');
+        Route::post('setting/import/mk-master/{mk}/commit', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'commit'])->name('setting.import.mk-master.commit');
+        Route::get('setting/import/mk-master/{mk}/template', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'template'])->name('setting.import.mk-master.template');
+        Route::post('setting/import/mk-master/{mk}/clear', [App\Http\Controllers\Bulk\ImportMkMasterController::class, 'clear'])->name('setting.import.mk-master.clear');
+    });
 
     // Bulk Upload Data Admin
     Route::get('setting/import/admin-master', [App\Http\Controllers\Bulk\ImportAdminMasterController::class, 'form'])->name('setting.import.admin-master');
