@@ -26,8 +26,8 @@ class NilaiController extends Controller
 
     public function create(Mk $mk)
     {
-        $nilai = New Nilai();
-        return view('setting.nilai-form', compact('mk', 'nilai'));
+        return to_route('mks.nilais.index', $mk->id)
+            ->with('warning', 'Gunakan input nilai langsung pada tabel penilaian.');
     }
 
     public function store(Request $request, Mk $mk)
@@ -58,7 +58,8 @@ class NilaiController extends Controller
 
     public function edit(Mk $mk, Nilai $nilai)
     {
-        return view('setting.nilai-form', compact('mk', 'nilai'));
+        return to_route('mks.nilais.index', $mk->id)
+            ->with('warning', 'Gunakan input nilai langsung pada tabel penilaian.');
     }
 
     public function update(Request $request, Mk $mk, Nilai $nilai)

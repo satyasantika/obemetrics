@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Prodi;
-use App\Models\Metode;
 use App\Models\Evaluasi;
 use App\Models\Semester;
 use App\Models\Permission;
