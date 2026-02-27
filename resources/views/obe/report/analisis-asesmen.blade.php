@@ -24,7 +24,8 @@
 
                     <div class="row">
                         <div class="col">
-                            <table class="table table-bordered table-hover align-top">
+                            <div class="table-responsive rounded-3 border bg-white shadow-sm">
+                            <table class="table table-hover align-top mb-0">
                                 <thead>
                                     <tr>
                                         <th rowspan="3" class="align-middle">CAPAIAN PEMBELAJARAN LULUSAN</th>
@@ -62,9 +63,11 @@
                                     {{-- Jika BELUM ada MK terkait CPL --}}
                                     @if ($matkuls->isEmpty())
                                         <tr>
-                                            <td width="30%">
-                                                <strong>{{ $cpl->kode }}</strong><br>
-                                                <small>{{ $cpl->nama }}</small>
+                                            <td width="30%" class="bg-light-subtle">
+                                                <div class="d-flex flex-column gap-1">
+                                                    <span class="fs-5 fw-bold text-primary-emphasis">{{ $cpl->kode }}</span>
+                                                    <span class="small text-muted">{{ $cpl->nama }}</span>
+                                                </div>
                                             </td>
                                             <td class="text-muted fst-italic">Belum ada mata kuliah terkait</td>
 
@@ -86,16 +89,22 @@
                                             <tr>
                                                 @if ($i === 0)
                                                     {{-- Kolom CPL di-ROWSPAN sebanyak jumlah MK --}}
-                                                    <td rowspan="{{ $rowspan }}" width="30%">
-                                                        <strong>{{ $cpl->kode }}</strong><br>
-                                                        <small>{{ $cpl->nama }}</small>
+                                                    <td rowspan="{{ $rowspan }}" width="30%" class="bg-light-subtle">
+                                                        <div class="d-flex flex-column gap-1">
+                                                            <span class="fs-5 fw-bold text-primary-emphasis">{{ $cpl->kode }}</span>
+                                                            <span class="small text-muted">{{ $cpl->nama }}</span>
+                                                        </div>
                                                     </td>
                                                 @endif
                                                 {{-- Aspek Mata Kuliah --}}
                                                 <td>
-                                                    <span class="badge bg-primary text-white">{{ $matkul->sks }} SKS</span>
-                                                    {{ $matkul->nama }}
-                                                    {{-- <span class="badge bg-secondary text-white">Bobot {{ $matkul->joinCplMk->joinCplBk->cpl->kode ?? 0 }}: {{ $matkul->joinCplMk->bobot ?? 0 }}%</span> --}}
+                                                    <div class="d-flex flex-column gap-2">
+                                                        <span class="fw-semibold">{{ $matkul->nama }}</span>
+                                                        <div>
+                                                        <span class="small text-muted">{{ $matkul->kode }}</span>
+                                                        <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle align-self-start">{{ $matkul->sks }} SKS</span>
+                                                    </div>
+                                                    </div>
                                                 </td>
 
                                                 {{-- Kolom dinamis per angkatan: Rerata & N --}}
@@ -111,9 +120,13 @@
                                                     {{ isset($stat['rerata']) ? number_format($stat['rerata'], 2) : '-' }}
                                                 </td>
                                                 <td class="text-center">
-                                                    Total: {{ $stat['total'] ?? 0 }}<br>
-                                                    <span class="badge bg-warning text-white">&lt;{{ $kurikulum->target_capaian_lulusan }} </span>: {{ $stat['n1'] ?? 0 }}<br>
-                                                    <span class="badge bg-success text-white">&ge;{{ $kurikulum->target_capaian_lulusan }} </span>: {{ $stat['n2'] ?? 0 }}
+                                                    @if (($stat['total'] ?? 0) > 0)
+                                                        Total: {{ $stat['total'] }}<br>
+                                                        <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis border border-danger-subtle">&lt;{{ $kurikulum->target_capaian_lulusan }}</span>: {{ $stat['n1'] ?? 0 }}<br>
+                                                        <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">&ge;{{ $kurikulum->target_capaian_lulusan }}</span>: {{ $stat['n2'] ?? 0 }}
+                                                    @else
+                                                        -
+                                                    @endif
                                                 </td>
 
                                                 @endforeach
@@ -125,9 +138,13 @@
 
                                                 {{-- Rerata Nilai keseluruhan MK (contoh menggunakan $nilais) --}}
                                                 <td class="text-center">
-                                                    ({{ isset($avgPerCplPerMk[$cpl->id][$matkul->id]) ? number_format($avgPerCplPerMk[$cpl->id][$matkul->id], 2) : '-' }})
-                                                    dengan &lt;{{ $kurikulum->target_capaian_lulusan }} {{ $statMk['p_tidaktercapai'] ?? 0 }}%
-                                                    dan &ge;{{ $kurikulum->target_capaian_lulusan }} {{ $statMk['p_tercapai'] ?? 0 }}%
+                                                    @if (isset($avgPerCplPerMk[$cpl->id][$matkul->id]))
+                                                        ({{ number_format($avgPerCplPerMk[$cpl->id][$matkul->id], 2) }})
+                                                        dengan<br> <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle">&lt;{{ $kurikulum->target_capaian_lulusan }}</span> {{ $statMk['p_tidaktercapai'] ?? 0 }}%
+                                                        dan <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">&ge;{{ $kurikulum->target_capaian_lulusan }}</span> {{ $statMk['p_tercapai'] ?? 0 }}%
+                                                    @else
+                                                        -
+                                                    @endif
                                                 </td>
 
                                                 {{-- Bobot MK relatif terhadap total SKS pada CPL ini --}}
@@ -149,11 +166,17 @@
                                                     @endphp
 
                                                     <td rowspan="{{ $rowspan }}" class="text-center">
-                                                        {{ $nilaiCpl !== null ? number_format($nilaiCpl, 2) : '0.00' }}%
-                                                        dengan &lt;{{ $kurikulum->target_capaian_lulusan }} {{ $statCPL['p_tidaktercapai'] ?? 0 }}%
-                                                        dan &ge;{{ $kurikulum->target_capaian_lulusan }} {{ $statCPL['p_tercapai'] ?? 0 }}%
-                                                        <hr>
-                                                        <strong>CPL</strong> <span class="badge bg-{{ $statCPL['tercapai'] ? 'success' : 'danger' }}">{{ $statCPL['tercapai'] ? 'tercapai' : 'tidak tercapai' }}</span>
+                                                        @if ($nilaiCpl !== null)
+                                                            {{ number_format($nilaiCpl, 2) }}%
+                                                            dengan <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle">&lt;{{ $kurikulum->target_capaian_lulusan }}</span> {{ $statCPL['p_tidaktercapai'] ?? 0 }}%
+                                                            dan <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle">&ge;{{ $kurikulum->target_capaian_lulusan }}</span> {{ $statCPL['p_tercapai'] ?? 0 }}%
+                                                            <hr>
+                                                            <strong>CPL</strong> <span class="badge rounded-pill {{ $statCPL['tercapai'] ? 'bg-success-subtle text-success-emphasis border border-success-subtle' : 'bg-danger-subtle text-danger-emphasis border border-danger-subtle' }}">{{ $statCPL['tercapai'] ? 'tercapai' : 'tidak tercapai' }}</span>
+                                                        @else
+                                                            <div class="alert alert-warning mb-0 py-2 px-2 small">
+                                                                menunggu selesai penilaian
+                                                            </div>
+                                                        @endif
                                                     </td>
                                                 @endif
                                             </tr>
@@ -163,7 +186,7 @@
                                     @php $colCount = 5 + 2 * $angkatan->count(); @endphp
                                     <tr>
                                         <td colspan="{{ $colCount }}">
-                                            <span class="bg-warning text-dark p-2 d-inline-block">
+                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle p-2 d-inline-block">
                                                 Belum ada data CPL untuk kurikulum ini.
                                             </span>
                                         </td>
@@ -171,6 +194,7 @@
                                 @endforelse
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>

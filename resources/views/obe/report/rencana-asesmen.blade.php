@@ -29,7 +29,8 @@
                                 <thead>
                                     <tr>
                                         <th width="40%">CAPAIAN PEMBELAJARAN LULUSAN</th>
-                                        <th>ASPEK MATA KULIAH</th>
+                                        <th>NAMA MATA KULIAH (KODE)</th>
+                                        <th class="text-center">SKS</th>
                                         <th class="text-end">KONTRIBUSI MK</th>
                                     </tr>
                                 </thead>
@@ -48,17 +49,21 @@
 
                                     {{-- Baris pertama CPL --}}
                                     <tr style="vertical-align: top;">
-                                        <td rowspan="{{ $rowspan }}">
-                                            <strong>{{ $cpl->kode }}</strong><br>
-                                            <small>{{ $cpl->nama }}</small>
+                                        <td rowspan="{{ $rowspan }}" class="bg-light-subtle">
+                                            <div class="d-flex flex-column gap-1">
+                                                <span class="fs-5 fw-bold text-primary-emphasis">{{ $cpl->kode }}</span>
+                                                <span class="small text-muted">{{ $cpl->nama }}</span>
+                                            </div>
                                         </td>
 
                                         @if ($matkuls->count() > 0)
                                             {{-- Cetak baris MK pertama --}}
                                             @php $firstMk = $matkuls->first(); @endphp
                                             <td>
-                                                <span class="badge bg-primary">{{ $firstMk->sks }} SKS</span>
-                                                {{ $firstMk->nama }}
+                                                {{ $firstMk->nama }} ({{ $firstMk->kode }})
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle">{{ $firstMk->sks }}</span>
                                             </td>
                                             <td class="text-end">
                                                 {{ number_format((float) ($bobotPersenMk->get($firstMk->id) ?? 0), 2) }}%
@@ -66,6 +71,7 @@
                                         @else
                                             {{-- Tidak ada MK terkait --}}
                                             <td class="text-muted fst-italic">Belum ada mata kuliah terkait</td>
+                                            <td class="text-center">-</td>
                                             <td class="text-end">-</td>
                                         @endif
                                     </tr>
@@ -75,8 +81,10 @@
                                         @foreach ($matkuls->skip(1) as $mk)
                                             <tr>
                                                 <td>
-                                                    <span class="badge bg-primary">{{ $mk->sks }} SKS</span>
-                                                    {{ $mk->nama }}
+                                                    {{ $mk->nama }} ({{ $mk->kode }})
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle">{{ $mk->sks }}</span>
                                                 </td>
                                                 <td class="text-end">
                                                     {{ number_format((float) ($bobotPersenMk->get($mk->id) ?? 0), 2) }}%
@@ -87,7 +95,7 @@
 
                                 @empty
                                     <tr>
-                                        <td colspan="3">
+                                        <td colspan="4">
                                             <span class="bg-warning text-dark p-2 d-inline-block">
                                                 Belum ada data CPL untuk kurikulum ini.
                                             </span>
