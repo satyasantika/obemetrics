@@ -3,7 +3,7 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col">
+        <div class="col-11">
             <x-obe.menu-strip minWidth="960px">
                 {{-- menu mata kuliah --}}
                 @include('components.menu-mk',$mk)

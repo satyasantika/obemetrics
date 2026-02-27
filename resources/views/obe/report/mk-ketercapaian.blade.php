@@ -3,7 +3,7 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col">
+        <div class="col-11">
             <x-obe.menu-strip minWidth="960px">
                 @include('components.menu-mk',$mk)
             </x-obe.menu-strip>
@@ -12,8 +12,8 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col">
+    <div class="row justify-content-center">
+        <div class="col-11">
             <div class="card">
                 <x-obe.header
                     title="Rekapitulasi Ketercapaian Sumbangan CPL"
@@ -186,7 +186,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const rnMap = rnData?.[kelas]?.[semesterId] ?? {};
         let html = '';
-        let totalPkAllCpl = 0;
+        const totalPkAllCpl = hierarchyData.reduce(function (sum, cpl) {
+            return sum + calculateCplTotals(cpl, rnMap).totalPk;
+        }, 0);
+        const isTargetComplete = Math.abs(totalPkAllCpl - 100) < 0.01;
         const ketercapaianRatios = [];
 
         hierarchyData.forEach(function (cpl) {
@@ -259,8 +262,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         html += '<td class="text-end">' + formatNum(pkrn) + '%</td>';
 
                         if (subcpmk === subcpmks[0] && cpmk === cpmks[0] && source === realSources[0]) {
-                            html += '<td rowspan="' + cplRowCount + '" class="text-center align-middle">'
-                                + escapeHtml(cplTotals.text)
+                            html += '<td rowspan="' + cplRowCount + '" class="text-center align-middle ' + (isTargetComplete ? '' : 'bg-danger-subtle') + '">'
+                                + (isTargetComplete
+                                    ? escapeHtml(cplTotals.text)
+                                    : '<div class="alert alert-danger mb-0 py-2 px-2 small d-flex flex-column align-items-center justify-content-center gap-1"><div class="d-flex align-items-center gap-1"><i class="bi bi-exclamation-triangle-fill"></i><span>Ketercapaian belum bisa ditampilkan.</span></div><div>Target saat ini: <strong>' + formatNum(totalPkAllCpl) + '%</strong> (menunggu 100%).</div></div>')
                                 + '</td>';
                         }
 
@@ -270,19 +275,40 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             ketercapaianRatios.push(cplTotals.ratio);
-            totalPkAllCpl += cplTotals.totalPk;
         });
 
         const avgRatio = ketercapaianRatios.length > 0
             ? ketercapaianRatios.reduce(function (sum, item) { return sum + item; }, 0) / ketercapaianRatios.length
             : 0;
 
-        html += '<tr>'
-            + '<td colspan="5"><strong>Persentase ketercapaian MK terhadap perkiraan sumbangan ke CPL</strong></td>'
-            + '<td><strong>Target: ' + formatNum(totalPkAllCpl) + '%</strong></td>'
-            + '<td></td>'
-            + '<td colspan="2"><strong>Ketercapaian: ' + formatNum(avgRatio) + '%</strong></td>'
-            + '</tr>';
+        if (isTargetComplete) {
+            html += '<tr class="table-light">'
+                + '<td colspan="9">'
+                + '<div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 py-2">'
+                + '<div class="fw-semibold text-success-emphasis">Persentase ketercapaian MK terhadap perkiraan sumbangan ke CPL</div>'
+                + '<div class="d-flex flex-wrap gap-2">'
+                + '<div class="rounded-3 border px-3 py-2 bg-white border-success-subtle text-success-emphasis text-end">'
+                + '<div class="small text-uppercase fw-semibold">Target</div>'
+                + '<div class="fs-4 fw-bold">' + formatNum(totalPkAllCpl) + '%</div>'
+                + '</div>'
+                + '<div class="rounded-3 border px-3 py-2 bg-white border-primary-subtle text-primary-emphasis text-end">'
+                + '<div class="small text-uppercase fw-semibold">Ketercapaian</div>'
+                + '<div class="fs-4 fw-bold">' + formatNum(avgRatio) + '%</div>'
+                + '</div>'
+                + '</div>'
+                + '</div>'
+                + '</td>'
+                + '</tr>';
+        } else {
+            html += '<tr class="table-danger">'
+                + '<td colspan="9">'
+                + '<div class="alert alert-danger mb-0 py-2 px-3 d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-2">'
+                + '<div class="d-flex align-items-center gap-2"><i class="bi bi-exclamation-triangle-fill"></i><span>Nilai ketercapaian belum ditampilkan. Menunggu target PK mencapai 100%.</span></div>'
+                + '<div class="fw-semibold">Target saat ini: ' + formatNum(totalPkAllCpl) + '%</div>'
+                + '</div>'
+                + '</td>'
+                + '</tr>';
+        }
 
         tbody.innerHTML = html;
     };

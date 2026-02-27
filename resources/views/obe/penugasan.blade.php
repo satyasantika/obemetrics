@@ -3,7 +3,7 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col">
+        <div class="col-11">
             <x-obe.menu-strip minWidth="960px">
                 {{-- menu mata kuliah --}}
                 @include('components.menu-mk',$mk)
@@ -103,7 +103,7 @@
         </div>
     </div>
     <div class="row justify-content-center mt-3">
-        <div class="col">
+        <div class="col-11">
             <div class="card">
                 <x-obe.header
                     title="Tabel Rencana Evaluasi"

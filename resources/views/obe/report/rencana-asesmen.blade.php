@@ -3,7 +3,7 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col">
+        <div class="col-11">
             <x-obe.menu-strip minWidth="800px">
                 {{-- menu kurikulum --}}
                 @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
@@ -13,8 +13,8 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="col">
+    <div class="row justify-content-center">
+        <div class="col-11">
             <div class="card">
                 <x-obe.header
                     title="Pemetaan Rencana Asesmen CPL"
