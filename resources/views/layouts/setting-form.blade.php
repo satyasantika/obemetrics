@@ -10,8 +10,7 @@
                     @stack('header')
                 </div>
                 <div class="card-body">
-                    @include('layouts.alert')
-                    @stack('body')
+                     @stack('body')
                 </div>
             </div>
         </div>

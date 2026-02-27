@@ -4,22 +4,24 @@
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col">
-            <div class="card">
-                <div class="card-header">
-                    {{-- header --}}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Hasil Analisis MK Dosen per Mahasiswa</strong>
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
-                </div>
-                <div class="card-body">
-                    @include('layouts.alert')
+            <x-obe.menu-strip minWidth="960px">
+                {{-- menu mata kuliah --}}
+                @include('components.menu-mk',$mk)
+            </x-obe.menu-strip>
+            {{-- identitas mata kuliah --}}
+            @include('components.identitas-mk', $mk)
+        </div>
+    </div>
 
-                    {{-- identitas mata kuliah --}}
-                    @include('components.identitas-mk', $mk)
-                    <hr>
-                    {{-- menu mata kuliah --}}
-                    @include('components.menu-mk',$mk)
-                    <hr>
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <x-obe.header
+                    title="Hasil Analisis MK Dosen per Mahasiswa"
+                    subtitle="Ringkasan capaian mahasiswa pada mata kuliah terpilih"
+                    icon="bi bi-mortarboard-fill"
+                    :backUrl="route('home')" />
+                <div class="card-body">
 
                     <div class="row">
                         <div class="col">

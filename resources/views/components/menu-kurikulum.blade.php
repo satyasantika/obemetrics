@@ -96,7 +96,7 @@
             @if ($mustImportJoinMaster)
             <x-menu-warning :message="$warningInteraksiIncomplete" />
             @endif
-            <x-menu-link :href="route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_kurikulum_bundle', 'return_url' => url()->current()])" :active="$isImportJoinMaster" variant="success" icon="bi bi-upload">
+            <x-menu-link :href="route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_kurikulum_bundle', 'return_url' => url()->current()])" :active="$isImportJoinMaster" variant="success" icon="bi bi-upload" :class="$joinProfilCplBKExists ? 'float-end' : ''">
                 Import Join Data Master
             </x-menu-link>
             @if ($joinProfilCplBKExists)

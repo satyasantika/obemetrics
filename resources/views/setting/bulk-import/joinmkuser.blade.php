@@ -12,8 +12,7 @@
                 </div>
 
                 <div class="card-body">
-                    @include('layouts.alert')
-                    <form action="{{ route('setting.import.joinmkusers') }}" method="POST" enctype="multipart/form-data">
+                     <form action="{{ route('setting.import.joinmkusers') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('home') }}">
                         <div class="row mt-3">

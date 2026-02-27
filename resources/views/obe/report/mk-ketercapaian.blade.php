@@ -4,38 +4,44 @@
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col">
-            <div class="card">
-                <div class="card-header">
-                    {{-- header --}}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    <strong>Rekapitulasi persentase ketercapaian sumbangan CPL pada Mata Kuliah</strong>
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
-                </div>
-                <div class="card-body">
-                    @include('layouts.alert')
+            <x-obe.menu-strip minWidth="960px">
+                @include('components.menu-mk',$mk)
+            </x-obe.menu-strip>
+            {{-- identitas mata kuliah --}}
+            @include('components.identitas-mk', $mk)
+        </div>
+    </div>
 
-                    {{-- identitas mata kuliah --}}
-                    @include('components.identitas-mk', $mk)
-                    <div class="row">
-                        <div class="col-md-3">Semester</div>
-                        <div class="col">
-                            <select id="semester-filter" class="form-control form-control-sm" style="max-width: 320px;">
-                                <option value="">Pilih Semester</option>
-                                @foreach ($semesters as $semester)
-                                    <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $defaultSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
-                                @endforeach
-                            </select>
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <x-obe.header
+                    title="Rekapitulasi Ketercapaian Sumbangan CPL"
+                    subtitle="Rekap kontribusi CPL pada mata kuliah per kelas"
+                    icon="bi bi-bar-chart-steps"
+                    :backUrl="route('home')" />
+                <div class="card-body bg-light-subtle">
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-6 d-flex">
+                            <div class="p-3 rounded-3 border bg-white d-flex flex-column align-items-start gap-2 h-100 w-100">
+                                <span>Semester :</span>
+                                <select id="semester-filter" class="form-control form-control-sm w-100" style="max-width: 320px;">
+                                    @foreach ($semesters as $semester)
+                                        <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $defaultSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex">
+                            <div class="p-3 p-lg-4 rounded-3 border border-primary-subtle bg-primary-subtle text-primary-emphasis h-100 w-100 d-flex flex-column justify-content-between text-md-end text-start">
+                                <div>
+                                    <span class="small text-uppercase fw-semibold d-block">Target Kelulusan CPL</span>
+                                    <strong id="target-kelulusan" class="display-6 fw-bold lh-1 d-block mt-2">{{ $mk->kurikulum->target_capaian_lulusan ?? 100 }}%</strong>
+                                </div>
+                                <small class="mt-2">Persentase minimum ketercapaian rata-rata kelas</small>
+                            </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-3">Target Kelulusan CPL</div>
-                        <div class="col">
-                            <strong id="target-kelulusan">{{ $mk->kurikulum->target_capaian_lulusan ?? 100 }}%</strong>
-                        </div>
-                    </div>
-                    <hr>
-                    @include('components.menu-mk',$mk)
-                    <hr>
                     @php
                         $defaultKelas = collect($kelasList)->first();
                     @endphp
@@ -77,11 +83,16 @@
                                     role="tabpanel"
                                     aria-labelledby="{{ $kelasPaneId }}-tab">
                                     <div class="card mb-3">
-                                        <div class="card-header"><strong>Evaluasi Ketercapaian CPL {{ $kelas === '__SEMUA_KELAS__' ? 'Semua Kelas' : 'kelas ' . $kelas }}</strong></div>
-                                        <div class="card-body">
-                                            <div class="table-responsive nilai-matrix-wrapper">
-                                                <table class="table table-bordered table-striped nilai-matrix-table mb-0">
-                                                    <thead>
+                                        <div class="card-header bg-info-subtle text-info-emphasis border border-info-subtle rounded-top-3">
+                                            <div class="d-flex align-items-center gap-2 fw-semibold">
+                                                <i class="bi bi-bar-chart-line-fill"></i>
+                                                <span>Evaluasi Ketercapaian CPL {{ $kelas === '__SEMUA_KELAS__' ? 'Semua Kelas' : 'kelas ' . $kelas }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="card-body bg-light-subtle">
+                                            <div class="table-responsive nilai-matrix-wrapper rounded-3 border bg-white shadow-sm">
+                                                <table class="table table-hover align-middle nilai-matrix-table mb-0">
+                                                    <thead class="table-light">
                                                         <tr class="text-center align-middle">
                                                             <th>CPL yang dibebankan pada MK</th>
                                                             <th>CPMK yang Relevan dengan CPL</th>
@@ -303,14 +314,14 @@ document.addEventListener('DOMContentLoaded', function () {
 .nilai-matrix-table thead th {
     position: sticky;
     top: 0;
-    background: #fff;
+    background: var(--bs-light);
     z-index: 20;
 }
 
 .nilai-matrix-table .sticky-col {
     position: sticky;
     left: 0;
-    background: #fff;
+    background: var(--bs-white);
     z-index: 15;
     min-width: 240px;
 }

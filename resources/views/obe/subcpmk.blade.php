@@ -3,131 +3,167 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    {{-- header --}}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Data Sub Capaian Pembelajaran Mata Kuliah (CPMK)</strong>
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
-                </div>
-                <div class="card-body">
-                    @include('layouts.alert')
+        <div class="col">
+            <x-obe.menu-strip minWidth="960px">
+                {{-- menu mata kuliah --}}
+                @include('components.menu-mk',$mk)
+            </x-obe.menu-strip>
+            {{-- identitas mata kuliah --}}
+            @include('components.identitas-mk', $mk)
 
-                    {{-- identitas mata kuliah --}}
-                    @include('components.identitas-mk', $mk)
-                    <div class="row">
-                        <div class="col-md-3">Semester</div>
-                        <div class="col">
-                            @php
-                                $semesterOptions = $mk->kontrakMks()
-                                    ->whereNotNull('semester_id')
-                                    ->with('semester')
-                                    ->get()
-                                    ->pluck('semester')
-                                    ->filter()
-                                    ->unique('id')
-                                    ->sortByDesc('status_aktif')
-                                    ->sortByDesc('kode')
-                                    ->values();
-                            @endphp
-                            <select id="semester-filter" name="semester_id" class="form-control form-control-sm" style="max-width: 320px;">
-                                @foreach ($semesterOptions as $semester)
+            <div class="card">
+                <x-obe.header
+                    title="Data Sub Capaian Pembelajaran Mata Kuliah"
+                    subtitle="Kelola SubCPMK pada mata kuliah terpilih"
+                    icon="bi bi-diagram-3"
+                    :backUrl="route('home')" />
+                <div class="card-body bg-light-subtle">
+                    <div class="row mb-3">
+                        <div class="col-md-6 d-flex">
+                            <div class="d-flex flex-column align-items-start gap-2 h-100 w-100">
+                                <span>Semester :</span>
+                                @php
+                                    $semesterOptions = $mk->kontrakMks()
+                                        ->whereNotNull('semester_id')
+                                        ->with('semester')
+                                        ->get()
+                                        ->pluck('semester')
+                                        ->filter()
+                                        ->unique('id')
+                                        ->sortByDesc('status_aktif')
+                                        ->sortByDesc('kode')
+                                        ->values();
+                                        @endphp
+                                <select id="semester-filter" name="semester_id" class="form-control form-control-sm w-100" style="max-width: 320px;">
+                                    @foreach ($semesterOptions as $semester)
                                     <option value="{{ $semester->id }}" @selected($semester->status_aktif)>{{ $semester->kode }} - {{ $semester->nama }}</option>
-                                @endforeach
-                            </select>
+                                    @endforeach
+                                </select>
+                                @php
+                                    $joinCplCpmkOptions = \App\Models\JoinCplCpmk::where('mk_id', $mk->id)->with('cpmk')->get();
+                                @endphp
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateSubcpmk"><i class="bi bi-plus-circle"></i> Tambah Sub CPMK</button>
+                                    <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'subcpmks']) }}" class="btn btn-sm btn-success"><i class="bi bi-upload"></i> Import banyak SubCPMK</a>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <hr>
-                    {{-- menu mata kuliah --}}
-                    @include('components.menu-mk',$mk)
-                    <hr>
-                    <div class="row">
-                        <div class="col">
-                            @php
-                                $joinCplCpmkOptions = \App\Models\JoinCplCpmk::where('mk_id', $mk->id)->with('cpmk')->get();
-                            @endphp
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateSubcpmk"><i class="bi bi-plus-circle"></i> Tambah Sub CPMK</button>
-                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'subcpmks']) }}" class="btn btn-sm btn-success"><i class="bi bi-upload"></i> Import banyak SubCPMK</a>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <div class="float-end">
-                                <span class="h4">Total bobot evaluasi: {{ $total_bobot }}%</span>
-                                <br>
-                                <small class="text-primary">bobot akan otomatis dihitung jika sudah set Tagihan Tugas</small>
+                        <div class="col-md-6 d-flex">
+                            <div class="p-3 p-lg-4 rounded-3 border border-primary-subtle bg-primary-subtle text-primary-emphasis h-100 w-100 d-flex flex-column justify-content-between text-md-end text-start">
+                                <div>
+                                    <span class="small text-uppercase fw-semibold d-block">Total bobot evaluasi</span>
+                                    <span class="display-6 fw-bold lh-1 d-block mt-2">{{ $total_bobot }}%</span>
+                                </div>
+                                <small class="mt-2">Bobot akan otomatis dihitung jika sudah set Tagihan Tugas</small>
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col">
                             @forelse ($cpmks as $cpmk)
-                            <div class="card mb-3">
-                                <div class="card-header bg-dark text-white">
-                                    <strong class="h4">{{ $cpmk->kode }}</strong><br>
-                                    <span class="h5">{{ $cpmk->nama }}</span>
+                            <div class="card mb-3 border-0 shadow-sm">
+                                <div class="card-header border-0 border-bottom py-3">
+                                    <div class="d-flex align-items-start gap-2 text-dark">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="d-inline-flex align-items-center justify-content-center rounded-start-5 bg-info-subtle text-info-emphasis border border-info-subtle px-3" style="min-height: 45px;">
+                                                <i class="bi bi-sliders fs-4"></i> &nbsp;{{ $cpmk->kode }}
+                                            </div>
+                                            <div>
+                                                <span class="fs-5">{{ $cpmk->nama }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    <ul>
-                                        @foreach ($cpmk->joinCplCpmks->pluck('subcpmks')->flatten() as $subcpmk)
-                                            <li>
-                                                <strong class="h5">{{ $subcpmk->kode }}</strong>
-                                                {{-- Edit SubCPMK --}}
-                                                <button type="button" class="btn btn-sm btn-white text-primary" data-bs-toggle="modal" data-bs-target="#modalEditSubcpmk-{{ $subcpmk->id }}">
-                                                    <i class="bi bi-pencil-square"></i>
-                                                </button>
-                                                <br>
-                                                <span class="h5">{{ $subcpmk->nama }}</span>
-                                                @php
-                                                    $kompetensi = [];
-                                                    if ($subcpmk->kompetensi_c) $kompetensi[] = $subcpmk->kompetensi_c;
-                                                    if ($subcpmk->kompetensi_a) $kompetensi[] = $subcpmk->kompetensi_a;
-                                                    if ($subcpmk->kompetensi_p) $kompetensi[] = $subcpmk->kompetensi_p;
-                                                @endphp
-                                                <span class="badge bg-info text-dark mb-3">
-                                                    [{{ implode(', ', $kompetensi) }}]
-                                                </span>
-                                                <table class="table">
-                                                    <thead>
-                                                        <tr>
-                                                            <th class="bg-secondary text-white">Indikator</th>
-                                                            <th class="bg-secondary text-white">Evaluasi</th>
-                                                            <th class="bg-secondary text-white">Bobot</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        <tr>
-                                                            <td>{{ $subcpmk->indikator }}</td>
-                                                            <td>
-                                                                {{ $subcpmk->evaluasi }}<hr>
-                                                                <strong>Tagihan: </strong>
-                                                                {{ $subcpmk->joinSubcpmkPenugasans
-                                                                    ->groupBy(fn($t) => $t->penugasan->evaluasi->nama ?? '-')
-                                                                    ->map(fn($group) =>
-                                                                        $group->sum(fn($t) =>
-                                                                            (float)($t->penugasan->bobot ?? 0) * ((float)($t->bobot ?? 0) / 100)
-                                                                        )
-                                                                    )
-                                                                    ->filter(fn($total) => $total > 0) // opsional: buang total 0
-                                                                    ->map(fn($total, $nama) =>
-                                                                        // tampilkan tanpa desimal jika bilangan bulat, else 2 desimal
-                                                                        $nama.' ('.(intval($total) == $total ? intval($total) : number_format($total, 2)).'%)'
-                                                                    )
-                                                                    ->values()
-                                                                    ->whenEmpty(fn () => collect(['-'])) // fallback jika tidak ada data
-                                                                    ->implode(', ')
-                                                                }}
-                                                            </td>
-                                                            <td>
-                                                                {{ $subcpmk->joinSubcpmkPenugasans->sum(fn ($row) => (float)($row->penugasan->bobot ?? 0) * (float)($row->bobot ?? 0)/100);
-                                                                }}%
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
+                                <div class="card-body bg-white">
+                                    <ul class="list-unstyled mb-0">
+                                        @forelse ($cpmk->joinCplCpmks->pluck('subcpmks')->flatten() as $subcpmk)
+                                        <li class="border rounded-3 p-3 mb-3">
+                                            <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <div class="d-inline-flex align-items-center justify-content-center rounded-end-5 bg-success-subtle text-success-emphasis border border-success-subtle px-3" style="min-height: 35px;">
+                                                        <i class="bi bi-list-nested fs-4"></i>  &nbsp;{{ $subcpmk->kode }}
+                                                    </div>
+                                                    <div>
+                                                        <div class="text-muted">{{ $subcpmk->nama }}
+                                                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" data-bs-toggle="modal" data-bs-target="#modalEditSubcpmk-{{ $subcpmk->id }}" title="Edit SubCPMK">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                                                    <div class="fs-6">
+                                                        @php
+                                                            $kompetensi = [];
+                                                            if ($subcpmk->kompetensi_c) $kompetensi[] = $subcpmk->kompetensi_c;
+                                                            if ($subcpmk->kompetensi_a) $kompetensi[] = $subcpmk->kompetensi_a;
+                                                            if ($subcpmk->kompetensi_p) $kompetensi[] = $subcpmk->kompetensi_p;
+                                                        @endphp
+                                                        <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle fs-6 px-3 py-1">
+                                                            [{{ implode(', ', $kompetensi) }}]
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @php
+                                                $tagihanList = $subcpmk->joinSubcpmkPenugasans
+                                                    ->groupBy(fn($t) => $t->penugasan->evaluasi->nama ?? '-')
+                                                    ->map(fn($group) =>
+                                                        $group->sum(fn($t) =>
+                                                            (float)($t->penugasan->bobot ?? 0) * ((float)($t->bobot ?? 0) / 100)
+                                                        )
+                                                    )
+                                                    ->filter(fn($total) => $total > 0)
+                                                    ->map(fn($total, $nama) => [
+                                                        'nama' => $nama,
+                                                        'total' => $total,
+                                                    ])
+                                                    ->values();
+
+                                                $totalBobotSubcpmk = $subcpmk->joinSubcpmkPenugasans
+                                                    ->sum(fn ($row) => (float)($row->penugasan->bobot ?? 0) * (float)($row->bobot ?? 0)/100);
+                                            @endphp
+
+                                            <div class="row g-3 mt-1">
+                                                <div class="col-12 col-lg-4">
+                                                    <div class="border rounded-3 p-3 h-100 bg-light-subtle">
+                                                        <div class="small text-uppercase text-muted mb-1">Indikator</div>
+                                                        <div>{{ $subcpmk->indikator }}</div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12 col-lg-6">
+                                                    <div class="border rounded-3 p-3 h-100 bg-light-subtle">
+                                                        <div class="small text-uppercase text-muted mb-1">Evaluasi</div>
+                                                        <div class="mb-2">{{ $subcpmk->evaluasi }}</div>
+                                                        <div class="small text-uppercase text-muted mb-2">Bentuk Tagihan</div>
+                                                        <div class="d-flex flex-wrap gap-2">
+                                                            @forelse ($tagihanList as $tagihan)
+                                                                <span class="badge text-bg-light border">
+                                                                    {{ $tagihan['nama'] }} ({{ intval($tagihan['total']) == $tagihan['total'] ? intval($tagihan['total']) : number_format($tagihan['total'], 2) }}%)
+                                                                </span>
+                                                            @empty
+                                                                <span class="badge text-bg-danger border">belum ada</span>
+                                                            @endforelse
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-12 col-lg-2">
+                                                    <div class="border rounded-3 p-3 h-100 bg-light-subtle d-flex flex-column justify-content-center align-items-lg-end align-items-start">
+                                                        <div class="small text-uppercase text-muted mb-1">Bobot</div>
+                                                        <span class="badge bg-primary-subtle text-primary fs-3">
+                                                            {{ intval($totalBobotSubcpmk) == $totalBobotSubcpmk ? intval($totalBobotSubcpmk) : number_format($totalBobotSubcpmk, 2) }}%
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </li>
-                                        @endforeach
+                                        @empty
+                                            <li>
+                                                <span class="alert alert-warning p-2">
+                                                    <i class="bi bi-exclamation-triangle"></i> Belum ada data SubCPMK untuk {{ $cpmk->kode }}.</span>
+                                            </li>
+                                        @endforelse
                                     </ul>
                                 </div>
                             </div>

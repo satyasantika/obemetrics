@@ -3,23 +3,21 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    {{-- header --}}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Interaksi CPL dan CPMK</strong>
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
-                </div>
-                <div class="card-body">
-                    @include('layouts.alert')
+        <div class="col">
+            <x-obe.menu-strip minWidth="960px">
+                {{-- menu mata kuliah --}}
+                @include('components.menu-mk',$mk)
+            </x-obe.menu-strip>
+            {{-- identitas mata kuliah --}}
+            @include('components.identitas-mk', $mk)
 
-                    {{-- identitas mata kuliah --}}
-                    @include('components.identitas-mk', $mk)
-                    <hr>
-                    {{-- menu mata kuliah --}}
-                    @include('components.menu-mk',$mk)
-                    <hr>
+            <div class="card">
+                <x-obe.header
+                    title="Interaksi CPL dan CPMK"
+                    subtitle="Pemetaan hubungan CPL terhadap CPMK"
+                    icon="bi bi-bezier2"
+                    :backUrl="route('home')" />
+                <div class="card-body">
                     <div class="row mb-2">
                         <div class="col">
                             <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'join_cpl_cpmks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-sm btn-success mt-1 float-end"><i class="bi bi-upload"></i> Import Interaksi CPL-CPMK</a>

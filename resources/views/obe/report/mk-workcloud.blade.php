@@ -4,40 +4,44 @@
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col">
-            <div class="card">
-                <div class="card-header">
-                    {{-- header --}}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Rekap Nilai per Kategori Workcloud
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
-                </div>
-                <div class="card-body">
-                    @include('layouts.alert')
+            <x-obe.menu-strip minWidth="960px">
+                @include('components.menu-mk',$mk)
+            </x-obe.menu-strip>
+            {{-- identitas mata kuliah --}}
+            @include('components.identitas-mk', $mk)
+        </div>
+    </div>
 
-                    {{-- identitas mata kuliah --}}
-                    @include('components.identitas-mk', $mk)
-                    <div class="row">
-                        <div class="col-md-3">Semester</div>
-                        <div class="col">
-                            <select id="semester-filter" class="form-control form-control-sm" style="max-width: 320px;">
-                                @foreach ($semesters as $semester)
-                                    <option value="{{ $semester->id }}" @selected($semester->status_aktif)>{{ $semester->kode }} - {{ $semester->nama }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <hr>
-                    @include('components.menu-mk',$mk)
-                    <hr>
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <x-obe.header
+                title="Rekap Nilai per Kategori Workcloud"
+                subtitle="Rekap komponen nilai mahasiswa berdasarkan kategori penilaian"
+                icon="bi bi-grid-1x2-fill"
+                :backUrl="route('home')" />
+                <div class="card-body bg-light-subtle">
+                            <div class="row mb-3">
+                                <div class="col-lg-6">
+                                    <div class="p-3 rounded-3 border bg-white d-flex flex-column align-items-start gap-2">
+                                    <span>Semester :</span>
+                                    <select id="semester-filter" class="form-control form-control-sm w-100" style="max-width: 320px;">
+                                        @foreach ($semesters as $semester)
+                                            <option value="{{ $semester->id }}" @selected($semester->status_aktif)>{{ $semester->kode }} - {{ $semester->nama }}</option>
+                                        @endforeach
+                                    </select>
+                                    </div>
+                                </div>
+                            </div>
                     @php
                         $defaultSemesterIdForExport = collect($semesters)->firstWhere('status_aktif', true)?->id
-                            ?? collect($semesters)->first()?->id;
+                        ?? collect($semesters)->first()?->id;
                         $kelasGroups = $kontrakMks
-                            ->groupBy(function ($item) {
-                                return trim((string) ($item->kelas ?? '')) !== '' ? trim((string) $item->kelas) : 'Tanpa Kelas';
+                        ->groupBy(function ($item) {
+                            return trim((string) ($item->kelas ?? '')) !== '' ? trim((string) $item->kelas) : 'Tanpa Kelas';
                             })
                             ->sortKeys();
-                        $defaultKelas = $kelasGroups->keys()->first();
+                            $defaultKelas = $kelasGroups->keys()->first();
                     @endphp
 
                     {{-- matriks nilai workcloud --}}
@@ -86,7 +90,7 @@
                                     @endphp
                                     <a
                                         href="{{ route('mks.workclouds.export-kelas', $mk->id) . '?' . http_build_query($exportQuery) }}"
-                                        class="btn btn-success btn-sm btn-export-kelas"
+                                        class="btn btn-outline-success btn-sm btn-export-kelas"
                                         data-base-url="{{ route('mks.workclouds.export-kelas', $mk->id) }}"
                                         data-kelas="{{ $kelas }}">
                                         <i class="bi bi-file-earmark-excel"></i> Download Excel Kelas {{ $kelas }}
@@ -94,9 +98,9 @@
                                 </div>
                                 <div class="row">
                                     <div class="col">
-                                        <div class="table-responsive nilai-matrix-wrapper">
-                                        <table class="table table-bordered table-striped nilai-matrix-table mb-0">
-                                            <thead>
+                                        <div class="table-responsive nilai-matrix-wrapper rounded-3 border bg-white shadow-sm">
+                                        <table class="table table-hover align-middle nilai-matrix-table mb-0">
+                                            <thead class="table-light">
                                                 <tr class="text-center align-middle">
                                                     <th rowspan="3">No</th>
                                                     <th rowspan="3">Mahasiswa</th>
@@ -173,13 +177,13 @@
                                                 @endforelse
                                             </tr>
                                             <tr class="matrix-empty-row" style="display:none;">
-                                                <td colspan="{{ max(5, $workclouds->count() + 1) }}"><span class="bg-warning text-dark p-2">
+                                                <td colspan="{{ max(5, $workclouds->count() + 1) }}"><span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle p-2">
                                                     Tidak ada data mahasiswa pada semester yang dipilih.</span>
                                                 </td>
                                             </tr>
                                             @else
                                             <tr>
-                                                <td colspan="{{ max(5, $workclouds->count() + 1) }}"><span class="bg-warning text-dark p-2">
+                                                <td colspan="{{ max(5, $workclouds->count() + 1) }}"><span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle p-2">
                                                     Belum ada data kontrak mahasiswa untuk Mata Kuliah ini.</span>
                                                 </td>
                                             </tr>
@@ -279,14 +283,14 @@ document.addEventListener('DOMContentLoaded', function () {
 .nilai-matrix-table thead th {
     position: sticky;
     top: 0;
-    background: #fff;
+    background: var(--bs-light);
     z-index: 20;
 }
 
 .nilai-matrix-table .sticky-col {
     position: sticky;
     left: 0;
-    background: #fff;
+    background: var(--bs-white);
     z-index: 15;
     min-width: 240px;
 }

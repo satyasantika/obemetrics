@@ -12,8 +12,7 @@
                 </div>
 
                 <div class="card-body">
-                    @include('layouts.alert')
-                    @php
+                     @php
                         $selectedProdi = old('prodi_id') ?? ($preview['prodi_id'] ?? request('prodi_id'));
                     @endphp
                     <form action="{{ route('setting.import.mahasiswas') }}" method="POST" enctype="multipart/form-data">

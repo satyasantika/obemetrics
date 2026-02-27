@@ -4,21 +4,24 @@
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col">
-            <div class="card">
-                <div class="card-header">
-                    {{-- header --}}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Set Nilai Tagihan Mata Kuliah
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
-                </div>
-                <div class="card-body">
-                    @include('layouts.alert')
+            <x-obe.menu-strip minWidth="960px">
+                {{-- menu mata kuliah --}}
+                @include('components.menu-mk',$mk)
+            </x-obe.menu-strip>
+            {{-- identitas mata kuliah --}}
+            @include('components.identitas-mk', $mk)
 
-                    {{-- identitas mata kuliah --}}
-                    @include('components.identitas-mk', $mk)
-                    <div class="row">
-                        <div class="col-md-3">Semester</div>
-                        <div class="col">
+            <div class="card">
+                <x-obe.header
+                    title="Set Nilai Tagihan Mata Kuliah"
+                    subtitle="Pengaturan nilai mahasiswa per komponen penilaian"
+                    icon="bi bi-calculator-fill"
+                    :backUrl="route('home')" />
+                <div class="card-body bg-light-subtle">
+                    <div class="row mb-3">
+                        <div class="col-lg-6">
+                            <div class="p-3 rounded-3 border bg-white d-flex flex-column align-items-start gap-2">
+                                <span>Semester :</span>
                             @php
                                 $semesterOptions = $mk->kontrakMks()
                                     ->whereNotNull('semester_id')
@@ -31,17 +34,14 @@
                                     ->sortByDesc('kode')
                                     ->values();
                             @endphp
-                            <select id="semester-filter" name="semester_id" class="form-control form-control-sm" style="max-width: 320px;">
+                            <select id="semester-filter" name="semester_id" class="form-control form-control-sm w-100" style="max-width: 320px;">
                                 @foreach ($semesterOptions as $semester)
                                     <option value="{{ $semester->id }}" @selected($semester->status_aktif)>{{ $semester->kode }} - {{ $semester->nama }}</option>
                                 @endforeach
                             </select>
+                            </div>
                         </div>
                     </div>
-                    <hr>
-                    {{-- menu mata kuliah --}}
-                    @include('components.menu-mk',$mk)
-                    <hr>
                     @php
                         $sortedKontrakMks = collect($kontrakMks)
                             ->sortBy(fn ($item) => \Illuminate\Support\Str::lower((string) ($item->mahasiswa->nama ?? '')))
@@ -97,14 +97,14 @@
                                     aria-labelledby="{{ $kelasPaneId }}-tab">
 
                                     <div class="mb-3">
-                                        <a href="{{ route('setting.import.nilais', array_merge(['mk' => $mk->id], $kelasQuery)) }}" class="btn btn-secondary btn-sm">
+                                        <a href="{{ route('setting.import.nilais', array_merge(['mk' => $mk->id], $kelasQuery)) }}" class="btn btn-outline-secondary btn-sm">
                                             <i class="bi bi-upload"></i> Import Nilai {{ $kelasLabel }}
                                         </a>
                                     </div>
 
-                                    <div class="table-responsive nilai-matrix-wrapper">
-                                        <table class="table table-bordered table-striped nilai-matrix-table mb-0">
-                                            <thead>
+                                    <div class="table-responsive nilai-matrix-wrapper rounded-3 border bg-white shadow-sm">
+                                        <table class="table table-hover align-middle nilai-matrix-table mb-0">
+                                            <thead class="table-light">
                                                 <tr>
                                                     <th class="sticky-col">Mahasiswa</th>
                                                     @forelse ($penugasans as $penugasan)
@@ -161,7 +161,7 @@
                                                                     <input
                                                                         type="number"
                                                                         name="nilai"
-                                                                        class="form-control form-control-sm"
+                                                                        class="form-control form-control-sm text-end border-primary-subtle"
                                                                         min="0"
                                                                         max="100"
                                                                         step="0.01"
@@ -177,7 +177,7 @@
                                                     @endforelse
                                                 </tr>
                                             @endforeach
-                                            <tr>
+                                            <tr class="bg-light-subtle fw-semibold">
                                                 <td>Rata-rata Kelas</td>
                                                 @forelse ($penugasans as $penugasan)
                                                     @php
@@ -193,7 +193,7 @@
                                                 @endforelse
                                             </tr>
                                             <tr class="matrix-empty-row" style="display:none;">
-                                                <td colspan="{{ max(2, $penugasans->count() + 1) }}"><span class="bg-warning text-dark p-2">
+                                                <td colspan="{{ max(2, $penugasans->count() + 1) }}"><span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle p-2">
                                                     Tidak ada data mahasiswa pada semester yang dipilih.</span>
                                                 </td>
                                             </tr>
@@ -326,14 +326,14 @@ document.addEventListener('DOMContentLoaded', function () {
 .nilai-matrix-table thead th {
     position: sticky;
     top: 0;
-    background: #fff;
+    background: var(--bs-light);
     z-index: 20;
 }
 
 .nilai-matrix-table .sticky-col {
     position: sticky;
     left: 0;
-    background: #fff;
+    background: var(--bs-white);
     z-index: 15;
     min-width: 240px;
 }

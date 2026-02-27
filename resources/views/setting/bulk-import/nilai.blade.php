@@ -11,7 +11,6 @@
                 </div>
 
                 <div class="card-body">
-                    @include('layouts.alert')
 
                     <div class="row">
                         <div class="col-md-3">Mata Kuliah</div>

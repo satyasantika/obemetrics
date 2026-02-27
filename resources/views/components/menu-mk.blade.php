@@ -31,11 +31,13 @@
     $nilaiExists = $mk->nilais()->exists();
 
     $dataComplete = $cpmkExists && $joinCplCpmkExists && $subcpmkExists;
-    $penilaianComplete = $penugasanExists && $joinSubcpmkPenugasanExists && $nilaiExists;
+    $siapMenilai = $dataComplete && $penugasanExists && $joinSubcpmkPenugasanExists;
+    $penilaianComplete = $dataComplete && $penugasanExists && $joinSubcpmkPenugasanExists && $nilaiExists;
 
     $warningDataIncomplete = 'Data CPMK, SubCPMK, dan relasi CPL-CPMK belum lengkap. Silakan upload datanya terlebih dahulu.';
     $warningPenugasanIncomplete = 'Lengkapi data tagihan penugasan mata kuliah ini.';
     $warningNilaiIncomplete = 'Silakan lengkapi nilai terlebih dahulu.';
+    $warningJoinSubcpmkPenugasanIncomplete = 'Silakan lengkapi relasi SubCPMK-Penugasan terlebih dahulu.';
 
 @endphp
 
@@ -78,6 +80,11 @@
         </x-menu-link>
     </div>
     <div class="tab-pane fade {{ $isPenilaianTab ? 'show active' : '' }}" id="{{ $tabId }}-penilaian" role="tabpanel" aria-labelledby="{{ $tabId }}-penilaian-tab" tabindex="0">
+        @if(!$joinSubcpmkPenugasanExists)
+        {{-- jika data sudah ada, tetapi belum set subcpmk-penugasan --}}
+        <x-menu-warning :message="$warningJoinSubcpmkPenugasanIncomplete" />
+        @endif
+
         {{-- jika data belum lengkap, upload data master --}}
         @if (!$dataComplete)
         <x-menu-warning :message="$warningDataIncomplete" />
@@ -97,7 +104,8 @@
                 Set SubCPMK >< Tugas
             </x-menu-link>
         @endif
-        @if($penugasanExists)
+        @if($siapMenilai)
+        {{-- jika sudah siap menilai --}}
         <x-menu-link :href="route('mks.nilais.index', [$mk->id])" :active="$isNilai" icon="bi bi-clipboard-check" class="mt-1">
             Pengisian Nilai
         </x-menu-link>
@@ -113,13 +121,20 @@
         {{-- jika data belum lengkap, upload data master --}}
         @if (!$dataComplete)
         <x-menu-warning :message="$warningDataIncomplete" />
-        @elseif (!$penugasanExists)
+        @endif
+        @if (!$penugasanExists)
         {{-- jika data sudah ada, tetapi belum lengkap tagihan tugasnya --}}
         <x-menu-warning :message="$warningPenugasanIncomplete" />
-        @elseif(!$nilaiExists)
+        @endif
+        @if(!$joinSubcpmkPenugasanExists)
+        {{-- jika data sudah ada, tetapi belum set subcpmk-penugasan --}}
+        <x-menu-warning :message="$warningJoinSubcpmkPenugasanIncomplete" />
+        @endif
+        @if(!$nilaiExists)
         {{-- jika data sudah ada, tetapi belum lengkap nilai --}}
         <x-menu-warning :message="$warningNilaiIncomplete" />
-        @else
+        @endif
+        @if ($penilaianComplete)
         {{-- jika data sudah lengkap, tampilkan menu laporan evaluasi ketercapaian CPL --}}
         <x-menu-link :href="route('mks.achievements.index', [$mk->id])" :active="$isAchievement" icon="bi bi-graph-up" class="mt-1">
             Evaluasi Ketercapaian CPL

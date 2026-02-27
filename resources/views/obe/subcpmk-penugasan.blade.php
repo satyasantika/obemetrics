@@ -4,55 +4,69 @@
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col">
-            <div class="card">
-                <div class="card-header">
-                    {{-- header --}}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Set SubCPMK untuk Setiap Tugas Mata Kuliah</strong>
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
-                </div>
-                <div class="card-body">
-                    @include('layouts.alert')
+            <x-obe.menu-strip minWidth="960px">
+                {{-- menu mata kuliah --}}
+                @include('components.menu-mk',$mk)
+            </x-obe.menu-strip>
+            {{-- identitas mata kuliah --}}
+            @include('components.identitas-mk', $mk)
 
-                    {{-- identitas mata kuliah --}}
-                    @include('components.identitas-mk', $mk)
-                    <div class="row">
-                        <div class="col-md-3">Semester</div>
-                        <div class="col">
-                            <select id="semester-filter" name="semester_id" class="form-control form-control-sm" style="max-width: 320px;">
-                                @foreach ($semesterOptions as $semester)
-                                    <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $selectedSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
-                                @endforeach
-                            </select>
+            <div class="card">
+                <x-obe.header
+                    title="Set SubCPMK untuk Setiap Tugas Mata Kuliah"
+                    subtitle="Pemetaan SubCPMK pada komponen penugasan"
+                    icon="bi bi-diagram-3"
+                    :backUrl="route('home')" />
+                <div class="card-body bg-light-subtle">
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-6 d-flex">
+                            <div class="p-3 rounded-3 border bg-white d-flex flex-column align-items-start gap-2 h-100 w-100">
+                                <span>Semester :</span>
+                                <select id="semester-filter" name="semester_id" class="form-control form-control-sm w-100" style="max-width: 320px;">
+                                    @foreach ($semesterOptions as $semester)
+                                        <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $selectedSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
+                                    @endforeach
+                                </select>
+                                <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'join_subcpmk_penugasans', 'semester_id' => $selectedSemesterId]) }}" class="btn btn-sm btn-success"><i class="bi bi-upload"></i> Import banyak SubCPMK untuk Penugasan</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex">
+                            <div class="p-3 p-lg-4 rounded-3 border border-primary-subtle bg-primary-subtle text-primary-emphasis h-100 w-100 d-flex flex-column justify-content-between text-md-end text-start">
+                                <div>
+                                    <span class="small text-uppercase fw-semibold d-block">Ringkasan Relasi</span>
+                                    <span class="h5 mb-0 d-block mt-2">Total Tugas: {{ $penugasans->count() }}</span>
+                                </div>
+                                <small class="mt-2">Atur bobot relasi SubCPMK agar total tiap tugas = 100%</small>
+                            </div>
                         </div>
                     </div>
-                    <hr>
-                    {{-- menu mata kuliah --}}
-                    @include('components.menu-mk',$mk)
-                    <hr>
                     <div class="row">
-                        <div class="col">
-                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'join_subcpmk_penugasans', 'semester_id' => $selectedSemesterId]) }}" class="btn btn-sm btn-success mb-2 float-end"><i class="bi bi-upload"></i> Import banyak SubCPMK untuk Penugasan</a>
+                        <div class="col mb-2">
+                            <div class="p-3 rounded-3 border border-warning-subtle bg-warning-subtle text-warning-emphasis">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    <span class="fw-semibold">Petunjuk Pemetaan SubCPMK - Penugasan</span>
+                                </div>
+                                <div class="small">
+                                    Bagian ini digunakan untuk mengaitkan SubCPMK dengan penugasan (tugas) yang ada pada mata kuliah ini.<br>
+                                    Pada kondisi tertentu, satu penugasan bisa terkait dengan lebih dari satu SubCPMK, dan satu SubCPMK bisa terkait dengan lebih dari satu penugasan.<br>
+                                    Silakan isi bobot (tanpa %) dan tekan Enter pada pasangan isian SubCPMK Penugasan. Pastikan tampil keterangan <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">Terkait</span><br>
+                                    Untuk menghapus keterkaitan, kosongkan nilai bobot dan tekan Enter.<br>
+                                    Bobot total untuk setiap penugasan harus 100%. (perhatikan keterangan di setiap penugasan)
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col bg-warning text-dark p-2 mb-2">
-                            Bagian ini digunakan untuk mengaitkan SubCPMK dengan penugasan (tugas) yang ada pada mata kuliah ini.<br>
-                            Pada kondisi tertentu, satu penugasan bisa terkait dengan lebih dari satu SubCPMK, dan satu SubCPMK bisa terkait dengan lebih dari satu penugasan.<br>
-                            Silakan isi bobot (tanpa %) dan tekan Enter pada pasangan isian SubCPMK Penugasan. Pastikan tampil keterangan <span class="badge bg-success text-white">Terkait</span><br>
-                            Untuk menghapus keterkaitan, kosongkan nilai bobot dan tekan Enter.<br>
-                            Bobot total untuk setiap penugasan harus 100%. (perhatikan keterangan di setiap penugasan)
-                        </div>
-                    </div>
-                    <div class="row">
                         <div class="col">
-                            <table class="table table-bordered table-striped">
-                                <thead>
+                            <div class="table-responsive rounded-3 border bg-white shadow-sm">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
                                     <tr>
-                                        <th></th>
+                                        <th class="text-uppercase small text-muted fw-semibold">Penugasan</th>
                                         @forelse ($subcpmks as $subcpmk)
-                                            <th>
-                                                <span title="{{ $subcpmk->nama }}">
+                                            <th class="text-center text-uppercase small text-muted fw-semibold fs-4">
+                                                <span class="badge rounded-pill bg-info-subtle text-info-emphasis border border-info-subtle" title="{{ $subcpmk->nama }}">
                                                     {{ $subcpmk->kode }}
                                                 </span>
                                             </th>
@@ -63,21 +77,19 @@
                                 </thead>
                                 <tbody>
                                 @forelse ($penugasans as $penugasan)
-                                    <tr style="vertical-align: text-top;">
-                                        <td>
-                                            <strong>{{ $penugasan->kode }}:</strong><br>
-                                            {{ $penugasan->nama }}
-                                            <br>
+                                    <tr class="align-top">
+                                        <td class="bg-light-subtle" style="min-width: 240px;">
+                                            <span class="fw-semibold d-block">{{ $penugasan->kode }}</span>
+                                            <span class="text-muted small d-block">{{ $penugasan->nama }}</span>
                                             @php
                                                 $totalBobot = (float) ($bobotTotalByPenugasan[$penugasan->id] ?? 0);
                                             @endphp
-                                            <span class="total-bobot-label text-{{ $totalBobot==100 ? 'primary' : 'danger' }}">
-                                                (Bobot:
-                                                <span class="total-bobot-value">{{ $totalBobot }}</span>% )
+                                            <span class="total-bobot-label badge rounded-pill mt-2 text-{{ $totalBobot==100 ? 'primary' : 'danger' }} bg-white border border-{{ $totalBobot==100 ? 'primary' : 'danger' }}">
+                                                Bobot: <span class="total-bobot-value">{{ $totalBobot }}</span>%
                                             </span>
                                         </td>
                                         @forelse ($subcpmks as $subcpmk)
-                                            <td>
+                                            <td class="p-2">
                                                 @php
                                                     $cellKey = $penugasan->id . '_' . $subcpmk->id;
                                                     $linkedObj = $linkByKey[$cellKey] ?? null;
@@ -91,12 +103,12 @@
                                                     <input type="hidden" name="mk_id" value="{{ $mk->id }}">
                                                     <input type="hidden" name="semester_id" value="{{ $selectedSemesterId }}">
                                                     <div class="mb-1 d-flex align-items-center justify-content-between gap-1">
-                                                        <span class="badge {{ $linkedObj ? 'bg-success' : 'bg-white text-dark' }} link-status-badge">
+                                                        <span class="badge {{ $linkedObj ? 'bg-success-subtle text-success-emphasis border border-success-subtle' : 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle' }} link-status-badge">
                                                             {{ $linkedObj ? 'Terkait' : 'x' }}
                                                         </span>
                                                         <button
                                                             type="button"
-                                                            class="btn btn-outline-danger btn-sm py-0 px-2 clear-bobot-btn {{ $linkedObj ? '' : 'd-none' }}"
+                                                            class="btn btn-outline-danger btn-sm py-0 px-2 rounded-pill clear-bobot-btn {{ $linkedObj ? '' : 'd-none' }}"
                                                             title="Hapus relasi SubCPMK-Penugasan"
                                                             aria-label="Hapus relasi"
                                                         >
@@ -105,7 +117,7 @@
                                                     </div>
                                                     <div class="d-flex align-items-center gap-1">
                                                         <input
-                                                            class="form-control form-control-sm bobot-input"
+                                                            class="form-control form-control-sm bobot-input text-end border-primary-subtle"
                                                             type="number"
                                                             name="bobot"
                                                             title="{{ $subcpmk->nama }}"
@@ -132,6 +144,7 @@
                                 @endforelse
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -218,7 +231,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (badge) {
                     const linked = !!result.linked;
                     badge.textContent = linked ? 'Terkait' : 'x';
-                    badge.className = 'badge ' + (linked ? 'bg-success' : 'bg-white text-dark') + ' link-status-badge';
+                    badge.className = 'badge ' + (linked
+                        ? 'bg-success-subtle text-success-emphasis border border-success-subtle'
+                        : 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle') + ' link-status-badge';
 
                     if (clearBtn) {
                         clearBtn.classList.toggle('d-none', !linked);

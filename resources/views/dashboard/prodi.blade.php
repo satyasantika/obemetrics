@@ -3,43 +3,42 @@
 @endpush
 <div class="row">
     <div class="col">
-        <div class="card bg-primary bg-opacity-10 mt-3">
-            <div class="card-header"><span class="h4">Manajemen Kurikulum OBE oleh UPPS</span></div>
+        <div class="card border-0 shadow-sm mt-3">
+            <div class="card-header bg-white border-0 pb-0">
+                <h5 class="mb-0">Manajemen Kurikulum OBE</h5>
+                <small class="text-muted">Kelola kurikulum dan lanjutkan ke detail pemetaan CPL</small>
+            </div>
             <div class="card-body">
-                @include('layouts.alert')
                 {{-- Program Studi --}}
                 @forelse (auth()->user()->joinProdiUsers->pluck('prodi') as $prodi)
-                    <span class="h5">Program Studi {{ $prodi->jenjang }} {{ $prodi->nama }}</span>
-                    <hr>
+                    <div class="border rounded-3 p-3 mb-3 bg-light-subtle">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                        <span class="h6 mb-0">Program Studi {{ $prodi->jenjang }} {{ $prodi->nama }}</span>
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateKurikulum-{{ $prodi->id }}">
+                            <i class="bi bi-plus-circle"></i> Tambah Kurikulum
+                        </button>
+                    </div>
 
-                    {{-- Kurikulum --}}
-                    Kurikulum pada program studi ini:
-                    <ol>
+                    <ol class="mb-2">
                         @forelse (auth()->user()->joinProdiUsers->pluck('prodi.kurikulums')->flatten() as $kurikulum)
-                        <hr>
-                        <div class="row mb-1">
-                            <div class="col">
-                                <li>
-                                    {{ $kurikulum->nama }}
-                                    <br>
-                                    <button type="button" class="btn btn-link text-primary p-0" style="text-decoration: none;" data-bs-toggle="modal" data-bs-target="#modalEditKurikulum-{{ $kurikulum->id }}">
+                        <li class="mb-2">
+                            <div class="border rounded-2 p-2 p-md-3 bg-white">
+                                <div class="fw-semibold">{{ $kurikulum->nama }}</div>
+                                <div class="mt-1 d-flex align-items-center gap-2 flex-wrap">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditKurikulum-{{ $kurikulum->id }}">
                                         <i class="bi bi-pencil-square"></i> Edit
                                     </button>
-                                    |
-                                    <a href="{{ route('kurikulums.profils.index',[$kurikulum->id]) }}" class="text-primary" style="text-decoration: none;">
-                                        <i class="bi bi-eye"></i> Selengkapnya ...
+                                    <a href="{{ route('kurikulums.profils.index',[$kurikulum->id]) }}" class="btn btn-link btn-sm p-0 text-decoration-none">
+                                        <i class="bi bi-eye"></i> Selengkapnya
                                     </a>
-                                </li>
+                                </div>
                             </div>
-                        </div>
+                        </li>
                         @empty
-                            Tidak ada kurikulum pada program studi ini.
+                            <div class="text-muted">Tidak ada kurikulum pada program studi ini.</div>
                         @endforelse
                     </ol>
-                    <hr>
-                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateKurikulum-{{ $prodi->id }}">
-                        <i class="bi bi-plus-circle"></i> Tambah Kurikulum
-                    </button>
+                    </div>
 
                     <div class="modal fade" id="modalCreateKurikulum-{{ $prodi->id }}" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog modal-lg modal-dialog-scrollable">

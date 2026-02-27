@@ -3,23 +3,25 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    {{-- header --}}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Pemetaan Rencana Asesmen CPL</strong>
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
-                </div>
-                <div class="card-body">
-                    @include('layouts.alert')
+        <div class="col">
+            <x-obe.menu-strip minWidth="800px">
+                {{-- menu kurikulum --}}
+                @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
+            </x-obe.menu-strip>
+            {{-- identitas kurikulum --}}
+            @include('components.identitas-kurikulum',['kurikulum' => $kurikulum])
+        </div>
+    </div>
 
-                    {{-- identitas kurikulum --}}
-                    @include('components.identitas-kurikulum',['kurikulum' => $kurikulum])
-                    <hr>
-                    {{-- menu kurikulum --}}
-                    @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
-                    <hr>
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <x-obe.header
+                    title="Pemetaan Rencana Asesmen CPL"
+                    subtitle="Pemetaan kontribusi mata kuliah terhadap capaian CPL"
+                    icon="bi bi-diagram-3-fill"
+                    :backUrl="route('home')" />
+                <div class="card-body">
 
                     <div class="row">
                         <div class="col">

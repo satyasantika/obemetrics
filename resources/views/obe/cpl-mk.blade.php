@@ -4,22 +4,20 @@
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col">
-            <div class="card">
-                <div class="card-header">
-                    {{-- header --}}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Interaksi CPL dan Mata kuliah</strong>
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
-                </div>
-                <div class="card-body">
-                    @include('layouts.alert')
+            <x-obe.menu-strip minWidth="800px">
+                {{-- menu kurikulum --}}
+                @include('components.menu-kurikulum', ['kurikulum' => $kurikulum])
+            </x-obe.menu-strip>
+            {{-- identitas kurikulum --}}
+            @include('components.identitas-kurikulum', ['kurikulum' => $kurikulum])
 
-                    {{-- identitas mata kuliah --}}
-                    @include('components.identitas-kurikulum', ['kurikulum' => $kurikulum])
-                    <hr>
-                    {{-- menu mata kuliah --}}
-                    @include('components.menu-kurikulum', ['kurikulum' => $kurikulum])
-                    <hr>
+            <div class="card">
+                <x-obe.header
+                    title="Interaksi CPL dan Mata Kuliah"
+                    subtitle="Pemetaan kontribusi CPL pada setiap mata kuliah"
+                    icon="bi bi-link-45deg"
+                    :backUrl="route('home')" />
+                <div class="card-body">
                     <div class="row mb-2">
                         <div class="col">
                             <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_cpl_mks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-sm btn-success mt-1 float-end"><i class="bi bi-upload"></i> Import Interaksi CPL >< MK</a>

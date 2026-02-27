@@ -11,7 +11,6 @@
                 </div>
 
                 <div class="card-body">
-                    @include('layouts.alert')
 
                     <form action="{{ route('setting.import.admin-master.upload') }}" method="POST" enctype="multipart/form-data">
                         @csrf

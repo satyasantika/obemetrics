@@ -3,32 +3,21 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col">
+            <x-obe.menu-strip minWidth="800px">
+                {{-- menu kurikulum --}}
+                @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
+            </x-obe.menu-strip>
+            {{-- identitas mata kuliah --}}
+            @include('components.identitas-mk', $mk)
+
             <div class="card">
-                <div class="card-header">
-                    {{-- header --}}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Set Dosen ke Mata Kuliah</strong>
-                    <a href="{{ route('kurikulums.mks.index',['kurikulum'=>$kurikulum->id]) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
-                </div>
+                <x-obe.header
+                    title="Set Dosen ke Mata Kuliah"
+                    subtitle="Pengaturan dosen pengampu dan koordinator mata kuliah"
+                    icon="bi bi-person-workspace"
+                    :backUrl="route('kurikulums.mks.index',['kurikulum'=>$kurikulum->id])" />
                 <div class="card-body">
-                    @include('layouts.alert')
-
-                    {{-- identitas kurikulum --}}
-                    <div class="row">
-                        <div class="col-md-4">Mata Kuliah</div>
-                        <div class="col"><strong>{{ $mk->nama }}</strong></div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">Nama Kurikulum</div>
-                        <div class="col"><strong>{{ $kurikulum->nama }}</strong></div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">Program Studi</div>
-                        <div class="col"><strong>{{ $kurikulum->prodi->jenjang }} {{ $kurikulum->prodi->nama }}</strong></div>
-                    </div>
-                    <hr>
-
                     <div class="row">
                         <div class="col">
                             <table class="table table-bordered table-striped">

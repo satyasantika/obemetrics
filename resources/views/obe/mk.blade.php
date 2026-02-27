@@ -3,23 +3,21 @@
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    {{-- header --}}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Data Mata Kuliah (MK)</strong>
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
-                </div>
-                <div class="card-body">
-                    @include('layouts.alert')
+        <div class="col">
+            <x-obe.menu-strip minWidth="800px">
+                {{-- menu kurikulum --}}
+                @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
+            </x-obe.menu-strip>
+            {{-- identitas kurikulum --}}
+            @include('components.identitas-kurikulum',['kurikulum' => $kurikulum])
 
-                    {{-- identitas kurikulum --}}
-                    @include('components.identitas-kurikulum',['kurikulum' => $kurikulum])
-                    <hr>
-                    {{-- menu kurikulum --}}
-                    @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
-                    <hr>
+            <div class="card">
+                <x-obe.header
+                    title="Data Mata Kuliah (MK)"
+                    subtitle="Kelola mata kuliah pada kurikulum aktif"
+                    icon="bi bi-journal-bookmark-fill"
+                    :backUrl="route('home')" />
+                <div class="card-body">
                     <div class="row mb-2">
                         <div class="col">
                             <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateMk"><i class="bi bi-plus-circle"></i> Tambah Mata Kuliah</button>

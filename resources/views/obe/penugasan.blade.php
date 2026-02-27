@@ -4,21 +4,22 @@
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col">
-            <div class="card">
-                <div class="card-header">
-                    {{-- header --}}
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    Rancangan Tugas</strong>
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
-                </div>
-                <div class="card-body">
-                    @include('layouts.alert')
+            <x-obe.menu-strip minWidth="960px">
+                {{-- menu mata kuliah --}}
+                @include('components.menu-mk',$mk)
+            </x-obe.menu-strip>
+            {{-- identitas mata kuliah --}}
+            @include('components.identitas-mk', $mk)
 
-                    {{-- identitas mata kuliah --}}
-                    @include('components.identitas-mk', $mk)
-                    <div class="row">
-                        <div class="col-md-3">Semester</div>
-                        <div class="col">
+            <div class="card">
+                <x-obe.header
+                    title="Rancangan Tugas"
+                    subtitle="Kelola komponen tugas dan bobot penilaian"
+                    icon="bi bi-journal-richtext"
+                    :backUrl="route('home')" />
+                <div class="card-body bg-light-subtle">
+                    <div class="row mb-3">
+                        <div class="col-md-6">Semester :
                             @php
                                 $semesterOptions = $mk->kontrakMks()
                                     ->whereNotNull('semester_id')
@@ -36,48 +37,42 @@
                                     <option value="{{ $semester->id }}" @selected($semester->status_aktif)>{{ $semester->kode }} - {{ $semester->nama }}</option>
                                 @endforeach
                             </select>
+                            <button type="button" class="btn btn-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#modalCreatePenugasan"><i class="bi bi-plus-circle"></i> Tambah Tagihan</button>
+                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'penugasans']) }}" class="btn btn-sm btn-success mt-2"><i class="bi bi-upload"></i> Import Banyak Tagihan</a>
                         </div>
-                    </div>
-                    <hr>
-                    {{-- menu mata kuliah --}}
-                    @include('components.menu-mk',$mk)
-                    <hr>
-                    <div class="row">
-                        <div class="col">
-                            <div class="float-end">
-                                <span class="h4">Banyak Tugas: {{ $penugasans->count() }}</span>
-                                <br>
-                                <span class="h4 {{ $penugasans->sum('bobot')!=100 ? 'text-danger' : '' }}">Total Bobot Tugas: {{ $penugasans->sum('bobot') }} %</span>
+                        <div class="col-md-6 d-flex">
+                            <div class="p-3 p-lg-4 rounded-3 border border-primary-subtle bg-primary-subtle text-primary-emphasis h-100 w-100 d-flex flex-column justify-content-between text-md-end text-start">
+                                <div>
+                                    <span class="small text-uppercase fw-semibold d-block">Ringkasan Tugas</span>
+                                    <span class="h5 mb-0 d-block mt-2">Banyak Tugas: {{ $penugasans->count() }}</span>
+                                </div>
+                                <span class="h5 mb-0 d-block fw-bold {{ $penugasans->sum('bobot') != 100 ? 'text-danger' : 'text-success' }}">
+                                    Total Bobot Tugas: {{ $penugasans->sum('bobot') }}%
+                                </span>
                             </div>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col">
-                            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreatePenugasan"><i class="bi bi-plus-circle"></i> Tambah Tagihan</button>
-                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'penugasans']) }}" class="btn btn-sm btn-success"><i class="bi bi-upload"></i> Import Banyak Tagihan</a>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col">
-                            <table class="table">
-                                <thead>
+                            <div class="table-responsive rounded-3 border bg-white shadow-sm">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
                                     <tr>
-                                        <th>Kode</th>
-                                        <th>SubCPMK</th>
-                                        <th>Nama Tugas</th>
-                                        <th>Bobot (%)</th>
-                                        <th>Bentuk Evaluasi</th>
+                                        <th class="text-uppercase small text-muted">Kode</th>
+                                        <th class="text-uppercase small text-muted">SubCPMK</th>
+                                        <th class="text-uppercase small text-muted">Nama Tugas</th>
+                                        <th class="text-uppercase small text-muted">Bobot (%)</th>
+                                        <th class="text-uppercase small text-muted">Bentuk Evaluasi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @forelse ($penugasans as $penugasan)
                                     <tr>
-                                        <td class="text-end">{{ $penugasan->kode }}</td>
+                                        <td class="fw-semibold">{{ $penugasan->kode }}</td>
                                         <td>
                                             @forelse ($penugasan->joinSubcpmkPenugasans as $item)
-                                            <span class="badge bg-white text-dark border">
+                                            <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle me-1 mb-1">
                                                 {{ $item->subcpmk->kode }} (<span class="text-primary">{{ $item->bobot }}%</span>)
                                             </span>
                                             @empty
@@ -86,11 +81,11 @@
                                         </td>
                                         <td>
                                             {{ $penugasan->nama }}
-                                            <button type="button" class="btn btn-sm btn-white text-primary" data-bs-toggle="modal" data-bs-target="#modalEditPenugasan-{{ $penugasan->id }}">
+                                            <button type="button" class="btn btn-sm btn-outline-primary border-0" data-bs-toggle="modal" data-bs-target="#modalEditPenugasan-{{ $penugasan->id }}">
                                                 <i class="bi bi-pencil-square"></i>
                                             </button>
                                         </td>
-                                        <td>{{ $penugasan->bobot }}</td>
+                                        <td class="fw-semibold">{{ $penugasan->bobot }}</td>
                                         <td>{{ $penugasan->evaluasi->nama }}</td>
                                     </tr>
                                     @empty
@@ -100,6 +95,7 @@
                                     @endforelse
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -107,20 +103,22 @@
         </div>
     </div>
     <div class="row justify-content-center mt-3">
-        <div class="col-auto">
+        <div class="col">
             <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <span class="h5">Tabel Rencana Evaluasi (<i>Assessment Plan</i>)</span>
-                </div>
-                <div class="card-body">
-                    <table class="table table-hover">
-                        <thead class="table-dark">
+                <x-obe.header
+                    title="Tabel Rencana Evaluasi"
+                    subtitle="Assessment Plan berdasarkan komponen evaluasi"
+                    icon="bi bi-clipboard2-data" />
+                <div class="card-body bg-light-subtle">
+                    <div class="table-responsive rounded-3 border bg-white shadow-sm">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
                             <tr>
-                                <th>Komponen Evaluasi</th>
-                                <th>Bentuk Asesmen</th>
-                                <th>Bobot (%)</th>
-                                <th>Mengukur CPL</th>
-                                <th>Mengukur CPMK</th>
+                                <th class="text-uppercase small text-muted">Komponen Evaluasi</th>
+                                <th class="text-uppercase small text-muted">Bentuk Asesmen</th>
+                                <th class="text-uppercase small text-muted">Bobot (%)</th>
+                                <th class="text-uppercase small text-muted">Mengukur CPL</th>
+                                <th class="text-uppercase small text-muted">Mengukur CPMK</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -195,6 +193,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
         </div>
