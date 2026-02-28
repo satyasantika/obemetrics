@@ -1,0 +1,88 @@
+@can('access admin dashboard')
+    <li class="nav-header">ADMIN</li>
+
+    <li class="nav-item">
+        <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-users-cog"></i>
+            <p>Manajemen User</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*', 'permissions.*', 'rolepermissions.*', 'userroles.*', 'userpermissions.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-user-shield"></i>
+            <p>Role & Permission</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{{ route('prodis.index') }}" class="nav-link {{ request()->routeIs('prodis.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-book-reader"></i>
+            <p>Prodi</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{{ route('semesters.index') }}" class="nav-link {{ request()->routeIs('semesters.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-calendar-alt"></i>
+            <p>Semester</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{{ route('evaluasis.index') }}" class="nav-link {{ request()->routeIs('evaluasis.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-clipboard-check"></i>
+            <p>Evaluasi</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{{ route('mahasiswas.index') }}" class="nav-link {{ request()->routeIs('mahasiswas.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-user-graduate"></i>
+            <p>Mahasiswa</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{{ route('kontrakmks.index') }}" class="nav-link {{ request()->routeIs('kontrakmks.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-file-signature"></i>
+            <p>Kontrak Mata Kuliah</p>
+        </a>
+    </li>
+
+    <li class="nav-item {{ request()->routeIs('setting.import.*') ? 'menu-open' : '' }}">
+        <a href="#" class="nav-link {{ request()->routeIs('setting.import.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-file-import"></i>
+            <p>
+                Bulk Import
+                <i class="right fas fa-angle-left"></i>
+            </p>
+        </a>
+        <ul class="nav nav-treeview">
+            <li class="nav-item">
+                <a href="{{ route('setting.import.admin-master') }}" class="nav-link {{ request()->routeIs('setting.import.admin-master*') ? 'active' : '' }}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Admin Master</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('setting.import.users') }}" class="nav-link {{ request()->routeIs('setting.import.users*') ? 'active' : '' }}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Users</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('setting.import.mahasiswas') }}" class="nav-link {{ request()->routeIs('setting.import.mahasiswas*') ? 'active' : '' }}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Mahasiswa</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('setting.import.joinprodiusers') }}" class="nav-link {{ request()->routeIs('setting.import.joinprodiusers*') ? 'active' : '' }}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Join Prodi User</p>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('setting.import.kontrakmks') }}" class="nav-link {{ request()->routeIs('setting.import.kontrakmks*') ? 'active' : '' }}">
+                    <i class="far fa-circle nav-icon"></i>
+                    <p>Kontrak MK</p>
+                </a>
+            </li>
+        </ul>
+    </li>
+@endcan
