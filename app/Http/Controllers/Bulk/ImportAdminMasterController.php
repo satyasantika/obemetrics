@@ -28,7 +28,7 @@ class ImportAdminMasterController extends Controller
         ],
         'joinprodiusers' => [
             'label' => 'Dosen ke Program Studi',
-            'columns' => ['kode_prodi', 'nama_prodi', 'nidn', 'nama_dosen', 'status'],
+            'columns' => ['kode_prodi', 'nama_prodi', 'nidn', 'nama_dosen', 'status_pimpinan'],
             'required' => ['kode_prodi', 'nidn'],
         ],
     ];
@@ -254,7 +254,7 @@ class ImportAdminMasterController extends Controller
                         'user_id' => $user->id,
                     ],
                     [
-                        'status' => trim((string) ($row['status'] ?? '')) ?: null,
+                        'status_pimpinan' => in_array(Str::lower(trim((string) ($row['status_pimpinan'] ?? ''))), ['ya', 'y', 'yes', '1', 'true', 'ketua prodi', 'kaprodi'], true),
                     ]
                 );
                 return;

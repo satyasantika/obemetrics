@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\User;
+use App\Models\Prodi;
 use App\Models\JoinProdiUser;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
@@ -22,8 +23,35 @@ class JoinProdiUsersDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function($row){
+                static $prodiKurikulumIds = null;
+                static $prodiMkIds = null;
+                static $lockedUserIds = [];
+
+                if ($prodiKurikulumIds === null || $prodiMkIds === null) {
+                    $prodi = Prodi::query()->with('kurikulums.mks:id,kurikulum_id')->find($this->prodi_id);
+                    $prodiKurikulumIds = $prodi?->kurikulums?->pluck('id')->values()->all() ?? [];
+                    $prodiMkIds = $prodi?->kurikulums?->pluck('mks')->flatten()->pluck('id')->values()->all() ?? [];
+                }
+
+                if (!array_key_exists($row->user_id, $lockedUserIds)) {
+                    $isUsedInJoinMkUser = \App\Models\JoinMkUser::query()
+                        ->where('user_id', $row->user_id)
+                        ->whereIn('kurikulum_id', $prodiKurikulumIds)
+                        ->exists();
+
+                    $isUsedInKontrak = \App\Models\KontrakMk::query()
+                        ->where('user_id', $row->user_id)
+                        ->whereIn('mk_id', $prodiMkIds)
+                        ->exists();
+
+                    $lockedUserIds[$row->user_id] = $isUsedInJoinMkUser || $isUsedInKontrak;
+                }
+
+                $statusPimpinan = (bool) ($row->status_pimpinan ?? false);
+                $canDelete = !$lockedUserIds[$row->user_id];
+
                 $action = '<div class="row">';
-                $action .= ' <div class="col-auto"><a href="'.route('prodis.joinprodiusers.edit',[$row->prodi_id,$row->id]).'" class="btn btn-primary btn-sm action" data-bs-toggle="tooltip" title="Edit data user prodi"><i class="bi bi-pencil-square"></i></a></div>';
+                $action .= ' <div class="col-auto"><button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditJoinProdiUser" data-joinprodiuser-id="'.$row->id.'" data-joinprodiuser-username="'.e($row->user->name ?? '').'" data-joinprodiuser-status-pimpinan="'.($statusPimpinan ? '1' : '0').'" data-joinprodiuser-can-delete="'.($canDelete ? '1' : '0').'" title="Edit data user prodi"><i class="bi bi-pencil-square"></i></button></div>';
                 $action .= '</div>';
                 return $action;
             })
@@ -37,10 +65,24 @@ class JoinProdiUsersDataTable extends DataTable
             ->addColumn('nama_user', function($row) {
                 return $row->user->name ?? '';
             })
+            ->editColumn('status_pimpinan', function ($row) {
+                return (bool) ($row->status_pimpinan ?? false) ? 'Ya' : '-';
+            })
             ->filterColumn('nama_user', function($query, $keyword) {
                 $query->where('users.name', 'like', "%{$keyword}%");
             })
             ->orderColumn('nama_user', 'users.name $1')
+            ->filterColumn('status_pimpinan', function ($query, $keyword) {
+                $normalized = mb_strtolower(trim((string) $keyword));
+                if ($normalized === 'ya') {
+                    $query->where('join_prodi_users.status_pimpinan', true);
+                    return;
+                }
+
+                if ($normalized === '-' || $normalized === 'tidak' || $normalized === 'no') {
+                    $query->where('join_prodi_users.status_pimpinan', false);
+                }
+            })
             ->rawColumns(['action','nama_user'])
             ->setRowId('id');
     }
@@ -104,7 +146,7 @@ class JoinProdiUsersDataTable extends DataTable
                 ->searchable(true)
                 ->orderable(true),
             Column::make('role'),
-            Column::make('status')->title('peran di prodi'),
+            Column::make('status_pimpinan')->title('status pimpinan'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 
 @section('content')
 <div class="container">
@@ -7,7 +7,6 @@
             <div class="card">
                 <div class="card-header">
                     Import Data Nilai Tugas ({{ $kelasLabel ?? 'Semua Kelas' }})
-                    <a href="{{ $returnUrl ?? route('mks.nilais.index', [$mk->id]) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali ke Penilaian</a>
                 </div>
 
                 <div class="card-body">
@@ -56,7 +55,7 @@
                             <div class="col-md-3"></div>
                             <div class="col">
                                 <button type="submit" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-upload"></i> Upload &amp; Preview
+                                    <i class="bi bi-upload"></i> Upload &amp; Simpan Langsung
                                 </button>
                             </div>
                         </div>

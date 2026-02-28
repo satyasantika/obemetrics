@@ -1,27 +1,20 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @push('title')
     {{ isset($title) ? $title : '' }}
 @endpush
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col">
-            <div class="card">
-                <div class="card-header">
-                    <a href="{{ route('home') }}" class="btn btn-primary btn-sm"><i class="bi bi-house-door"></i></a>
-                    @isset($header)
-                        Manajemen {{ $header }}
-                    @endisset
-                    <a href="{{ route((isset($back_route)? $back_route : 'home')) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> kembali</a>
-                </div>
-                <div class="card-body">
-
-                    @include('layouts.alert')
-                    @stack('info')
-
-                    {{ $dataTable->table()}}
-                    @stack('body')
-                </div>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                @isset($header)
+                    Manajemen {{ $header }}
+                @endisset
+            </div>
+            <div class="card-body">
+                @stack('info')
+                {{ $dataTable->table()}}
+                @stack('body')
             </div>
         </div>
     </div>

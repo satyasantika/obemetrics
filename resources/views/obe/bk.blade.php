@@ -1,13 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="800px">
-                {{-- menu kurikulum --}}
-                @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.kurikulum-flow-info',['kurikulum' => $kurikulum])
             {{-- identitas kurikulum --}}
             @include('components.identitas-kurikulum',['kurikulum' => $kurikulum])
 
@@ -16,27 +13,34 @@
                     title="Data Bahan Kajian (BK)"
                     subtitle="Kelola bahan kajian pendukung CPL"
                     icon="bi bi-journals"
-                    :backUrl="route('home')" />
-                <div class="card-body">
+                    />
+                <div class="card-body bg-light-subtle">
                     <div class="row mb-2">
                         <div class="col">
-                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateBk">
+                            <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateBk">
                                 <i class="bi bi-plus-circle"></i> Tambah Bahan Kajian
                             </button>
-                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'bks']) }}" class="btn btn-sm btn-success mt-1 float-end"><i class="bi bi-upload"></i> Upload Banyak BK</a>
+                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'bks']) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-1 float-end"><i class="bi bi-upload"></i> Upload Banyak BK</a>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col">
-                            <table class="table table-bordered table-striped">
+                            <div class="table-responsive rounded-3 border bg-white shadow-sm">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-uppercase small text-muted fw-semibold" style="width: 280px;">BK</th>
+                                        <th class="text-uppercase small text-muted fw-semibold">Deskripsi</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                 @forelse ($bks as $bk)
                                     <tr style="vertical-align: text-top;">
                                         <td>
-                                            <strong>{{ $bk->kode }}</strong>
+                                            <strong class="me-2">{{ $bk->kode }}</strong>
                                             {{-- Edit BK --}}
-                                            <button type="button" class="btn btn-sm btn-white text-primary" data-bs-toggle="modal" data-bs-target="#modalEditBk-{{ $bk->id }}">
+                                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" data-bs-toggle="modal" data-bs-target="#modalEditBk-{{ $bk->id }}" title="Edit BK">
                                                 <i class="bi bi-pencil-square"></i>
                                             </button>
                                         </td>
@@ -53,6 +57,7 @@
                                 @endforelse
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -62,12 +67,12 @@
 </div>
 
 <div class="modal fade" id="modalCreateBk" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-sm rounded-4 overflow-hidden">
             <form action="{{ route('kurikulums.bks.store', $kurikulum) }}" method="post">
                 @csrf
                 <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
-                <div class="modal-header">
+                <div class="modal-header bg-light-subtle border-bottom">
                     <h5 class="modal-title">Tambah Data Bahan Kajian</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -91,9 +96,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                <div class="modal-footer bg-light-subtle border-top">
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-save"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -102,13 +107,13 @@
 
 @foreach ($bks as $bk)
 <div class="modal fade" id="modalEditBk-{{ $bk->id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-sm rounded-4 overflow-hidden">
             <form action="{{ route('kurikulums.bks.update',[$kurikulum->id,$bk->id]) }}" method="post">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
-                <div class="modal-header">
+                <div class="modal-header bg-light-subtle border-bottom">
                     <h5 class="modal-title">Edit BK: {{ $bk->kode }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -132,17 +137,17 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer bg-light-subtle border-top">
                     @php
                         $canDeleteBk = !$bk->joinCplBks()->exists() && !$bk->joinCplMks()->exists();
                     @endphp
                     @if ($canDeleteBk)
-                        <button type="button" class="btn btn-outline-danger btn-sm me-auto" onclick="if(confirm('Yakin akan menghapus BK {{ $bk->kode }}?')){ document.getElementById('delete-bk-{{ $bk->id }}').submit(); }"><i class="bi bi-trash"></i> Hapus</button>
+                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold shadow-sm me-auto" onclick="if(confirm('Yakin akan menghapus BK {{ $bk->kode }}?')){ document.getElementById('delete-bk-{{ $bk->id }}').submit(); }"><i class="bi bi-trash"></i> Hapus</button>
                     @else
                         <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
                     @endif
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-save"></i> Save</button>
                 </div>
             </form>
             @if ($canDeleteBk)

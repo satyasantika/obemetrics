@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 
 @section('content')
 <div class="container">
@@ -7,7 +7,6 @@
             <div class="card">
                 <div class="card-header">
                     Bulk Import Data {{ $targets[$target]['label'] ?? 'N/A' }}
-                    <a href="{{ $target=='joinprodiusers' ? $returnUrl : route($target.'.index') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                 </div>
 
                 <div class="card-body">
@@ -62,9 +61,11 @@
                         </form>
                     </div>
                     <div class="card-body border-top">
-                        <div class="mb-2">
-                            <input type="checkbox" id="select-all" class="form-check-input">
-                            <label for="select-all" class="form-check-label">Pilih semua</label>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="form-check m-0">
+                                <input type="checkbox" id="select-all" class="form-check-input">
+                                <label for="select-all" class="form-check-label">Pilih semua</label>
+                            </div>
                         </div>
 
                         @php
@@ -101,7 +102,7 @@
                                                 <td>
                                                     <input
                                                         type="checkbox"
-                                                        class="form-check-input row-check"
+                                                        class="form-check-input row-check ms-0"
                                                         name="selected[]"
                                                         value="{{ $index }}"
                                                         @if ($showStatus)

@@ -1,26 +1,23 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="800px">
-                {{-- menu kurikulum --}}
-                @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.kurikulum-flow-info',['kurikulum' => $kurikulum])
             {{-- identitas kurikulum --}}
             @include('components.identitas-kurikulum',['kurikulum' => $kurikulum])
         </div>
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-11">
+        <div class="col-12">
             <div class="card">
                 <x-obe.header
                     title="Pemetaan Rencana Asesmen CPL"
                     subtitle="Pemetaan kontribusi mata kuliah terhadap capaian CPL"
                     icon="bi bi-diagram-3-fill"
-                    :backUrl="route('home')" />
+                    />
                 <div class="card-body">
 
                     <div class="row">

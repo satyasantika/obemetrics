@@ -1,13 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="960px">
-                {{-- menu mata kuliah --}}
-                @include('components.menu-mk',$mk)
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.mk-flow-info', ['mk' => $mk])
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
 
@@ -16,49 +13,20 @@
                     title="Set Nilai Tagihan Mata Kuliah"
                     subtitle="Pengaturan nilai mahasiswa per komponen penilaian"
                     icon="bi bi-calculator-fill"
-                    :backUrl="route('home')" />
                 <div class="card-body bg-light-subtle">
                     <div class="row mb-3">
-                        <div class="col-lg-6">
-                            <div class="p-3 rounded-3 border bg-white d-flex flex-column align-items-start gap-2">
+                        <div class="col-lg-12">
+                            <div class="p-3 rounded-3 border bg-white d-flex flex-row align-items-start gap-2">
                                 <span>Semester :</span>
-                            @php
-                                $semesterOptions = $mk->kontrakMks()
-                                    ->whereNotNull('semester_id')
-                                    ->with('semester')
-                                    ->get()
-                                    ->pluck('semester')
-                                    ->filter()
-                                    ->unique('id')
-                                    ->sortByDesc('status_aktif')
-                                    ->sortByDesc('kode')
-                                    ->values();
-                            @endphp
-                            <select id="semester-filter" name="semester_id" class="form-control form-control-sm w-100" style="max-width: 320px;">
-                                @foreach ($semesterOptions as $semester)
-                                    <option value="{{ $semester->id }}" @selected($semester->status_aktif)>{{ $semester->kode }} - {{ $semester->nama }}</option>
-                                @endforeach
-                            </select>
+                                <select id="semester-filter" name="semester_id" class="form-control form-control-sm" style="max-width: 320px;">
+                                    @foreach ($semesterOptions as $semester)
+                                        <option value="{{ $semester->id }}" @selected((int) $selectedSemesterId === (int) $semester->id)>{{ $semester->kode }} - {{ $semester->nama }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                     </div>
-                    @php
-                        $sortedKontrakMks = collect($kontrakMks)
-                            ->sortBy(fn ($item) => \Illuminate\Support\Str::lower((string) ($item->mahasiswa->nama ?? '')))
-                            ->values();
-
-                        $kelasGroups = $sortedKontrakMks
-                            ->groupBy(function ($item) {
-                                $kelas = trim((string) ($item->kelas ?? ''));
-                                return $kelas !== '' ? $kelas : 'Tanpa Kelas';
-                            })
-                            ->sortKeys();
-
-                        $kelasGroups = collect(['__SEMUA_KELAS__' => $sortedKontrakMks])->merge($kelasGroups);
-                        $defaultKelas = $kelasGroups->keys()->first();
-                    @endphp
-
-                    @if ($sortedKontrakMks->isNotEmpty())
+                    @if ($kontrakMks->isNotEmpty())
                         <ul class="nav nav-tabs" id="kelasTab" role="tablist">
                             @foreach ($kelasGroups as $kelasKey => $kelasRows)
                                 @php
@@ -97,7 +65,9 @@
                                     aria-labelledby="{{ $kelasPaneId }}-tab">
 
                                     <div class="mb-3">
-                                        <a href="{{ route('setting.import.nilais', array_merge(['mk' => $mk->id], $kelasQuery)) }}" class="btn btn-outline-secondary btn-sm">
+                                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold shadow-sm js-sort-tab" data-sort-key="nama" data-sort-label="Urutkan Nama" data-next-direction="asc">Urutkan Nama</button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold shadow-sm js-sort-tab" data-sort-key="nim" data-sort-label="Urutkan NIM" data-next-direction="asc">Urutkan NIM</button>
+                                        <a href="{{ route('setting.import.nilais', array_merge(['mk' => $mk->id], $kelasQuery)) }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm float-end">
                                             <i class="bi bi-upload"></i> Import Nilai {{ $kelasLabel }}
                                         </a>
                                     </div>
@@ -113,17 +83,7 @@
                                                             <span title="{{ $penugasan->nama }}">{{ $penugasan->kode }}</span>
                                                             <br>
                                                             <small class="text-muted">{{ $penugasan->nama }}</small>
-                                                            @php
-                                                                $cpl = $penugasan->joinSubcpmkPenugasans->pluck('subcpmk.joinCplCpmk.joinCplBk.Cpl.kode')
-                                                                                ->flatten()
-                                                                                ->filter()
-                                                                                ->unique()
-                                                                                ->sort()
-                                                                                ->values()
-                                                                                ->whenEmpty(fn () => collect(['-']))
-                                                                                ->implode(', ');
-                                                            @endphp
-                                                            <span class="fs-6">({{ $cpl }})</span>
+                                                            <span class="fs-6">({{ $cplLabelByPenugasanId[$penugasan->id] ?? '-' }})</span>
                                                         </th>
                                                     @empty
                                                         <th>Belum ada penugasan</th>
@@ -132,7 +92,11 @@
                                             </thead>
                                             <tbody>
                                             @foreach ($kelasRows as $kontrakMk)
-                                                <tr class="matriks-row" data-semester-id="{{ $kontrakMk->semester_id }}" style="vertical-align: text-top;">
+                                                <tr class="matriks-row"
+                                                    data-semester-id="{{ $kontrakMk->semester_id }}"
+                                                    data-mahasiswa-nim="{{ \Illuminate\Support\Str::lower((string) ($kontrakMk->mahasiswa->nim ?? '')) }}"
+                                                    data-mahasiswa-nama="{{ \Illuminate\Support\Str::lower((string) ($kontrakMk->mahasiswa->nama ?? '')) }}"
+                                                    style="vertical-align: text-top;">
                                                     <td class="sticky-col">
                                                         <small class="text-muted">{{ $kontrakMk->mahasiswa->nim }}</small><br>
                                                         {{ $kontrakMk->mahasiswa->nama }}
@@ -161,7 +125,7 @@
                                                                     <input
                                                                         type="number"
                                                                         name="nilai"
-                                                                        class="form-control form-control-sm text-end border-primary-subtle"
+                                                                        class="form-control form-control-sm text-end live-nilai-input {{ isset($nilaiObj) && $nilaiObj && $nilaiObj->nilai !== null && $nilaiObj->nilai !== '' ? 'border-success-subtle' : 'border-warning-subtle' }}"
                                                                         min="0"
                                                                         max="100"
                                                                         step="0.01"
@@ -177,7 +141,7 @@
                                                     @endforelse
                                                 </tr>
                                             @endforeach
-                                            <tr class="bg-light-subtle fw-semibold">
+                                            <tr class="matrix-summary-row bg-light-subtle fw-semibold">
                                                 <td>Rata-rata Kelas</td>
                                                 @forelse ($penugasans as $penugasan)
                                                     @php
@@ -217,21 +181,103 @@
 document.addEventListener('DOMContentLoaded', function () {
     const forms = document.querySelectorAll('.live-nilai-form');
     const semesterFilter = document.getElementById('semester-filter');
-    const matrixTables = document.querySelectorAll('.nilai-matrix-table');
+    const kelasTab = document.getElementById('kelasTab');
+    const tabStateKey = `nilai-active-tab:${window.location.pathname}:${window.location.search}`;
+
+    const persistActiveTab = function (targetPane) {
+        if (!targetPane) {
+            return;
+        }
+        window.sessionStorage.setItem(tabStateKey, targetPane);
+    };
+
+    const restoreActiveTab = function () {
+        if (!kelasTab) {
+            return;
+        }
+
+        const savedTarget = window.sessionStorage.getItem(tabStateKey);
+        if (!savedTarget) {
+            return;
+        }
+
+        const trigger = kelasTab.querySelector(`[data-bs-target="${savedTarget}"]`);
+        if (!trigger) {
+            return;
+        }
+
+        if (window.bootstrap && window.bootstrap.Tab) {
+            window.bootstrap.Tab.getOrCreateInstance(trigger).show();
+            return;
+        }
+
+        trigger.click();
+    };
+
+    if (kelasTab) {
+        kelasTab.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (tabBtn) {
+            tabBtn.addEventListener('shown.bs.tab', function (event) {
+                persistActiveTab(event.target.getAttribute('data-bs-target'));
+            });
+        });
+
+        const initialActive = kelasTab.querySelector('.nav-link.active');
+        if (initialActive) {
+            persistActiveTab(initialActive.getAttribute('data-bs-target'));
+        }
+
+        restoreActiveTab();
+    }
 
     forms.forEach(function (form) {
         const input = form.querySelector('input[name="nilai"]');
         const statusEl = form.querySelector('.save-status');
+        let debounceTimer = null;
+        let activeController = null;
+        let lastSubmittedValue = (input?.value ?? '').trim();
+        let isSubmitting = false;
 
-        const submitLive = function () {
+        const updateInputBorderState = function () {
             if (!input) {
                 return;
             }
 
-            statusEl.textContent = 'menyimpan...';
-            statusEl.className = 'save-status small text-muted';
+            const currentValue = (input.value ?? '').trim();
+            const isFilled = currentValue !== '';
+
+            input.classList.remove('border-success-subtle', 'border-warning-subtle');
+            input.classList.add(isFilled ? 'border-success-subtle' : 'border-warning-subtle');
+        };
+
+        const setStatus = function (text, tone) {
+            if (!statusEl) {
+                return;
+            }
+
+            statusEl.textContent = text;
+            statusEl.className = 'save-status small text-' + tone;
+        };
+
+        const submitLive = function (force) {
+            if (!input) {
+                return;
+            }
+
+            const currentValue = (input.value ?? '').trim();
+            if (!force && currentValue === lastSubmittedValue) {
+                return;
+            }
+
+            if (isSubmitting && activeController) {
+                activeController.abort();
+            }
+
+            isSubmitting = true;
+            setStatus('menyimpan...', 'muted');
 
             const formData = new FormData(form);
+            const controller = new AbortController();
+            activeController = controller;
 
             fetch(form.action, {
                 method: 'POST',
@@ -240,7 +286,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'
                 },
-                body: formData
+                body: formData,
+                signal: controller.signal
             })
             .then(function (response) {
                 if (!response.ok) {
@@ -249,10 +296,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 return response.json();
             })
             .then(function (result) {
-                statusEl.textContent = 'tersimpan';
-                statusEl.className = 'save-status small text-success';
+                lastSubmittedValue = (input.value ?? '').trim();
+                setStatus('tersimpan', 'success');
                 setTimeout(function () {
-                    statusEl.textContent = '';
+                    if (statusEl && statusEl.textContent === 'tersimpan') {
+                        statusEl.textContent = '';
+                    }
                 }, 1200);
 
                 const row = form.closest('.matriks-row');
@@ -271,46 +320,146 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
             })
-            .catch(function () {
-                statusEl.textContent = 'gagal';
-                statusEl.className = 'save-status small text-danger';
-            });
-        };
+            .catch(function (error) {
+                if (error && error.name === 'AbortError') {
+                    return;
+                }
 
-        if (input) {
-            input.addEventListener('change', submitLive);
-            input.addEventListener('blur', submitLive);
-        }
-    });
-
-    if (semesterFilter && matrixTables.length > 0) {
-        const applySemesterFilter = function () {
-            const selectedSemesterId = semesterFilter.value;
-
-            matrixTables.forEach(function (table) {
-                const matrixRows = table.querySelectorAll('.matriks-row');
-                const matrixEmptyRow = table.querySelector('.matrix-empty-row');
-                let visibleCount = 0;
-
-                matrixRows.forEach(function (row) {
-                    const rowSemesterId = row.getAttribute('data-semester-id');
-                    const isVisible = !selectedSemesterId || selectedSemesterId === rowSemesterId;
-
-                    row.style.display = isVisible ? '' : 'none';
-                    if (isVisible) {
-                        visibleCount++;
-                    }
-                });
-
-                if (matrixEmptyRow) {
-                    matrixEmptyRow.style.display = visibleCount === 0 ? '' : 'none';
+                setStatus('gagal', 'danger');
+            })
+            .finally(function () {
+                if (activeController === controller) {
+                    activeController = null;
+                    isSubmitting = false;
                 }
             });
         };
 
-        semesterFilter.addEventListener('change', applySemesterFilter);
-        applySemesterFilter();
+        const submitDebounced = function () {
+            if (debounceTimer) {
+                clearTimeout(debounceTimer);
+            }
+
+            setStatus('menunggu...', 'muted');
+            debounceTimer = setTimeout(function () {
+                debounceTimer = null;
+                submitLive(false);
+            }, 350);
+        };
+
+        if (input) {
+            updateInputBorderState();
+            input.addEventListener('input', submitDebounced);
+            input.addEventListener('input', updateInputBorderState);
+            input.addEventListener('change', function () {
+                updateInputBorderState();
+                submitLive(true);
+            });
+            input.addEventListener('blur', function () {
+                updateInputBorderState();
+                submitLive(true);
+            });
+        }
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            submitLive(true);
+        });
+    });
+
+    if (semesterFilter) {
+        semesterFilter.addEventListener('change', function () {
+            const selectedSemesterId = (semesterFilter.value ?? '').trim();
+            const url = new URL(window.location.href);
+
+            if (selectedSemesterId === '') {
+                url.searchParams.delete('semester_id');
+            } else {
+                url.searchParams.set('semester_id', selectedSemesterId);
+            }
+
+            window.location.assign(url.toString());
+        });
     }
+
+    const sortRowsInPane = function (pane, sortKey) {
+        return sortRowsInPaneByDirection(pane, sortKey, 'asc');
+    };
+
+    const sortRowsInPaneByDirection = function (pane, sortKey, direction) {
+        if (!pane || !sortKey) {
+            return;
+        }
+
+        const table = pane.querySelector('.nilai-matrix-table');
+        const tbody = table ? table.querySelector('tbody') : null;
+        if (!tbody) {
+            return;
+        }
+
+        const matrixRows = Array.from(tbody.querySelectorAll('.matriks-row'));
+        if (matrixRows.length < 2) {
+            return;
+        }
+
+        matrixRows.sort(function (a, b) {
+            const aValue = (a.dataset[sortKey === 'nim' ? 'mahasiswaNim' : 'mahasiswaNama'] ?? '').trim();
+            const bValue = (b.dataset[sortKey === 'nim' ? 'mahasiswaNim' : 'mahasiswaNama'] ?? '').trim();
+            const cmp = aValue.localeCompare(bValue, 'id', { sensitivity: 'base', numeric: true });
+            return direction === 'desc' ? -cmp : cmp;
+        });
+
+        const summaryRow = tbody.querySelector('.matrix-summary-row');
+        const anchorNode = summaryRow ?? tbody.querySelector('.matrix-empty-row') ?? null;
+        const fragment = document.createDocumentFragment();
+
+        matrixRows.forEach(function (row) {
+            fragment.appendChild(row);
+        });
+
+        if (anchorNode) {
+            tbody.insertBefore(fragment, anchorNode);
+            return;
+        }
+
+        tbody.appendChild(fragment);
+    };
+
+    const updateSortButtonLabel = function (button, appliedDirection) {
+        if (!button) {
+            return;
+        }
+
+        const baseLabel = button.getAttribute('data-sort-label') || 'Urutkan';
+        const sortKey = button.getAttribute('data-sort-key') || '';
+        const isDesc = appliedDirection === 'desc';
+        const iconClass = sortKey === 'nim'
+            ? (isDesc ? 'bi-sort-numeric-up' : 'bi-sort-numeric-down')
+            : (isDesc ? 'bi-sort-alpha-up' : 'bi-sort-alpha-down');
+        const directionText = isDesc ? 'turun' : 'naik';
+
+        button.innerHTML = `<i class="bi ${iconClass}"></i> ${baseLabel} (${directionText})`;
+    };
+
+    document.querySelectorAll('.js-sort-tab').forEach(function (button) {
+        updateSortButtonLabel(button, 'asc');
+        button.setAttribute('data-next-direction', 'asc');
+    });
+
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('.js-sort-tab');
+        if (!button) {
+            return;
+        }
+
+        const pane = button.closest('.tab-pane');
+        const sortKey = button.getAttribute('data-sort-key');
+        const directionToApply = button.getAttribute('data-next-direction') === 'desc' ? 'desc' : 'asc';
+
+        sortRowsInPaneByDirection(pane, sortKey, directionToApply);
+        updateSortButtonLabel(button, directionToApply);
+        button.setAttribute('data-next-direction', directionToApply === 'asc' ? 'desc' : 'asc');
+    });
 
 });
 </script>

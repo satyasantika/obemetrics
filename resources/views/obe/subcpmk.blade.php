@@ -1,13 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="960px">
-                {{-- menu mata kuliah --}}
-                @include('components.menu-mk',$mk)
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.mk-flow-info', ['mk' => $mk])
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
 
@@ -15,8 +12,7 @@
                 <x-obe.header
                     title="Data Sub Capaian Pembelajaran Mata Kuliah"
                     subtitle="Kelola SubCPMK pada mata kuliah terpilih"
-                    icon="bi bi-diagram-3"
-                    :backUrl="route('home')" />
+                    icon="bi bi-diagram-3" />
                 <div class="card-body bg-light-subtle">
                     <div class="row mb-3">
                         <div class="col-md-6 d-flex">
@@ -43,8 +39,8 @@
                                     $joinCplCpmkOptions = \App\Models\JoinCplCpmk::where('mk_id', $mk->id)->with('cpmk')->get();
                                 @endphp
                                 <div class="d-flex flex-wrap gap-2">
-                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateSubcpmk"><i class="bi bi-plus-circle"></i> Tambah Sub CPMK</button>
-                                    <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'subcpmks']) }}" class="btn btn-sm btn-success"><i class="bi bi-upload"></i> Import banyak SubCPMK</a>
+                                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateSubcpmk"><i class="bi bi-plus-circle"></i> Tambah Sub CPMK</button>
+                                    <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'subcpmks']) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-upload"></i> Import banyak SubCPMK</a>
                                 </div>
                             </div>
                         </div>
@@ -267,7 +263,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                    <button type="submit" class="btn btn-outline-success btn-sm"><i class="bi bi-save"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -370,7 +366,7 @@
                             <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
                         @endif
                         <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                        <button type="submit" class="btn btn-outline-success btn-sm"><i class="bi bi-save"></i> Save</button>
                     </div>
                 </form>
                 @if ($canDeleteSubcpmk)

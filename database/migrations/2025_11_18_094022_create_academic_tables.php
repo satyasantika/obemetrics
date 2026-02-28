@@ -41,7 +41,7 @@ return new class extends Migration
             $table->uuid('id')->primary('id');
             $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
             $table->foreignUuid('user_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->string('status')->nullable();
+            $table->boolean('status_pimpinan')->default(0);
             $table->timestamps();
         });
 
@@ -324,7 +324,7 @@ return new class extends Migration
         Schema::dropIfExists('join_mk_users');
         // interaksi cpl-mk
         Schema::table('join_cpl_mks', function (Blueprint $table) {
-            $table->dropForeign('join_cpl_mks_join_cpl_id_foreign');
+            $table->dropForeign('join_cpl_mks_join_cpl_bk_id_foreign');
             $table->dropForeign('join_cpl_mks_mk_id_foreign');
             $table->dropForeign('join_cpl_mks_kurikulum_id_foreign');
         });

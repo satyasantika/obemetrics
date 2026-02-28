@@ -91,9 +91,57 @@ class KetercapaianController extends Controller
             ->get()
             ->groupBy('mahasiswa_id');
 
+        $baselinePenugasanAgg = $mk->penugasans()
+            ->select('id', 'kode', 'nama')
+            ->get()
+            ->mapWithKeys(function ($penugasan) {
+                return [
+                    (string) $penugasan->id => [
+                        'kode' => $penugasan->kode,
+                        'nama' => $penugasan->nama,
+                        'total' => 0.0,
+                        'count' => 0,
+                    ],
+                ];
+            })
+            ->all();
+
+        $baselineSubcpmkAgg = DB::table('subcpmks as s')
+            ->join('join_cpl_cpmks as jcc', 'jcc.id', '=', 's.join_cpl_cpmk_id')
+            ->where('jcc.mk_id', $mk->id)
+            ->select('s.id', 's.kode', 's.nama')
+            ->orderBy('s.kode')
+            ->get()
+            ->mapWithKeys(function ($subcpmk) {
+                return [
+                    (string) $subcpmk->id => [
+                        'kode' => $subcpmk->kode,
+                        'nama' => $subcpmk->nama,
+                        'total' => 0.0,
+                        'count' => 0,
+                    ],
+                ];
+            })
+            ->all();
+
+        $baselineCpmkAgg = $mk->cpmks()
+            ->select('id', 'kode', 'nama')
+            ->get()
+            ->mapWithKeys(function ($cpmk) {
+                return [
+                    (string) $cpmk->id => [
+                        'kode' => $cpmk->kode,
+                        'nama' => $cpmk->nama,
+                        'total' => 0.0,
+                        'count' => 0,
+                    ],
+                ];
+            })
+            ->all();
+
         $byMahasiswa = $kontrakMks->groupBy('mahasiswa_id');
 
-        $detailPerMahasiswa = $byMahasiswa->map(function ($kontraks, $mahasiswaId) use ($resolveHuruf, $angkaToHuruf, $nilaiByMahasiswa) {
+        $detailPerMahasiswa = $byMahasiswa->map(function ($kontraks, $mahasiswaId) use ($resolveHuruf, $angkaToHuruf, $nilaiByMahasiswa, $baselinePenugasanAgg, $baselineSubcpmkAgg, $baselineCpmkAgg) {
             $mahasiswa = $kontraks->first()->mahasiswa;
 
             $totalSks = (int) $kontraks->sum(fn ($kontrak) => (int) optional($kontrak->mk)->sks);
@@ -126,9 +174,9 @@ class KetercapaianController extends Controller
                 })
                 ->values();
 
-            $penugasanAgg = [];
-            $subcpmkAgg = [];
-            $cpmkAgg = [];
+            $penugasanAgg = $baselinePenugasanAgg;
+            $subcpmkAgg = $baselineSubcpmkAgg;
+            $cpmkAgg = $baselineCpmkAgg;
 
             foreach ($nilaiMahasiswa as $nilai) {
                 $nilaiAngka = $nilai->nilai;
@@ -193,14 +241,16 @@ class KetercapaianController extends Controller
             $toScores = function ($agg) {
                 return collect($agg)
                     ->map(function ($item) {
-                        $avg = ($item['count'] ?? 0) > 0
+                        $isAssessed = ((int) ($item['count'] ?? 0)) > 0;
+                        $avg = $isAssessed
                             ? round(((float) $item['total']) / ((int) $item['count']), 2)
-                            : 0;
+                            : null;
 
                         return [
                             'kode' => $item['kode'] ?? '-',
                             'nama' => $item['nama'] ?? '-',
                             'nilai' => $avg,
+                            'dinilai' => $isAssessed,
                         ];
                     })
                     ->sortBy('kode')

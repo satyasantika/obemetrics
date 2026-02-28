@@ -37,7 +37,17 @@ class JoinProdiUserController extends Controller
 
     public function store(Request $request, Prodi $prodi)
     {
-        JoinProdiUser::create($request->all());
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'prodi_id' => 'required|exists:prodis,id',
+        ]);
+
+        JoinProdiUser::create([
+            'user_id' => $validated['user_id'],
+            'prodi_id' => $validated['prodi_id'],
+            'status_pimpinan' => false,
+        ]);
+
         $namaUser = User::find($request->user_id)->name;
         $namaProdi = strtoupper($prodi->nama);
         return to_route('prodis.joinprodiusers.create',$prodi)
@@ -46,25 +56,21 @@ class JoinProdiUserController extends Controller
 
     public function edit(Prodi $prodi, JoinProdiUser $joinprodiuser)
     {
-        return view('setting.joinprodiuser-form', $this->_dataSelection($prodi,$joinprodiuser));
+        return to_route('prodis.joinprodiusers.index', $prodi)
+            ->with('warning', 'Gunakan tombol edit (modal) pada daftar User Prodi.');
     }
 
     public function update(Request $request, Prodi $prodi, JoinProdiUser $joinprodiuser)
     {
-        $isUsed = JoinMkUser::query()
-            ->where('user_id', $joinprodiuser->user_id)
-            ->whereIn('kurikulum_id', $prodi->kurikulums()->pluck('id'))
-            ->exists();
-
-        if ($isUsed) {
-            return to_route('prodis.joinprodiusers.index',$prodi)
-                ->with('error','Relasi user-prodi tidak dapat diubah karena sudah dipakai pada relasi MK >< USER.');
-        }
+        $validated = $request->validate([
+            'status_pimpinan' => 'nullable|boolean',
+        ]);
 
         $namaProdi = strtoupper($joinprodiuser->prodi->nama);
         $namaUser = strtoupper($joinprodiuser->user->name);
-        $data = $request->all();
-        $joinprodiuser->fill($data)->save();
+        $joinprodiuser->fill([
+            'status_pimpinan' => (bool) ($validated['status_pimpinan'] ?? false),
+        ])->save();
 
         return to_route('prodis.joinprodiusers.index',$prodi)->with('success','User '.$namaUser.' pada Prodi '.$namaProdi.' telah diperbarui');
     }
@@ -100,6 +106,7 @@ class JoinProdiUserController extends Controller
             'header' => 'Data Pengelola Program Studi '.$prodi->jenjang.' '.$prodi->nama,
             'prodi' => $prodi,
             'joinprodiuser'=> $joinprodiuser,
+            'title' => 'JoinProdiUser',
         ];
     }
 }

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 
 @section('content')
 <div class="container">
@@ -7,7 +7,6 @@
             <div class="card">
                 <div class="card-header">
                     Import Data User
-                    <a href="{{ $returnUrl ?? route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                     @stack('header')
                 </div>
 
@@ -59,7 +58,7 @@
                 </div>
                 <div class="card-body border-top">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div>
+                        <div class="form-check m-0">
                             <input type="checkbox" id="select-all" class="form-check-input">
                             <label for="select-all" class="form-check-label">Pilih semua</label>
                         </div>

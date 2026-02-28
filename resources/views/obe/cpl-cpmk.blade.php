@@ -1,13 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="960px">
-                {{-- menu mata kuliah --}}
-                @include('components.menu-mk',$mk)
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.mk-flow-info', ['mk' => $mk])
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
 
@@ -15,12 +12,11 @@
                 <x-obe.header
                     title="Interaksi CPL dan CPMK"
                     subtitle="Pemetaan hubungan CPL terhadap CPMK"
-                    icon="bi bi-bezier2"
-                    :backUrl="route('home')" />
+                    icon="bi bi-bezier2" />
                 <div class="card-body">
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'join_cpl_cpmks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-sm btn-success mt-1 float-end"><i class="bi bi-upload"></i> Import Interaksi CPL-CPMK</a>
+                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'join_cpl_cpmks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-1 float-end"><i class="bi bi-upload"></i> Import Interaksi CPL-CPMK</a>
                         </div>
                     </div>
                     <div class="row">
@@ -41,13 +37,6 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @php
-                                    $lockedCplCpmkPair = \App\Models\JoinCplCpmk::query()
-                                        ->where('mk_id', $mk->id)
-                                        ->whereHas('subcpmks')
-                                        ->get()
-                                        ->mapWithKeys(fn ($row) => [($row->join_cpl_bk_id.'|'.$row->cpmk_id) => true]);
-                                @endphp
                                 @forelse ($cpmks as $cpmk)
                                     <tr style="vertical-align: text-top;">
                                         <td>
@@ -60,15 +49,11 @@
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="cpmk_id" value="{{ $cpmk->id }}">
-                                                    <input type="hidden" name="cpmk_id" value="{{ $cpmk->id }}">
                                                     <input type="hidden" name="mk_id" value="{{ $mk->id }}">
                                                     @php
-                                                    $linkedCplCpmks = \App\Models\JoinCplCpmk::where('mk_id',$mk->id)->get();
-                                                    $cek = $linkedCplCpmks->contains(
-                                                        function($item) use ($joincplbk, $cpmk) {
-                                                            return $item->join_cpl_bk_id === $joincplbk->id && $item->cpmk_id === $cpmk->id;
-                                                        });
-                                                    $isLocked = $lockedCplCpmkPair->has($joincplbk->id.'|'.$cpmk->id);
+                                                    $pairKey = $joincplbk->id.'|'.$cpmk->id;
+                                                    $cek = isset($linkedPairMap[$pairKey]);
+                                                    $isLocked = isset($lockedPairMap[$pairKey]);
                                                     @endphp
                                                     <div class="form-check form-switch">
                                                         <input

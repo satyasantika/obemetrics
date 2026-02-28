@@ -1,25 +1,22 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="960px">
-                @include('components.menu-mk',$mk)
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.mk-flow-info', ['mk' => $mk])
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
         </div>
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-11">
+        <div class="col-12">
             <div class="card">
                 <x-obe.header
                 title="Rekap Nilai per Kategori Workcloud"
                 subtitle="Rekap komponen nilai mahasiswa berdasarkan kategori penilaian"
-                icon="bi bi-grid-1x2-fill"
-                :backUrl="route('home')" />
+                icon="bi bi-grid-1x2-fill" />
                 <div class="card-body bg-light-subtle">
                             <div class="row mb-3">
                                 <div class="col-lg-6">
@@ -90,7 +87,7 @@
                                     @endphp
                                     <a
                                         href="{{ route('mks.workclouds.export-kelas', $mk->id) . '?' . http_build_query($exportQuery) }}"
-                                        class="btn btn-outline-success btn-sm btn-export-kelas"
+                                        class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm btn-export-kelas"
                                         data-base-url="{{ route('mks.workclouds.export-kelas', $mk->id) }}"
                                         data-kelas="{{ $kelas }}">
                                         <i class="bi bi-file-earmark-excel"></i> Download Excel Kelas {{ $kelas }}

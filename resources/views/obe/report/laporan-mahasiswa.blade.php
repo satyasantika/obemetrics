@@ -1,13 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="800px">
-                {{-- menu kurikulum --}}
-                @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.kurikulum-flow-info',['kurikulum' => $kurikulum])
             @include('components.identitas-kurikulum',['kurikulum' => $kurikulum])
 
             <div class="card">
@@ -15,7 +12,7 @@
                     title="Hasil Analisis Asesmen CPL per Mahasiswa"
                     subtitle="Informasi pencapaian CPL setiap mahasiswa"
                     icon="bi bi-bar-chart-line-fill"
-                    :backUrl="url()->previous()" />
+                    />
                 <div class="card-body">
                     <div class="row">
                         <div class="col">
@@ -46,8 +43,8 @@
                                         <td class="text-end">{{ number_format((float) ($mahasiswa['ipk'] ?? 0), 2) }}</td>
                                         <td>
                                             {{-- detail capaian CPL mahasiswa ini --}}
-                                            <button type="button" class="btn btn-sm btn-primary btn-detail-cpl" data-mahasiswa-id="{{ $mahasiswa['id'] }}">
-                                                <i class="bi bi-eye"></i> Capaian
+                                            <button type="button" class="btn btn-sm btn-outline-primary btn-detail-cpl d-inline-flex align-items-center gap-1" data-mahasiswa-id="{{ $mahasiswa['id'] }}">
+                                                <i class="bi bi-eye"></i> <span>Grafik</span>
                                             </button>
                                         </td>
                                     </tr>
@@ -83,8 +80,14 @@
             </div>
             <div class="modal-body">
                 <div class="row g-3">
+                    <div class="col-12 d-none" id="chartNotReadyAlert">
+                        <div class="alert alert-warning mb-0">
+                            Grafik belum dapat ditampilkan karena penilaian mata kuliah mahasiswa ini belum tersedia.
+                        </div>
+                    </div>
+
                     <div class="col-12">
-                        <div class="card">
+                        <div class="card" id="cardChartCpl">
                             <div class="card-header">Grafik Ketercapaian CPL</div>
                             <div class="card-body">
                                 <div style="height: 360px;">
@@ -95,7 +98,7 @@
                     </div>
 
                     <div class="col-12">
-                        <div class="card">
+                        <div class="card" id="cardChartProfil">
                             <div class="card-header">Grafik Map Profil Lulusan</div>
                             <div class="card-body">
                                 <div style="height: 360px;">
@@ -158,6 +161,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const detailMkBody = document.getElementById('detailMkBody');
     const chartCplEl = document.getElementById('chartCplMahasiswa');
     const chartProfilEl = document.getElementById('chartProfilMahasiswa');
+    const chartNotReadyAlert = document.getElementById('chartNotReadyAlert');
+    const cardChartCpl = document.getElementById('cardChartCpl');
+    const cardChartProfil = document.getElementById('cardChartProfil');
 
     let chartCpl = null;
     let chartProfil = null;
@@ -238,6 +244,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const detailMks = Array.isArray(payload.detail_mks) ? payload.detail_mks : [];
             const cplScores = Array.isArray(payload.cpl_scores) ? payload.cpl_scores : [];
             const profilScores = Array.isArray(payload.profil_scores) ? payload.profil_scores : [];
+            const hasPenilaianMk = detailMks.some(function (item) {
+                return item && item.nilai !== null && item.nilai !== undefined && String(item.nilai).trim() !== '';
+            });
 
             if (detailMahasiswaNama) {
                 detailMahasiswaNama.textContent = `${mahasiswa.nim ?? '-'} - ${mahasiswa.nama ?? '-'}`;
@@ -255,23 +264,54 @@ document.addEventListener('DOMContentLoaded', function () {
                 }).join('')
                 : '<tr><td colspan="5"><span class="badge bg-warning text-dark">Tidak ada kontrak mata kuliah.</span></td></tr>';
 
-            chartCpl = renderRadar(
-                chartCplEl,
-                chartCpl,
-                cplScores.map(item => item.kode ?? '-'),
-                cplScores.map(item => toNumber(item.nilai)),
-                'Capaian CPL Mahasiswa',
-                true
-            );
+            if (!hasPenilaianMk) {
+                if (chartCpl) {
+                    chartCpl.destroy();
+                    chartCpl = null;
+                }
+                if (chartProfil) {
+                    chartProfil.destroy();
+                    chartProfil = null;
+                }
 
-            chartProfil = renderRadar(
-                chartProfilEl,
-                chartProfil,
-                profilScores.map(item => item.nama ?? '-'),
-                profilScores.map(item => toNumber(item.nilai)),
-                'Ketercapaian Profil Lulusan',
-                false
-            );
+                if (chartNotReadyAlert) {
+                    chartNotReadyAlert.classList.remove('d-none');
+                }
+                if (cardChartCpl) {
+                    cardChartCpl.classList.add('d-none');
+                }
+                if (cardChartProfil) {
+                    cardChartProfil.classList.add('d-none');
+                }
+            } else {
+                if (chartNotReadyAlert) {
+                    chartNotReadyAlert.classList.add('d-none');
+                }
+                if (cardChartCpl) {
+                    cardChartCpl.classList.remove('d-none');
+                }
+                if (cardChartProfil) {
+                    cardChartProfil.classList.remove('d-none');
+                }
+
+                chartCpl = renderRadar(
+                    chartCplEl,
+                    chartCpl,
+                    cplScores.map(item => item.kode ?? '-'),
+                    cplScores.map(item => toNumber(item.nilai)),
+                    'Capaian CPL Mahasiswa',
+                    true
+                );
+
+                chartProfil = renderRadar(
+                    chartProfilEl,
+                    chartProfil,
+                    profilScores.map(item => item.nama ?? '-'),
+                    profilScores.map(item => toNumber(item.nilai)),
+                    'Ketercapaian Profil Lulusan',
+                    false
+                );
+            }
 
             modal.show();
         });

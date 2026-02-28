@@ -19,9 +19,9 @@ class NilaiController extends Controller
         $this->middleware('permission:delete nilais', ['only' => ['destroy']]);
     }
 
-    public function index(Mk $mk)
+    public function index(Request $request, Mk $mk)
     {
-        return view('obe.nilai', $this->buildNilaiPageData($mk));
+        return view('obe.nilai', $this->buildNilaiPageData($mk, $request));
     }
 
     public function create(Mk $mk)
@@ -258,18 +258,71 @@ class NilaiController extends Controller
         return 'E';
     }
 
-    private function buildNilaiPageData(Mk $mk): array
+    private function buildNilaiPageData(Mk $mk, Request $request): array
     {
-        $penugasans = $mk->penugasans()->orderBy('kode')->get();
+        $penugasans = $mk->penugasans()
+            ->with('joinSubcpmkPenugasans.subcpmk.joinCplCpmk.joinCplBk.Cpl')
+            ->orderBy('kode')
+            ->get();
+
+        $semesterOptions = $mk->kontrakMks()
+            ->with('semester')
+            ->whereNotNull('mahasiswa_id')
+            ->whereNotNull('semester_id')
+            ->get()
+            ->pluck('semester')
+            ->filter()
+            ->unique('id')
+            ->sortByDesc('status_aktif')
+            ->sortByDesc('kode')
+            ->values();
+
+        $requestedSemesterId = $request->integer('semester_id');
+        $defaultSemesterId = $semesterOptions->firstWhere('status_aktif', true)?->id
+            ?? $semesterOptions->first()?->id;
+        $selectedSemesterId = $requestedSemesterId ?: $defaultSemesterId;
 
         $kontrakMks = $mk->kontrakMks()
             ->with(['mahasiswa', 'semester'])
             ->whereNotNull('mahasiswa_id')
             ->whereNotNull('semester_id')
+            ->when($selectedSemesterId, function ($query) use ($selectedSemesterId) {
+                $query->where('semester_id', $selectedSemesterId);
+            })
             ->get()
             ->filter(fn ($kontrakMk) => $kontrakMk->mahasiswa !== null)
             ->sortBy(fn ($kontrakMk) => Str::lower((string) ($kontrakMk->mahasiswa->nama ?? '')))
             ->values();
+
+        $kelasGroups = $kontrakMks
+            ->groupBy(function ($item) {
+                $kelas = trim((string) ($item->kelas ?? ''));
+                return $kelas !== '' ? $kelas : 'Tanpa Kelas';
+            })
+            ->sortKeys();
+
+        $kelasGroups = collect(['__SEMUA_KELAS__' => $kontrakMks])->merge($kelasGroups);
+        $defaultKelas = $kelasGroups->keys()->first();
+
+        $kelasRowsByKey = $kelasGroups
+            ->map(function ($rows) {
+                return $rows->values();
+            })
+            ->values();
+
+        $cplLabelByPenugasanId = $penugasans->mapWithKeys(function ($penugasan) {
+            $label = $penugasan->joinSubcpmkPenugasans
+                ->pluck('subcpmk.joinCplCpmk.joinCplBk.Cpl.kode')
+                ->flatten()
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values()
+                ->whenEmpty(fn () => collect(['-']))
+                ->implode(', ');
+
+            return [$penugasan->id => $label];
+        });
 
         $mahasiswaIds = $kontrakMks->pluck('mahasiswa_id')->filter()->unique()->values();
         $semesterIds = $kontrakMks->pluck('semester_id')->filter()->unique()->values();
@@ -283,7 +336,18 @@ class NilaiController extends Controller
             ->keyBy(fn ($nilai) => $nilai->mahasiswa_id . '_' . $nilai->penugasan_id . '_' . $nilai->semester_id)
             ->all();
 
-        return compact('mk', 'penugasans', 'kontrakMks', 'nilaisByKey');
+        return compact(
+            'mk',
+            'penugasans',
+            'kontrakMks',
+            'nilaisByKey',
+            'semesterOptions',
+            'selectedSemesterId',
+            'cplLabelByPenugasanId',
+            'kelasGroups',
+            'kelasRowsByKey',
+            'defaultKelas'
+        );
     }
 
     public function destroy(Mk $mk, Nilai $nilai)

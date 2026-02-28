@@ -8,6 +8,7 @@ use App\Models\Subcpmk;
 use App\Models\JoinCplCpmk;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 
 class SubCpmkController extends Controller
 {
@@ -22,7 +23,14 @@ class SubCpmkController extends Controller
     public function index(Mk $mk)
     {
         $join_cpl_cpmks = JoinCplCpmk::where('mk_id',$mk->id)->get();
-        $total_bobot = Subcpmk::whereIn('join_cpl_cpmk_id',$join_cpl_cpmks->pluck('id'))->sum('bobot');
+
+        $total_bobot = DB::table('join_subcpmk_penugasans')
+            ->join('subcpmks', 'subcpmks.id', '=', 'join_subcpmk_penugasans.subcpmk_id')
+            ->join('join_cpl_cpmks', 'join_cpl_cpmks.id', '=', 'subcpmks.join_cpl_cpmk_id')
+            ->leftJoin('penugasans', 'penugasans.id', '=', 'join_subcpmk_penugasans.penugasan_id')
+            ->where('join_cpl_cpmks.mk_id', $mk->id)
+            ->sum(DB::raw('COALESCE(penugasans.bobot,0) * COALESCE(join_subcpmk_penugasans.bobot,0) / 100'));
+
         $cpmks = Cpmk::where('mk_id',$mk->id)->get();
         return view('obe.subcpmk', compact('mk','cpmks','total_bobot'));
     }

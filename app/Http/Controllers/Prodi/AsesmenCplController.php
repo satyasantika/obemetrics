@@ -229,6 +229,10 @@ class AsesmenCplController extends Controller
         $chartPerCpl = $cpls->mapWithKeys(function ($cpl) use ($mksPerCpl, $avgNilaiPerMk) {
             $matkuls = $mksPerCpl->get($cpl->id, collect());
 
+            $hasPenilaian = $matkuls->contains(function ($mk) use ($avgNilaiPerMk) {
+                return $avgNilaiPerMk->has($mk->id);
+            });
+
             $labels = $matkuls->map(fn ($mk) => $mk->nama)->values();
             $data = $matkuls
                 ->map(function ($mk) use ($avgNilaiPerMk) {
@@ -242,6 +246,7 @@ class AsesmenCplController extends Controller
                 'nama' => $cpl->nama,
                 'labels' => $labels,
                 'data' => $data,
+                'has_penilaian' => $hasPenilaian,
             ]];
         });
 

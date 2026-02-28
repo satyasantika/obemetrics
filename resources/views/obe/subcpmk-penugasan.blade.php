@@ -1,13 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="960px">
-                {{-- menu mata kuliah --}}
-                @include('components.menu-mk',$mk)
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.mk-flow-info', ['mk' => $mk])
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
 
@@ -15,8 +12,7 @@
                 <x-obe.header
                     title="Set SubCPMK untuk Setiap Tugas Mata Kuliah"
                     subtitle="Pemetaan SubCPMK pada komponen penugasan"
-                    icon="bi bi-diagram-3"
-                    :backUrl="route('home')" />
+                    icon="bi bi-diagram-3" />
                 <div class="card-body bg-light-subtle">
                     <div class="row mb-3 g-3">
                         <div class="col-md-6 d-flex">
@@ -27,7 +23,7 @@
                                         <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $selectedSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
                                     @endforeach
                                 </select>
-                                <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'join_subcpmk_penugasans', 'semester_id' => $selectedSemesterId]) }}" class="btn btn-sm btn-success"><i class="bi bi-upload"></i> Import banyak SubCPMK untuk Penugasan</a>
+                                <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'join_subcpmk_penugasans', 'semester_id' => $selectedSemesterId]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-upload"></i> Import banyak SubCPMK untuk Penugasan</a>
                             </div>
                         </div>
                         <div class="col-md-6 d-flex">
@@ -59,11 +55,11 @@
                     </div>
                     <div class="row">
                         <div class="col">
-                            <div class="table-responsive rounded-3 border bg-white shadow-sm">
-                            <table class="table table-hover align-middle mb-0">
+                            <div class="table-responsive rounded-3 border bg-white shadow-sm subcpmk-matrix-wrapper">
+                            <table class="table table-hover align-middle mb-0 subcpmk-matrix-table">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="text-uppercase small text-muted fw-semibold">Penugasan</th>
+                                        <th class="text-uppercase small text-muted fw-semibold sticky-col">Penugasan</th>
                                         @forelse ($subcpmks as $subcpmk)
                                             <th class="text-center text-uppercase small text-muted fw-semibold fs-4">
                                                 <span class="badge rounded-pill bg-info-subtle text-info-emphasis border border-info-subtle" title="{{ $subcpmk->nama }}">
@@ -78,7 +74,7 @@
                                 <tbody>
                                 @forelse ($penugasans as $penugasan)
                                     <tr class="align-top">
-                                        <td class="bg-light-subtle" style="min-width: 240px;">
+                                        <td class="bg-light-subtle sticky-col" style="min-width: 240px;">
                                             <span class="fw-semibold d-block">{{ $penugasan->kode }}</span>
                                             <span class="text-muted small d-block">{{ $penugasan->nama }}</span>
                                             @php
@@ -103,8 +99,8 @@
                                                     <input type="hidden" name="mk_id" value="{{ $mk->id }}">
                                                     <input type="hidden" name="semester_id" value="{{ $selectedSemesterId }}">
                                                     <div class="mb-1 d-flex align-items-center justify-content-between gap-1">
-                                                        <span class="badge {{ $linkedObj ? 'bg-success-subtle text-success-emphasis border border-success-subtle' : 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle' }} link-status-badge">
-                                                            {{ $linkedObj ? 'Terkait' : 'x' }}
+                                                        <span class="badge {{ $linkedObj ? 'bg-success-subtle text-success-emphasis border border-success-subtle' : '' }} link-status-badge">
+                                                            {{ $linkedObj ? 'Terkait' : '' }}
                                                         </span>
                                                         <button
                                                             type="button"
@@ -298,6 +294,37 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+@endpush
+
+@push('styles')
+<style>
+.subcpmk-matrix-wrapper {
+    max-height: 70vh;
+    overflow: auto;
+}
+
+.subcpmk-matrix-table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bs-light);
+    z-index: 20;
+}
+
+.subcpmk-matrix-table .sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 15;
+}
+
+.subcpmk-matrix-table thead .sticky-col {
+    background: var(--bs-light);
+    z-index: 25;
+}
+
+.subcpmk-matrix-table tbody .sticky-col {
+    background: var(--bs-light-bg-subtle);
+}
+</style>
 @endpush
 
 @endsection

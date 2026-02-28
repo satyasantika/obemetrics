@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Cpmk;
+use App\Models\JoinMkUser;
 use App\Models\KontrakMk;
 use App\Models\Mk;
 use App\Models\Nilai;
@@ -26,16 +27,39 @@ class EnsureMkAccess
             return $next($request);
         }
 
-        $hasAccess = KontrakMk::query()
+        $hasJoinMkAccess = JoinMkUser::query()
             ->where('mk_id', $targetMkId)
             ->where('user_id', $user->id)
             ->exists();
 
-        if (!$hasAccess) {
+        if (!$hasJoinMkAccess) {
             abort(403, 'Anda tidak memiliki akses ke mata kuliah ini.');
         }
 
+        if ($this->requiresKontrakAccess($request)) {
+            $hasKontrakAccess = KontrakMk::query()
+                ->where('mk_id', $targetMkId)
+                ->where('user_id', $user->id)
+                ->exists();
+
+            if (!$hasKontrakAccess) {
+                abort(403, 'Penilaian belum dapat diakses karena Anda belum tercatat pada kontrak mata kuliah ini.');
+            }
+        }
+
         return $next($request);
+    }
+
+    private function requiresKontrakAccess(Request $request): bool
+    {
+        return $request->routeIs(
+            'mks.nilais.*',
+            'mks.workclouds.*',
+            'mks.achievements.*',
+            'mks.ketercapaians.*',
+            'mks.spyderweb',
+            'setting.import.nilais*'
+        );
     }
 
     private function resolveTargetMkId(Request $request): ?string

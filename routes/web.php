@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,6 +24,13 @@ Route::impersonate();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/ruang-prodi', [App\Http\Controllers\HomeController::class, 'ruangProdi'])
+        ->middleware('can:access prodi dashboard')
+        ->name('ruang.prodi');
+    Route::get('/ruang-dosen', [App\Http\Controllers\HomeController::class, 'ruangDosen'])
+        ->middleware('can:access dosen dashboard')
+        ->name('ruang.dosen');
+
     Route::get('/mypassword/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'showChangePasswordGet'])->name('mypassword.change');
     Route::post('/mypassword/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'changePasswordPost'])->name('mypassword.change.post');
     // Ruang Admin

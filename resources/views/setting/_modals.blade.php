@@ -1,6 +1,7 @@
 @php
 	$modalViews = [
 		'Evaluasi' => 'setting.modals.evaluasi',
+		'JoinProdiUser' => 'setting.modals.joinprodiuser',
 		'KontrakMk' => 'setting.modals.kontrakmk',
 		'Mahasiswa' => 'setting.modals.mahasiswa',
 		'Permission' => 'setting.modals.permission',

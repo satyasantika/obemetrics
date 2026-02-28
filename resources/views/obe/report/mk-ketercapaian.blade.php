@@ -1,25 +1,22 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="960px">
-                @include('components.menu-mk',$mk)
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.mk-flow-info', ['mk' => $mk])
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
         </div>
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-11">
+        <div class="col-12">
             <div class="card">
                 <x-obe.header
                     title="Rekapitulasi Ketercapaian Sumbangan CPL"
                     subtitle="Rekap kontribusi CPL pada mata kuliah per kelas"
-                    icon="bi bi-bar-chart-steps"
-                    :backUrl="route('home')" />
+                    icon="bi bi-bar-chart-steps" />
                 <div class="card-body bg-light-subtle">
                     <div class="row mb-3 g-3">
                         <div class="col-md-6 d-flex">
@@ -94,7 +91,7 @@
                                                 <table class="table table-hover align-middle nilai-matrix-table mb-0">
                                                     <thead class="table-light">
                                                         <tr class="text-center align-middle">
-                                                            <th>CPL yang dibebankan pada MK</th>
+                                                            <th class="sticky-col">CPL yang dibebankan pada MK</th>
                                                             <th>CPMK yang Relevan dengan CPL</th>
                                                             <th>SubCPMK sebagai kemampuan akhir yang relevan</th>
                                                             <th>Indikator</th>
@@ -168,6 +165,41 @@ document.addEventListener('DOMContentLoaded', function () {
         };
     };
 
+    const calculateCpmkTotals = function (cpmk, rnMap) {
+        let totalPk = 0;
+        let totalPkRn = 0;
+        const subcpmks = Array.isArray(cpmk?.subcpmks) ? cpmk.subcpmks : [];
+
+        subcpmks.forEach(function (subcpmk) {
+            const sources = Array.isArray(subcpmk?.sources) ? subcpmk.sources : [];
+            sources.forEach(function (source) {
+                const pk = Number(source.pk/100 ?? 0);
+                const rn = Number(rnMap?.[String(source.penugasan_id)] ?? 0);
+                totalPk += pk;
+                totalPkRn += (pk * rn) / 100;
+            });
+        });
+
+        const ratio = totalPk > 0 ? (totalPkRn / totalPk) * 100 : 0;
+        return { totalPk, totalPkRn, ratio };
+    };
+
+    const calculateSubcpmkTotals = function (subcpmk, rnMap) {
+        let totalPk = 0;
+        let totalPkRn = 0;
+        const sources = Array.isArray(subcpmk?.sources) ? subcpmk.sources : [];
+
+        sources.forEach(function (source) {
+            const pk = Number(source.pk/100 ?? 0);
+            const rn = Number(rnMap?.[String(source.penugasan_id)] ?? 0);
+            totalPk += pk;
+            totalPkRn += (pk * rn) / 100;
+        });
+
+        const ratio = totalPk > 0 ? (totalPkRn / totalPk) * 100 : 0;
+        return { totalPk, totalPkRn, ratio };
+    };
+
     const renderCplTable = function (kelas, semesterId) {
         const tbody = document.querySelector('.cpl-achievement-body[data-kelas="' + CSS.escape(kelas) + '"]');
         if (!tbody) {
@@ -239,19 +271,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         if (!cplRowRendered) {
                             const cplLabel = (cpl.kode ? cpl.kode : '-') + ' - ' + (cpl.nama ? cpl.nama : '-');
-                            html += '<td rowspan="' + cplRowCount + '">' + escapeHtml(cplLabel) + '</td>';
+                            html += '<td rowspan="' + cplRowCount + '" class="sticky-col">'
+                                + escapeHtml(cplLabel)
+                                + '<br><span class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle mt-1">(ketercapaian: '
+                                + formatNum(cplTotals.ratio)
+                                + '%)</span></td>';
                             cplRowRendered = true;
                         }
 
                         if (!cpmkRowRendered) {
                             const cpmkLabel = (cpmk.kode ? cpmk.kode : '-') + ' - ' + (cpmk.nama ? cpmk.nama : '-');
-                            html += '<td rowspan="' + cpmkRowCount + '">' + escapeHtml(cpmkLabel) + '</td>';
+                            const cpmkTotals = calculateCpmkTotals(cpmk, rnMap);
+                            html += '<td rowspan="' + cpmkRowCount + '">'
+                                + escapeHtml(cpmkLabel)
+                                + '<br><span class="badge bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle mt-1">(ketercapaian: '
+                                + formatNum(cpmkTotals.ratio)
+                                + '%)</span></td>';
                             cpmkRowRendered = true;
                         }
 
                         if (!subRowRendered) {
                             const subLabel = (subcpmk.kode ? subcpmk.kode : '-') + ' - ' + (subcpmk.nama ? subcpmk.nama : '-');
-                            html += '<td rowspan="' + subRowCount + '">' + escapeHtml(subLabel) + '</td>';
+                            const subcpmkTotals = calculateSubcpmkTotals(subcpmk, rnMap);
+                            html += '<td rowspan="' + subRowCount + '">'
+                                + escapeHtml(subLabel)
+                                + '<br><span class="badge bg-info-subtle text-info-emphasis border border-info-subtle mt-1">(ketercapaian: '
+                                + formatNum(subcpmkTotals.ratio)
+                                + '%)</span></td>';
                             html += '<td rowspan="' + subRowCount + '">' + (subcpmk.indikator ? escapeHtml(subcpmk.indikator) : '-') + '</td>';
                             subRowRendered = true;
                         }
@@ -262,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         html += '<td class="text-end">' + formatNum(pkrn) + '%</td>';
 
                         if (subcpmk === subcpmks[0] && cpmk === cpmks[0] && source === realSources[0]) {
-                            html += '<td rowspan="' + cplRowCount + '" class="text-center align-middle ' + (isTargetComplete ? '' : 'bg-danger-subtle') + '">'
+                            html += '<td rowspan="' + cplRowCount + '" class="text-center ' + (isTargetComplete ? '' : 'bg-danger-subtle') + '">'
                                 + (isTargetComplete
                                     ? escapeHtml(cplTotals.text)
                                     : '<div class="alert alert-danger mb-0 py-2 px-2 small d-flex flex-column align-items-center justify-content-center gap-1"><div class="d-flex align-items-center gap-1"><i class="bi bi-exclamation-triangle-fill"></i><span>Ketercapaian belum bisa ditampilkan.</span></div><div>Target saat ini: <strong>' + formatNum(totalPkAllCpl) + '%</strong> (menunggu 100%).</div></div>')

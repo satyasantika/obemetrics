@@ -1,25 +1,22 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="960px">
-                @include('components.menu-mk',$mk)
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.mk-flow-info', ['mk' => $mk])
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
         </div>
     </div>
 
     <div class="row justify-content-center">
-        <div class="col-11">
+        <div class="col-12">
             <div class="card">
                 <x-obe.header
                 title="Evaluasi Ketercapaian CPL"
                 subtitle="Evaluasi capaian CPL berdasarkan data nilai kelas"
-                icon="bi bi-award-fill"
-                :backUrl="route('home')" />
+                icon="bi bi-award-fill" />
                 <div class="card-body bg-light-subtle">
                     <div class="row mb-3 g-3">
                         <div class="col-md-6 d-flex">

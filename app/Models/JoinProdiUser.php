@@ -12,6 +12,10 @@ class JoinProdiUser extends Model
     use HasFactory, HasUuids;
     protected $guarded = ['id'];
 
+    protected $casts = [
+        'status_pimpinan' => 'boolean',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

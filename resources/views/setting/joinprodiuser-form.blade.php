@@ -1,8 +1,7 @@
 @extends('layouts.setting-form')
 
 @push('header')
-    {{ $joinprodiuser->id ? 'Edit' : 'Tambah' }} Data Pengelola Program Studi {{ $prodi->jenjang.' '.$prodi->nama }},
-    <a href="{{ route('prodis.joinprodiusers.index',$prodi->id) }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
+    {{ $joinprodiuser->id ? 'Edit' : 'Tambah' }} Data Pengelola Program Studi {{ $prodi->jenjang.' '.$prodi->nama }}
 @endpush
 
 @push('body')

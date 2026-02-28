@@ -1,13 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="800px">
-                {{-- menu kurikulum --}}
-                @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.kurikulum-flow-info',['kurikulum' => $kurikulum])
             {{-- identitas kurikulum --}}
             @include('components.identitas-kurikulum',['kurikulum' => $kurikulum])
 
@@ -16,7 +13,7 @@
                     title="Grafik Jaring Laba-laba Ketercapaian CPL"
                     subtitle="Visualisasi ketercapaian CPL dari seluruh mata kuliah"
                     icon="bi bi-bullseye"
-                    :backUrl="route('home')" />
+                    />
             </div>
         </div>
     </div>
@@ -25,6 +22,7 @@
         @php
             $chart = $chartPerCpl[$cpl->id] ?? ['labels' => collect(), 'data' => collect()];
             $hasData = collect($chart['labels'] ?? [])->isNotEmpty();
+            $hasPenilaian = (bool) ($chart['has_penilaian'] ?? false);
             $canvasId = 'chart-cpl-' . $cpl->id;
         @endphp
         <div class="col-md-6 col-sm-auto mt-3">
@@ -35,8 +33,12 @@
                 <div class="card-body">
                     <p class="mb-2 text-muted">{{ $cpl->nama }}</p>
                     <div class="table-responsive">
-                        @if ($hasData)
+                        @if ($hasData && $hasPenilaian)
                             <canvas id="{{ $canvasId }}" height="320"></canvas>
+                        @elseif ($hasData)
+                            <div class="alert alert-warning mb-0 py-2 px-3">
+                                Grafik belum dapat ditampilkan karena mata kuliah pada CPL ini belum dinilai.
+                            </div>
                         @else
                             <span class="badge bg-warning text-dark">Belum ada mata kuliah terkait CPL ini.</span>
                         @endif

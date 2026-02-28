@@ -1,13 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="800px">
-                {{-- menu kurikulum --}}
-                @include('components.menu-kurikulum', ['kurikulum' => $kurikulum])
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.kurikulum-flow-info',['kurikulum' => $kurikulum])
             {{-- identitas kurikulum --}}
             @include('components.identitas-kurikulum', ['kurikulum' => $kurikulum])
 
@@ -16,19 +13,20 @@
                     title="Interaksi CPL dan Mata Kuliah"
                     subtitle="Pemetaan kontribusi CPL pada setiap mata kuliah"
                     icon="bi bi-link-45deg"
-                    :backUrl="route('home')" />
-                <div class="card-body">
+                    />
+                <div class="card-body bg-light-subtle">
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_cpl_mks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-sm btn-success mt-1 float-end"><i class="bi bi-upload"></i> Import Interaksi CPL >< MK</a>
+                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_cpl_mks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-1 float-end"><i class="bi bi-upload"></i> Import Interaksi CPL >< MK</a>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col">
-                            <table class="table table-bordered table-striped">
-                                <thead>
+                            <div class="table-responsive nilai-matrix-wrapper rounded-3 border bg-white shadow-sm">
+                            <table class="table table-hover align-middle nilai-matrix-table mb-0">
+                                <thead class="table-light">
                                     <tr>
-                                        <th rowspan="2">MATA KULIAH</th>
+                                        <th class="sticky-col" rowspan="2">MATA KULIAH</th>
                                         @forelse ($cplHeaderGroups as $group)
                                             <th colspan="{{ $group['colspan'] }}" class="text-center">
                                                 <strong data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $group['cpl_nama'] }}">
@@ -54,7 +52,7 @@
                                 <tbody>
                                 @forelse ($mks as $mk)
                                     <tr style="vertical-align: text-top;">
-                                        <th>
+                                        <th class="sticky-col">
                                             <span class="text-secondary fw-lighter">{{ $mk->kode }}</span><br>
                                             <span data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $mk->nama }}">
                                                 {{ $mk->nama }}
@@ -136,6 +134,7 @@
                                 @endforelse
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -330,6 +329,34 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+@endpush
+
+@push('styles')
+<style>
+.nilai-matrix-wrapper {
+    max-height: 70vh;
+    overflow: auto;
+}
+
+.nilai-matrix-table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bs-light);
+    z-index: 20;
+}
+
+.nilai-matrix-table .sticky-col {
+    position: sticky;
+    left: 0;
+    background: var(--bs-white);
+    z-index: 15;
+    min-width: 280px;
+}
+
+.nilai-matrix-table thead .sticky-col {
+    z-index: 25;
+}
+</style>
 @endpush
 
 

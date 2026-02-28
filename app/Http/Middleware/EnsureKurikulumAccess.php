@@ -30,6 +30,7 @@ class EnsureKurikulumAccess
         $hasAccess = JoinProdiUser::query()
             ->where('user_id', $user->id)
             ->where('prodi_id', $targetProdiId)
+            ->where('status_pimpinan', true)
             ->exists();
 
         if (!$hasAccess) {

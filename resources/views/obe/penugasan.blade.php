@@ -1,13 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="960px">
-                {{-- menu mata kuliah --}}
-                @include('components.menu-mk',$mk)
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.mk-flow-info', ['mk' => $mk])
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
 
@@ -15,8 +12,7 @@
                 <x-obe.header
                     title="Rancangan Tugas"
                     subtitle="Kelola komponen tugas dan bobot penilaian"
-                    icon="bi bi-journal-richtext"
-                    :backUrl="route('home')" />
+                    icon="bi bi-journal-richtext" />
                 <div class="card-body bg-light-subtle">
                     <div class="row mb-3">
                         <div class="col-md-6">Semester :
@@ -37,8 +33,8 @@
                                     <option value="{{ $semester->id }}" @selected($semester->status_aktif)>{{ $semester->kode }} - {{ $semester->nama }}</option>
                                 @endforeach
                             </select>
-                            <button type="button" class="btn btn-primary btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#modalCreatePenugasan"><i class="bi bi-plus-circle"></i> Tambah Tagihan</button>
-                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'penugasans']) }}" class="btn btn-sm btn-success mt-2"><i class="bi bi-upload"></i> Import Banyak Tagihan</a>
+                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold shadow-sm mt-2" data-bs-toggle="modal" data-bs-target="#modalCreatePenugasan"><i class="bi bi-plus-circle"></i> Tambah Tagihan</button>
+                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'penugasans']) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-2"><i class="bi bi-upload"></i> Import Banyak Tagihan</a>
                         </div>
                         <div class="col-md-6 d-flex">
                             <div class="p-3 p-lg-4 rounded-3 border border-primary-subtle bg-primary-subtle text-primary-emphasis h-100 w-100 d-flex flex-column justify-content-between text-md-end text-start">
@@ -103,7 +99,7 @@
         </div>
     </div>
     <div class="row justify-content-center mt-3">
-        <div class="col-11">
+        <div class="col-12">
             <div class="card">
                 <x-obe.header
                     title="Tabel Rencana Evaluasi"
@@ -247,7 +243,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                    <button type="submit" class="btn btn-outline-success btn-sm"><i class="bi bi-save"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -311,7 +307,7 @@
                         <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
                     @endif
                     <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                    <button type="submit" class="btn btn-outline-success btn-sm"><i class="bi bi-save"></i> Save</button>
                 </div>
             </form>
             @if ($canDeletePenugasan)

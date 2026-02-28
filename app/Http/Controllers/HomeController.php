@@ -2,6 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cpl;
+use App\Models\Evaluasi;
+use App\Models\KontrakMk;
+use App\Models\Kurikulum;
+use App\Models\Mahasiswa;
+use App\Models\Mk;
+use App\Models\Permission;
+use App\Models\Prodi;
+use App\Models\Role;
+use App\Models\Semester;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -23,6 +34,102 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $user = auth()->user();
+        $managedProdiIds = $user->joinProdiUsers()
+            ->where('status_pimpinan', true)
+            ->pluck('prodi_id')
+            ->filter()
+            ->unique();
+        $managedKurikulumIds = Kurikulum::whereIn('prodi_id', $managedProdiIds)->pluck('id');
+        $taughtKurikulumIds = $user->joinMkUsers()->pluck('kurikulum_id')->filter()->unique();
+
+        $adminStats = [
+            'users' => User::count(),
+            'roles' => Role::count(),
+            'permissions' => Permission::count(),
+            'prodis' => Prodi::count(),
+            'mahasiswas' => Mahasiswa::count(),
+            'semesters' => Semester::count(),
+            'evaluasis' => Evaluasi::count(),
+            'kontrakmks' => KontrakMk::count(),
+        ];
+
+        $prodiStats = [
+            'prodis' => $managedProdiIds->count(),
+            'kurikulums' => $managedKurikulumIds->count(),
+            'cpls' => Cpl::whereIn('kurikulum_id', $managedKurikulumIds)->count(),
+            'mks' => Mk::whereIn('kurikulum_id', $managedKurikulumIds)->count(),
+        ];
+
+        $dosenStats = [
+            'prodis' => Kurikulum::whereIn('id', $taughtKurikulumIds)->distinct('prodi_id')->count('prodi_id'),
+            'kurikulums' => $taughtKurikulumIds->count(),
+            'mks' => $user->joinMkUsers()->distinct('mk_id')->count('mk_id'),
+            'kontrakmks' => KontrakMk::where('user_id', $user->id)->count(),
+        ];
+
+        return view('home', compact('adminStats', 'prodiStats', 'dosenStats'));
+    }
+
+    public function ruangProdi(Request $request)
+    {
+        $user = auth()->user();
+        $prodiIds = $user->joinProdiUsers()
+            ->where('status_pimpinan', true)
+            ->pluck('prodi_id')
+            ->filter()
+            ->unique();
+
+        $managedProdis = $user->joinProdiUsers()
+            ->where('status_pimpinan', true)
+            ->with('prodi.kurikulums')
+            ->get()
+            ->pluck('prodi')
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        $kurikulums = Kurikulum::whereIn('prodi_id', $prodiIds)
+            ->with('prodi')
+            ->orderBy('nama')
+            ->get();
+
+        $selectedId = $request->query('kurikulum_id');
+        if ($selectedId !== null) {
+            $selectedId = (int) $selectedId;
+            if ($kurikulums->contains('id', $selectedId)) {
+                session(['selected_kurikulum_id' => $selectedId]);
+            }
+        }
+
+        $sessionSelectedId = (int) session('selected_kurikulum_id');
+        $selectedKurikulum = $kurikulums->firstWhere('id', $sessionSelectedId);
+
+        return view('dashboard.prodi-space', compact('kurikulums', 'selectedKurikulum', 'managedProdis'));
+    }
+
+    public function ruangDosen()
+    {
+        $user = auth()->user();
+
+        $joinProdiUsers = $user->joinProdiUsers()
+            ->with('prodi')
+            ->get();
+
+        $joinMkUsers = $user->joinMkUsers()
+            ->with(['mk', 'kurikulum.prodi'])
+            ->get()
+            ->filter(fn ($item) => $item->mk && $item->kurikulum)
+            ->values();
+
+        $mkByProdiKurikulum = $joinMkUsers
+            ->groupBy(fn ($item) => $item->kurikulum->prodi_id)
+            ->map(function ($prodiRows) {
+                return $prodiRows
+                    ->groupBy('kurikulum_id')
+                    ->map(fn ($kurikulumRows) => $kurikulumRows->unique('mk_id')->values());
+            });
+
+        return view('dashboard.dosen-space', compact('joinProdiUsers', 'mkByProdiKurikulum'));
     }
 }

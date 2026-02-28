@@ -353,6 +353,15 @@ class ImportMkMasterController extends Controller
                 $rowIndex++;
             }
 
+            if ($rowIndex > 2 && $columnIndex > 2) {
+                $lastColumn = Coordinate::stringFromColumnIndex($columnIndex - 1);
+                $sheet->getStyle('B2:' . $lastColumn . ($rowIndex - 1))
+                    ->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()
+                    ->setARGB('FFFFF59D');
+            }
+
             $writer = new Xlsx($spreadsheet);
             $waktu_download = now()->format('YmdHis');
             $fileName = 'import' . $waktu_download . '-subcpmk-penugasan-matrix-' . Str::slug((string) ($mk->kode ?? 'mk'), '-') . '.xlsx';

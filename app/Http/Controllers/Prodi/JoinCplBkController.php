@@ -7,6 +7,7 @@ use App\Models\Cpl;
 use App\Models\Kurikulum;
 use Illuminate\Http\Request;
 use App\Models\JoinCplBk;
+use App\Models\JoinCplCpmk;
 use App\Http\Controllers\Controller;
 
 class JoinCplBkController extends Controller
@@ -19,10 +20,31 @@ class JoinCplBkController extends Controller
 
     public function index(Kurikulum $kurikulum)
     {
+        $linkedCplBks = JoinCplBk::query()
+            ->where('kurikulum_id', $kurikulum->id)
+            ->get(['id', 'cpl_id', 'bk_id']);
+
+        $lockedJoinCplBkIds = JoinCplCpmk::query()
+            ->whereIn('join_cpl_bk_id', $linkedCplBks->pluck('id'))
+            ->pluck('join_cpl_bk_id')
+            ->unique()
+            ->flip();
+
+        $linkedPairMap = $linkedCplBks
+            ->mapWithKeys(fn ($row) => [($row->cpl_id.'|'.$row->bk_id) => true])
+            ->all();
+
+        $lockedPairMap = $linkedCplBks
+            ->filter(fn ($row) => $lockedJoinCplBkIds->has($row->id))
+            ->mapWithKeys(fn ($row) => [($row->cpl_id.'|'.$row->bk_id) => true])
+            ->all();
+
         return view('obe.cpl-bk')
                 ->with('kurikulum', $kurikulum)
                 ->with('cpls', $kurikulum->cpls)
-                ->with('bks', $kurikulum->bks);
+                ->with('bks', $kurikulum->bks)
+                ->with('linkedPairMap', $linkedPairMap)
+                ->with('lockedPairMap', $lockedPairMap);
     }
 
     public function update(Request $request, Cpl $cpl, Bk $bk)
@@ -30,6 +52,8 @@ class JoinCplBkController extends Controller
         $joincplbk = JoinCplBk::where('cpl_id', $cpl->id)
                                         ->where('bk_id', $bk->id)
                                         ->first();
+
+        $expectsJson = $request->expectsJson() || $request->ajax();
 
         if ($request->has('is_linked')) {
             if (!$joincplbk) {
@@ -39,16 +63,42 @@ class JoinCplBkController extends Controller
                     'kurikulum_id' => $request->kurikulum_id,
                 ]);
             }
+
+            if ($expectsJson) {
+                return response()->json([
+                    'status' => 'ok',
+                    'linked' => true,
+                    'message' => $bk->kode . ' telah diinteraksi dengan ' . $cpl->kode,
+                ]);
+            }
+
             return to_route('kurikulums.joincplbks.index',$request->kurikulum_id)
                     ->with('success', $bk->kode . ' telah diinteraksi dengan ' . $cpl->kode);
         } else {
             if ($joincplbk) {
                 if ($joincplbk->joinCplCpmks()->exists()) {
+                    if ($expectsJson) {
+                        return response()->json([
+                            'status' => 'error',
+                            'linked' => true,
+                            'message' => 'Interaksi tidak dapat diubah karena sudah dipakai pada relasi CPL >< CPMK.',
+                        ], 422);
+                    }
+
                     return to_route('kurikulums.joincplbks.index',$request->kurikulum_id)
                         ->with('error', 'Interaksi tidak dapat diubah karena sudah dipakai pada relasi CPL >< CPMK.');
                 }
                 $joincplbk->delete();
                 }
+
+            if ($expectsJson) {
+                return response()->json([
+                    'status' => 'ok',
+                    'linked' => false,
+                    'message' => $bk->kode . ' sudah tidak berinteraksi dengan ' . $cpl->kode,
+                ]);
+            }
+
             return to_route('kurikulums.joincplbks.index',$request->kurikulum_id)
                     ->with('warning', $bk->kode . ' sudah tidak berinteraksi dengan ' . $cpl->kode);
         }

@@ -18,15 +18,47 @@ class JoinMkUserController extends Controller
         $this->middleware('permission:update join mk users', ['only' => ['edit','update']]);
     }
 
-    public function index(MK $mk)
+    public function index(Mk $mk)
     {
         $kurikulum = Kurikulum::findOrFail($mk->kurikulum_id);
-        $join_prodi_users = JoinProdiUser::where('prodi_id', $mk->kurikulum->prodi_id)->get();
+        $join_prodi_users = JoinProdiUser::query()
+            ->where('prodi_id', $mk->kurikulum->prodi_id)
+            ->with('user:id,name')
+            ->get();
+
+        $linkedMkUsers = JoinMkUser::query()
+            ->where('mk_id', $mk->id)
+            ->get(['user_id', 'koordinator']);
+
+        $linkedUserMap = $linkedMkUsers
+            ->pluck('user_id')
+            ->unique()
+            ->flip()
+            ->all();
+
+        $koordinatorUserMap = $linkedMkUsers
+            ->where('koordinator', true)
+            ->pluck('user_id')
+            ->unique()
+            ->flip()
+            ->all();
+
+        $lockedUserMap = KontrakMk::query()
+            ->where('mk_id', $mk->id)
+            ->whereNotNull('user_id')
+            ->pluck('user_id')
+            ->unique()
+            ->flip()
+            ->all();
+
         return view('obe.mk-user')
                 ->with('mk', $mk)
                 ->with('kurikulum', $kurikulum)
                 ->with('mks', $kurikulum->mks)
-                ->with('join_prodi_users', $join_prodi_users);
+                ->with('join_prodi_users', $join_prodi_users)
+                ->with('linkedUserMap', $linkedUserMap)
+                ->with('koordinatorUserMap', $koordinatorUserMap)
+                ->with('lockedUserMap', $lockedUserMap);
     }
 
     public function update(Request $request, Mk $mk, User $user)

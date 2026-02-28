@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 
 @section('content')
 <div class="container">
@@ -7,7 +7,6 @@
             <div class="card">
                 <div class="card-header">
                     Import Data Join Prodi User
-                    <a href="{{ $returnUrl ?? route('home') }}" class="btn btn-primary btn-sm float-end"><i class="bi bi-arrow-left"></i> Kembali</a>
                     @stack('header')
                 </div>
 
@@ -60,7 +59,7 @@
                 </div>
                 <div class="card-body border-top">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div>
+                        <div class="form-check m-0">
                             <input type="checkbox" id="select-all" class="form-check-input">
                             <label for="select-all" class="form-check-label">Pilih semua</label>
                         </div>
@@ -77,7 +76,7 @@
                                         <th>Nama Program Studi</th>
                                         <th>NIDN</th>
                                         <th>Nama Dosen</th>
-                                        <th>Peran di Prodi</th>
+                                        <th>Status Pimpinan</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -102,7 +101,7 @@
                                             <td>{{ $row['nama_prodi'] }}</td>
                                             <td>{{ $row['nidn'] }}</td>
                                             <td>{{ $row['nama_dosen'] }}</td>
-                                            <td>{{ $row['status'] ?: '-' }}</td>
+                                            <td>{{ $row['status_pimpinan_label'] ?? ((bool)($row['status_pimpinan'] ?? false) ? 'Ya' : '-') }}</td>
                                             <td>
                                                 @if (!$row['prodi_exists'])
                                                     <span class="badge bg-danger">Program Studi tidak ditemukan</span>

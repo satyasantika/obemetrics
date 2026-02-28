@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ImportNilaiController extends Controller
@@ -162,16 +163,55 @@ class ImportNilaiController extends Controller
                     ->with('error', 'Tidak ada data valid di file yang diunggah.');
             }
 
-            session([
-                $this->previewSessionKey($mk, $kelasFilter) => [
-                    'rows' => $previewRows,
-                    'filename' => $request->file('file')->getClientOriginalName(),
-                    'return_url' => $this->resolveReturnUrl($request),
-                ],
-            ]);
+            $savedRows = 0;
+            $savedScores = 0;
+            $skippedRows = 0;
 
-            return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
-                ->with('success', 'Data nilai berhasil dibaca. Pilih baris yang ingin disimpan.');
+            foreach ($previewRows as $row) {
+                if (!($row['can_save'] ?? false)) {
+                    $skippedRows++;
+                    continue;
+                }
+
+                $savedRows++;
+                foreach (($row['scores'] ?? []) as $penugasanId => $score) {
+                    if ($score === null || $score === '') {
+                        continue;
+                    }
+
+                    Nilai::updateOrCreate(
+                        [
+                            'mk_id' => $mk->id,
+                            'penugasan_id' => $penugasanId,
+                            'mahasiswa_id' => $row['mahasiswa_id'],
+                            'semester_id' => $row['semester_id'],
+                        ],
+                        [
+                            'nilai' => $score,
+                            'komentar' => null,
+                        ]
+                    );
+
+                    $savedScores++;
+                }
+
+                $this->syncKontrakMkScore($mk, $row['mahasiswa_id'], $row['semester_id']);
+            }
+
+            session()->forget($this->previewSessionKey($mk, $kelasFilter));
+
+            if ($savedRows === 0) {
+                return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
+                    ->with('error', 'Import gagal diproses. Tidak ada baris valid untuk disimpan.');
+            }
+
+            $message = "{$savedRows} baris diproses langsung, {$savedScores} nilai berhasil disimpan.";
+            if ($skippedRows > 0) {
+                $message .= " {$skippedRows} baris dilewati karena tidak valid.";
+            }
+
+            return redirect()->to($this->resolveReturnUrl($request))
+                ->with('success', $message);
         } catch (\Throwable $exception) {
             return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                 ->with('error', 'Terjadi kesalahan saat membaca file: ' . $exception->getMessage());
@@ -307,6 +347,15 @@ class ImportNilaiController extends Controller
             }
 
             $rowNum++;
+        }
+
+        if ($rowNum > 2 && count($headers) > 2) {
+            $lastColumn = Coordinate::stringFromColumnIndex(count($headers));
+            $sheet->getStyle('C2:' . $lastColumn . ($rowNum - 1))
+                ->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()
+                ->setARGB('FFFFF59D');
         }
 
         $writer = new Xlsx($spreadsheet);

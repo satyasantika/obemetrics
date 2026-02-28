@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Prodi;
 
 use App\Models\Mk;
 use App\Models\Kurikulum;
+use App\Models\JoinMkUser;
+use App\Models\KontrakMk;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -19,8 +21,49 @@ class MkController extends Controller
 
     public function index(Kurikulum $kurikulum)
     {
-        $mks = Mk::where('kurikulum_id',$kurikulum->id)->get();
-        return view('obe.mk', compact('kurikulum','mks'));
+        $mks = Mk::where('kurikulum_id', $kurikulum->id)
+            ->withCount(['joinCplMks', 'joinMkUsers', 'kontrakMks', 'cpmks', 'penugasans'])
+            ->get();
+
+        $joinProdiUsers = $kurikulum->prodi->joinProdiUsers()->with('user')->get();
+
+        $joinMkUsers = JoinMkUser::with('user')
+            ->where('kurikulum_id', $kurikulum->id)
+            ->get();
+
+        $assignedByMk = $joinMkUsers->groupBy('mk_id');
+        $linkedByMkUser = $assignedByMk->map(function ($rows) {
+            return $rows->keyBy('user_id');
+        });
+
+        $lockedByMk = KontrakMk::query()
+            ->whereIn('mk_id', $mks->pluck('id'))
+            ->whereNotNull('user_id')
+            ->get(['mk_id', 'user_id'])
+            ->groupBy('mk_id')
+            ->map(function ($rows) {
+                return $rows->pluck('user_id')->filter()->unique()->flip();
+            });
+
+        $canDeleteByMk = [];
+        foreach ($mks as $mk) {
+            $canDeleteByMk[$mk->id] =
+                (int) $mk->join_cpl_mks_count === 0 &&
+                (int) $mk->join_mk_users_count === 0 &&
+                (int) $mk->kontrak_mks_count === 0 &&
+                (int) $mk->cpmks_count === 0 &&
+                (int) $mk->penugasans_count === 0;
+        }
+
+        return view('obe.mk', compact(
+            'kurikulum',
+            'mks',
+            'joinProdiUsers',
+            'assignedByMk',
+            'linkedByMkUser',
+            'lockedByMk',
+            'canDeleteByMk'
+        ));
     }
 
     public function create(Kurikulum $kurikulum)

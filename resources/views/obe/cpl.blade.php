@@ -1,13 +1,10 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 @section('content')
 
 <div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="col-11">
-            <x-obe.menu-strip minWidth="800px">
-                {{-- menu kurikulum --}}
-                @include('components.menu-kurikulum',['kurikulum' => $kurikulum])
-            </x-obe.menu-strip>
+        <div class="col-12">
+            @include('components.kurikulum-flow-info',['kurikulum' => $kurikulum])
             {{-- identitas kurikulum --}}
             @include('components.identitas-kurikulum',['kurikulum' => $kurikulum])
 
@@ -16,14 +13,14 @@
                     title="Data Capaian Pembelajaran Lulusan (CPL)"
                     subtitle="Kelola CPL pada kurikulum aktif"
                     icon="bi bi-bullseye"
-                    :backUrl="route('home')" />
-                <div class="card-body">
+                    />
+                <div class="card-body bg-light-subtle">
                     <div class="row mb-2">
                         <div class="col">
-                            <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateCpl">
+                            <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateCpl">
                                 <i class="bi bi-plus-circle"></i> Tambah CPL
                             </button>
-                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'cpls']) }}" class="btn btn-sm btn-success mt-1 float-end">
+                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'cpls']) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-1 float-end">
                                 <i class="bi bi-upload"></i> Upload Banyak CPL
                             </a>
                         </div>
@@ -31,17 +28,26 @@
 
                     <div class="row">
                         <div class="col">
-                            <table class="table table-bordered table-striped">
+                            <div class="table-responsive rounded-3 border bg-white shadow-sm">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-uppercase small text-muted fw-semibold" style="width: 280px;">CPL</th>
+                                        <th class="text-uppercase small text-muted fw-semibold">Deskripsi</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                  @forelse ($cpls as $cpl)
                                     <tr style="vertical-align: text-top;">
                                         <td>
-                                            <strong>{{ $cpl->kode }}</strong>
+                                            <strong class="me-2">{{ $cpl->kode }}</strong>
                                             {{-- Edit CPL --}}
-                                            <button type="button" class="btn btn-sm btn-white text-primary" data-bs-toggle="modal" data-bs-target="#modalEditCpl-{{ $cpl->id }}">
+                                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" data-bs-toggle="modal" data-bs-target="#modalEditCpl-{{ $cpl->id }}" title="Edit CPL">
                                                 <i class="bi bi-pencil-square"></i>
                                             </button>
-                                            <span class="badge bg-{{ $cpl->cakupan == 'Universitas' ? 'success' : '' }}{{ $cpl->cakupan == 'Fakultas' ? 'primary' : '' }}{{ $cpl->cakupan == 'Program Studi' ? 'dark' : '' }}">{{ $cpl->cakupan }}</span>
+                                            <div class="mt-2">
+                                                <span class="badge rounded-pill bg-{{ $cpl->cakupan == 'Universitas' ? 'success' : '' }}{{ $cpl->cakupan == 'Fakultas' ? 'primary' : '' }}{{ $cpl->cakupan == 'Program Studi' ? 'dark' : '' }}">{{ $cpl->cakupan }}</span>
+                                            </div>
                                         </td>
                                         <td style="text-align: justify">
                                             {{ $cpl->nama }}
@@ -56,6 +62,7 @@
                                  @endforelse
                                 </tbody>
                             </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -65,12 +72,12 @@
 </div>
 
 <div class="modal fade" id="modalCreateCpl" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-sm rounded-4 overflow-hidden">
             <form action="{{ route('kurikulums.cpls.store', $kurikulum) }}" method="post">
                 @csrf
                 <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
-                <div class="modal-header">
+                <div class="modal-header bg-light-subtle border-bottom">
                     <h5 class="modal-title">Tambah Data CPL</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -99,9 +106,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                <div class="modal-footer bg-light-subtle border-top">
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-save"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -110,13 +117,13 @@
 
 @foreach ($cpls as $cpl)
 <div class="modal fade" id="modalEditCpl-{{ $cpl->id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-sm rounded-4 overflow-hidden">
             <form action="{{ route('kurikulums.cpls.update',[$kurikulum->id,$cpl->id]) }}" method="post">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
-                <div class="modal-header">
+                <div class="modal-header bg-light-subtle border-bottom">
                     <h5 class="modal-title">Edit CPL: {{ $cpl->kode }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -145,17 +152,17 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer bg-light-subtle border-top">
                     @php
                         $canDeleteCpl = !$cpl->joinProfilCpls()->exists() && !$cpl->joinCplBks()->exists();
                     @endphp
                     @if ($canDeleteCpl)
-                        <button type="button" class="btn btn-outline-danger btn-sm me-auto" onclick="if(confirm('Yakin akan menghapus CPL {{ $cpl->kode }}?')){ document.getElementById('delete-cpl-{{ $cpl->id }}').submit(); }"><i class="bi bi-trash"></i> Hapus</button>
+                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold shadow-sm me-auto" onclick="if(confirm('Yakin akan menghapus CPL {{ $cpl->kode }}?')){ document.getElementById('delete-cpl-{{ $cpl->id }}').submit(); }"><i class="bi bi-trash"></i> Hapus</button>
                     @else
                         <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
                     @endif
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-save"></i> Save</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-save"></i> Save</button>
                 </div>
             </form>
             @if ($canDeleteCpl)

@@ -27,10 +27,25 @@ class JoinCplCpmkController extends Controller
             ->unique('id')
             ->values();
 
+        $linkedPairMap = JoinCplCpmk::query()
+            ->where('mk_id', $mk->id)
+            ->get(['join_cpl_bk_id', 'cpmk_id'])
+            ->mapWithKeys(fn ($row) => [($row->join_cpl_bk_id.'|'.$row->cpmk_id) => true])
+            ->all();
+
+        $lockedPairMap = JoinCplCpmk::query()
+            ->where('mk_id', $mk->id)
+            ->whereHas('subcpmks')
+            ->get(['join_cpl_bk_id', 'cpmk_id'])
+            ->mapWithKeys(fn ($row) => [($row->join_cpl_bk_id.'|'.$row->cpmk_id) => true])
+            ->all();
+
         return view('obe.cpl-cpmk')
                 ->with('mk', $mk)
                 ->with('joincplbks', $joincplbks)
-                ->with('cpmks', $mk->cpmks);
+                ->with('cpmks', $mk->cpmks)
+                ->with('linkedPairMap', $linkedPairMap)
+                ->with('lockedPairMap', $lockedPairMap);
     }
 
     public function update(Request $request, JoinCplBk $joincplbk, Cpmk $cpmk)

@@ -49,8 +49,12 @@ class ImportJoinProdiUserController extends Controller
                 'nama_prodi' => array_search('nama program studi', $header, true),
                 'nidn' => array_search('nidn dosen', $header, true),
                 'nama_dosen' => array_search('nama dosen', $header, true),
-                'status' => array_search('posisi dalam prodi', $header, true),
+                'status_pimpinan' => array_search('status pimpinan', $header, true),
             ];
+
+            if ($headerMap['status_pimpinan'] === false) {
+                $headerMap['status_pimpinan'] = array_search('posisi dalam prodi', $header, true);
+            }
 
             if ($headerMap['prodi_id'] === false || $headerMap['nidn'] === false) {
                 return back()->with('error', 'File harus memiliki minimal kolom "kode program studi" dan "nidn dosen".');
@@ -78,7 +82,9 @@ class ImportJoinProdiUserController extends Controller
 
                 $namaProdi = trim((string) ($row[$headerMap['nama_prodi']] ?? ''));
                 $namaDosen = trim((string) ($row[$headerMap['nama_dosen']] ?? ''));
-                $status = trim((string) ($row[$headerMap['status']] ?? ''));
+                $rawStatusPimpinan = trim((string) ($row[$headerMap['status_pimpinan']] ?? ''));
+                $normalizedStatus = Str::lower($rawStatusPimpinan);
+                $statusPimpinan = in_array($normalizedStatus, ['ya', 'y', 'yes', '1', 'true', 'ketua prodi', 'kaprodi'], true);
 
                 // Check prodi
                 $prodi = Prodi::where('kode_prodi', $kodeProdi)->first();
@@ -98,7 +104,8 @@ class ImportJoinProdiUserController extends Controller
                     'nama_prodi' => $namaProdi,
                     'nidn' => $nidn,
                     'nama_dosen' => $namaDosen,
-                    'status' => $status,
+                    'status_pimpinan' => $statusPimpinan,
+                    'status_pimpinan_label' => $statusPimpinan ? 'Ya' : '-',
                     'prodi_exists' => (bool) $prodi,
                     'prodi_actual_id' => $prodi?->id,
                     'dosen_exists' => (bool) $dosen,
@@ -168,7 +175,7 @@ class ImportJoinProdiUserController extends Controller
                     'user_id' => $row['dosen_id'],
                 ],
                 [
-                    'status' => $row['status'] ?: null,
+                    'status_pimpinan' => (bool) ($row['status_pimpinan'] ?? false),
                 ]
             );
             $savedCount++;
@@ -191,7 +198,7 @@ class ImportJoinProdiUserController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set header
-        $headers = ['kode program studi', 'nama program studi', 'nidn dosen', 'nama dosen', 'posisi dalam prodi'];
+        $headers = ['kode program studi', 'nama program studi', 'nidn dosen', 'nama dosen', 'status pimpinan'];
         $column = 'A';
         foreach ($headers as $header) {
             $sheet->setCellValue($column . '1', $header);
@@ -205,13 +212,13 @@ class ImportJoinProdiUserController extends Controller
         $sheet->setCellValue('B2', 'Pendidikan X');
         $sheet->setCellValue('C2', '0123456789');
         $sheet->setCellValue('D2', 'Dr. Budi Santoso');
-        $sheet->setCellValue('E2', 'Ketua Prodi');
+        $sheet->setCellValue('E2', 'Ya');
 
         $sheet->setCellValue('A3', '2156');
         $sheet->setCellValue('B3', 'Pendidikan Y');
         $sheet->setCellValue('C3', '0123456790');
         $sheet->setCellValue('D3', 'Prof. Ahmad Rizki');
-        $sheet->setCellValue('E3', 'Dosen');
+        $sheet->setCellValue('E3', '-');
 
         // Create writer and download
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
