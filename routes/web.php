@@ -15,10 +15,17 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return to_route('home');
+    if (Auth::check()) {
+        return to_route('home');
+    }
+
+    return view('welcome');
 });
 
-Auth::routes();
+Auth::routes(['register' => false]);
+Route::any('/register', function () {
+    return redirect('/');
+});
 Route::impersonate();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

@@ -23,6 +23,7 @@
 </head>
 <body>
     <div id="app">
+        @unless (View::hasSection('hideNavbar'))
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
@@ -85,6 +86,7 @@
                 </div>
             </div>
         </nav>
+        @endunless
 
         <main class="py-4">
             @include('layouts.alert')
