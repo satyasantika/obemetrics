@@ -1,66 +1,264 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# obemetrics
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+`obemetrics` adalah aplikasi berbasis web untuk mendukung pengelolaan data dan evaluasi Outcome-Based Education (OBE), seperti pemetaan CPL, CPMK, kurikulum, evaluasi, serta rekap data akademik terkait.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 1. Judul dan Deskripsi Singkat Aplikasi
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Nama Aplikasi:** `obemetrics`  
+**Tujuan:** mempermudah pengelolaan proses OBE secara terstruktur, terdokumentasi, dan terukur dalam satu sistem terpusat.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 2. Fitur Utama
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Berikut fitur utama yang tersedia (atau direncanakan) pada `obemetrics`:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+- Manajemen data master akademik (program studi, mata kuliah, semester, mahasiswa).
+- Pengelolaan CPL, CPMK, Sub-CPMK, dan relasi antar komponen OBE.
+- Evaluasi dan pemantauan capaian pembelajaran.
+- Dukungan tabel data interaktif (filter, sortir, ekspor) melalui DataTables.
+- Manajemen pengguna, role, dan permission.
+- Dukungan autentikasi berbasis Laravel + Sanctum untuk endpoint API.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-## Laravel Sponsors
+## 3. Teknologi yang Digunakan
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Backend
+- PHP `^8.1`
+- Laravel `^10.10`
+- MySQL/MariaDB (disarankan; sesuaikan dengan konfigurasi `.env`)
 
-### Premium Partners
+### Frontend & Build Tools
+- Vite `^5.0.0`
+- Bootstrap `^5.2.3`
+- Sass `^1.56.1`
+- Axios `^1.6.4`
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### Library Pendukung
+- `yajra/laravel-datatables`
+- `spatie/laravel-permission`
+- `laravel/sanctum`
+- `phpoffice/phpspreadsheet`
+- `lab404/laravel-impersonate`
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 4. Cara Instalasi
 
-## Code of Conduct
+1. Clone repository:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+	```bash
+	git clone <URL_REPOSITORY_ANDA>
+	cd obemetrics
+	```
 
-## Security Vulnerabilities
+2. Install dependency backend (Composer):
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+	```bash
+	composer install
+	```
 
-## License
+3. Install dependency frontend (NPM):
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+	```bash
+	npm install
+	```
+
+4. Buat file environment:
+
+	```bash
+	cp .env.example .env
+	```
+
+	> Untuk Windows CMD, gunakan:
+	> ```cmd
+	> copy .env.example .env
+	> ```
+
+5. Generate application key:
+
+	```bash
+	php artisan key:generate
+	```
+
+6. Atur konfigurasi database di `.env`, lalu jalankan migrasi:
+
+	```bash
+	php artisan migrate
+	```
+
+7. (Opsional) Jalankan seeder jika tersedia:
+
+	```bash
+	php artisan db:seed
+	```
+
+---
+
+## 5. Cara Menjalankan Aplikasi
+
+1. Jalankan server Laravel:
+
+	```bash
+	php artisan serve
+	```
+
+2. Jalankan Vite dev server (terminal terpisah):
+
+	```bash
+	npm run dev
+	```
+
+3. Akses aplikasi di browser:
+
+	```
+	http://127.0.0.1:8000
+	```
+
+### Mode Production (build asset)
+
+```bash
+npm run build
+```
+
+---
+
+## 6. Contoh Konfigurasi
+
+Contoh minimal konfigurasi `.env`:
+
+```env
+APP_NAME=obemetrics
+APP_ENV=local
+APP_KEY=base64:GENERATED_KEY
+APP_DEBUG=true
+APP_URL=http://127.0.0.1:8000
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=obemetrics
+DB_USERNAME=root
+DB_PASSWORD=
+
+CACHE_DRIVER=file
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+```
+
+> Placeholder di atas dapat disesuaikan dengan environment server Anda.
+
+---
+
+## 7. Struktur Folder/Proyek
+
+Struktur utama proyek:
+
+```text
+obemetrics/
+├── app/
+│   ├── Console/
+│   ├── DataTables/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   └── Middleware/
+│   ├── Models/
+│   └── Providers/
+├── bootstrap/
+├── config/
+├── database/
+│   ├── factories/
+│   ├── migrations/
+│   └── seeders/
+├── public/
+├── resources/
+│   ├── css/
+│   ├── js/
+│   ├── sass/
+│   └── views/
+├── routes/
+│   ├── web.php
+│   └── api.php
+├── storage/
+├── tests/
+├── composer.json
+├── package.json
+└── README.md
+```
+
+---
+
+## 8. Screenshot atau Demo
+
+Tambahkan dokumentasi visual aplikasi di bagian ini:
+
+- Screenshot Dashboard: `![Dashboard](docs/screenshots/dashboard.png)`
+- Screenshot Modul Evaluasi: `![Evaluasi](docs/screenshots/evaluasi.png)`
+- Demo Video: `[Tautan Demo](https://supportfkip.unsil.ac.id/demo-obemetrics)`
+
+---
+
+## 9. API Endpoint
+
+Endpoint API yang sudah terdeteksi:
+
+| Method | Endpoint | Middleware | Keterangan |
+|---|---|---|---|
+| GET | `/api/user` | `auth:sanctum` | Mengambil data user terautentikasi |
+
+Template endpoint tambahan (isi sesuai implementasi Anda):
+
+| Method | Endpoint | Middleware | Keterangan |
+|---|---|---|---|
+| GET | `/api/<resource>` | `auth:sanctum` | List data |
+| POST | `/api/<resource>` | `auth:sanctum` | Tambah data |
+| PUT/PATCH | `/api/<resource>/{id}` | `auth:sanctum` | Ubah data |
+| DELETE | `/api/<resource>/{id}` | `auth:sanctum` | Hapus data |
+
+---
+
+## 10. Lisensi
+
+Proyek ini menggunakan lisensi **MIT**.  
+Silakan lihat detail lisensi pada file `LICENSE` (jika belum ada, dapat ditambahkan kemudian).
+
+---
+
+## 11. Kontributor
+
+```text
+Nama: <satya santika>
+Peran: <pengembang>
+Kontak: <satyasantika@unsil.ac.id>
+```
+
+Kami sangat terbuka jika ada yang bersedia bergabung pada proyek ini
+
+---
+
+## 12. Catatan Tambahan / Roadmap Versi Selanjutnya
+
+Rencana pengembangan berikutnya:
+
+- [ ] Menambahkan dokumentasi API lengkap (OpenAPI/Swagger).
+- [ ] Menambahkan pengujian otomatis untuk modul inti.
+- [ ] Menambahkan dashboard analitik OBE yang lebih komprehensif.
+- [ ] Integrasi ekspor laporan ke format PDF/Excel yang lebih fleksibel.
+- [ ] Menyusun panduan deployment production (Nginx/Apache + queue + scheduler).
+
+Catatan tambahan:
+
+- Pastikan konfigurasi `.env` tidak dibagikan ke publik.
+- Gunakan branch terpisah untuk pengembangan fitur baru.
+- Lakukan backup database secara berkala.
+
+---
+
+## Informasi Kontak Proyek (Placeholder)
+
+- Email tim: `<comming soon>`
+- Issue tracker: `<comming soon>`
+- Dokumentasi internal: `<comming soon>`
