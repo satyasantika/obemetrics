@@ -191,11 +191,11 @@ class UserSeeder extends Seeder
             'workcloud'=>'UAS',
             'nama'=>'Ujian Akhir Semester (UAS)',
         ]);
-        $evaluasi_kuis = Evaluasi::create([
-            'kode'=>'kuis',
+        $evaluasi_quiz = Evaluasi::create([
+            'kode'=>'quiz',
             'kategori'=>'Pengetahuan/Kognitif',
-            'workcloud'=>'Kuis',
-            'nama'=>'Kuis',
+            'workcloud'=>'Quiz',
+            'nama'=>'Quiz',
         ]);
         $evaluasi_tugas = Evaluasi::create([
             'kode'=>'tugas',
@@ -205,19 +205,19 @@ class UserSeeder extends Seeder
         ]);
         $evaluasi_proyek_individu = Evaluasi::create([
             'kode'=>'proyek_individu',
-            'kategori'=>'Hasil Proyek',
+            'kategori'=>'Hasil Proyek/Studi Kasus',
             'workcloud'=>'Hasil Proyek/Studi Kasus',
             'nama'=>'Hasil Proyek Individu',
         ]);
         $evaluasi_proyek_kelompok = Evaluasi::create([
             'kode'=>'proyek_kelompok',
-            'kategori'=>'Hasil Proyek',
+            'kategori'=>'Hasil Proyek/Studi Kasus',
             'workcloud'=>'Hasil Proyek/Studi Kasus',
             'nama'=>'Hasil Proyek Kelompok',
         ]);
         $evaluasi_studi_kasus = Evaluasi::create([
             'kode'=>'studi_kasus',
-            'kategori'=>'Studi Kasus',
+            'kategori'=>'Hasil Proyek/Studi Kasus',
             'workcloud'=>'Hasil Proyek/Studi Kasus',
             'nama'=>'Studi Kasus',
         ]);

@@ -136,7 +136,7 @@
                                         @forelse ($asesmens as $tugas)
                                             <table>
                                                 <tbody>
-                                                    <tr style="vertical-align: top">
+                                                    <tr>
                                                         <td>{{ $tugas->kode }}:</td>
                                                         <td>{{ $tugas->nama }} (bobot: {{ $tugas->bobot }}%)</td>
                                                     </tr>
