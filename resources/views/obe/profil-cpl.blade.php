@@ -60,7 +60,7 @@
                                         </td>
                                         @forelse ($profils as $profil)
                                             <td>
-                                                <form action="{{ route('joinprofilcpls.update',[$profil->id,$cpl->id]) }}" method="POST">
+                                                <form action="{{ route('joinprofilcpls.update',[$profil->id,$cpl->id]) }}" method="POST" class="live-profilcpl-form">
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="profil_id" value="{{ $profil->id }}">
@@ -75,14 +75,15 @@
                                                             type="checkbox"
                                                             name="is_linked"
                                                             id="is_linked_{{ $profil->id }}_{{ $cpl->id }}"
-                                                            onchange="this.form.submit()"
+                                                            onchange="this.form.requestSubmit()"
                                                             @checked($cek)
                                                         >
                                                         <label class="form-check-label mb-0" for="is_linked_{{ $profil->id }}_{{ $cpl->id }}">
-                                                            <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle {{ $cek ? '' : 'd-none' }}">
+                                                            <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle link-status-badge {{ $cek ? '' : 'd-none' }}">
                                                                 <i class="bi bi-check-circle-fill"></i>
                                                             </span>
                                                         </label>
+                                                        <span class="save-status small text-muted"></span>
                                                     </div>
                                                 </form>
                                             </td>
@@ -107,6 +108,89 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const forms = document.querySelectorAll('.live-profilcpl-form');
+
+    forms.forEach(function (form) {
+        const checkbox = form.querySelector('input[name="is_linked"]');
+        const statusEl = form.querySelector('.save-status');
+        const badge = form.querySelector('.link-status-badge');
+
+        if (!checkbox) {
+            return;
+        }
+
+        const setStatus = function (text, tone) {
+            if (!statusEl) {
+                return;
+            }
+
+            statusEl.textContent = text;
+            statusEl.className = 'save-status small text-' + tone;
+
+            if (tone === 'success') {
+                setTimeout(function () {
+                    statusEl.textContent = '';
+                    statusEl.className = 'save-status small text-muted';
+                }, 1200);
+            }
+        };
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            if (checkbox.disabled) {
+                return;
+            }
+
+            const previousValue = !checkbox.checked;
+            const formData = new FormData(form);
+
+            checkbox.disabled = true;
+            setStatus('menyimpan...', 'muted');
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    return response.json().then(function (payload) {
+                        throw new Error(payload?.message || 'Gagal menyimpan');
+                    }).catch(function () {
+                        throw new Error('Gagal menyimpan');
+                    });
+                }
+
+                return response.json();
+            })
+            .then(function (result) {
+                setStatus('tersimpan', 'success');
+
+                if (badge) {
+                    badge.classList.toggle('d-none', !result.linked);
+                }
+            })
+            .catch(function (error) {
+                checkbox.checked = previousValue;
+                setStatus(String(error?.message || 'Gagal menyimpan'), 'danger');
+            })
+            .finally(function () {
+                checkbox.disabled = false;
+            });
+        });
+    });
+});
+</script>
+@endpush
 
 @push('styles')
 <style>

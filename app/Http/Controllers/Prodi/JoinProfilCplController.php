@@ -30,6 +30,7 @@ class JoinProfilCplController extends Controller
         $joinprofilcpl = JoinProfilCpl::where('profil_id', $profil->id)
                                         ->where('cpl_id', $cpl->id)
                                         ->first();
+        $expectsJson = $request->expectsJson() || $request->ajax();
 
         if ($request->has('is_linked')) {
             if (!$joinprofilcpl) {
@@ -39,16 +40,30 @@ class JoinProfilCplController extends Controller
                     'kurikulum_id' => $request->kurikulum_id,
                 ]);
             }
-            return to_route('kurikulums.joinprofilcpls.index',$request->kurikulum_id)
+
+            if ($expectsJson) {
+                return response()->json([
+                    'status' => 'ok',
+                    'linked' => true,
+                    'message' => $cpl->kode . ' telah diset untuk profil ' . $profil->nama,
+                ]);
+            }
+
+            return back()
                     ->with('success', $cpl->kode . ' telah diset untuk profil ' . $profil->nama);
         } else {
             if ($joinprofilcpl) {
-                if ($cpl->joinCplBks()->exists()) {
-                    return to_route('kurikulums.joinprofilcpls.index',$request->kurikulum_id)
-                        ->with('error', 'Interaksi tidak dapat diubah karena CPL sudah dipakai pada relasi CPL >< BK.');
-                }
                 $joinprofilcpl->delete();
                 }
+
+            if ($expectsJson) {
+                return response()->json([
+                    'status' => 'ok',
+                    'linked' => false,
+                    'message' => $cpl->kode . ' telah dihapus dari profil ' . $profil->nama,
+                ]);
+            }
+
             return to_route('kurikulums.joinprofilcpls.index',$request->kurikulum_id)
                     ->with('warning', $cpl->kode . ' telah dihapus dari profil ' . $profil->nama);
         }

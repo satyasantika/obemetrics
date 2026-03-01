@@ -76,11 +76,11 @@
                                                                     @disabled($isLocked)
                                                                 >
                                                             </div>
-                                                            <span class="save-status small text-muted"></span>
                                                         </div>
+                                                        <span class="save-status small text-muted"></span>
                                                     </form>
                                                     <div class="mt-1 d-flex align-items-center gap-1 flex-wrap">
-                                                        <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle link-status-badge {{ $cek ? '' : 'd-none' }}">{{ $bk->kode }}</span>
+                                                        {{-- <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle link-status-badge {{ $cek ? '' : 'd-none' }}">{{ $bk->kode }}</span> --}}
                                                         @if ($isLocked)
                                                             <span class="badge bg-secondary">terkunci</span>
                                                         @endif

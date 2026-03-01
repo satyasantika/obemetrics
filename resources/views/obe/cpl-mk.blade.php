@@ -84,21 +84,6 @@
                                                         @method('PUT')
                                                         <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
                                                         <input type="hidden" name="join_cpl_bk_id" value="{{ $column['join_cpl_bk_id'] }}">
-                                                        <div class="mb-1 d-flex align-items-center justify-content-between gap-1">
-                                                            <span class="badge {{ $isLinked ? 'bg-success' : 'bg-white text-dark' }} link-status-badge">
-                                                                {{ $isLinked ? 'Terkait' : 'x' }}
-                                                            </span>
-                                                            @if (!$isLocked)
-                                                            <button
-                                                                type="button"
-                                                                class="btn btn-outline-danger btn-sm py-0 px-2 clear-bobot-btn {{ $isLinked ? '' : 'd-none' }}"
-                                                                title="Hapus relasi CPL-BK-MK"
-                                                                aria-label="Hapus relasi"
-                                                            >
-                                                                <i class="bi bi-x-lg"></i>
-                                                            </button>
-                                                            @endif
-                                                        </div>
                                                         <div class="d-flex align-items-center gap-1">
                                                             <input
                                                                 class="form-control form-control-sm bobot-input"
@@ -111,8 +96,23 @@
                                                                 value="{{ $bobot !== null ? $bobot : '' }}"
                                                                 title="{{ $column['cpl_kode'] }} - BK {{ $column['bk_kode'] }}"
                                                             >
-                                                            <span class="save-status small text-muted"></span>
                                                         </div>
+                                                        <div class="mt-1 d-flex align-items-center justify-content-between gap-1">
+                                                            <span class="badge {{ $isLinked ? 'bg-success' : 'bg-white text-dark' }} link-status-badge">
+                                                                {{ $isLinked ? 'Terkait' : '' }}
+                                                            </span>
+                                                            @if (!$isLocked)
+                                                            <button
+                                                                type="button"
+                                                                class="btn btn-outline-danger rounded-pill btn-sm py-0 px-2 clear-bobot-btn {{ $isLinked ? '' : 'd-none' }}"
+                                                                title="Hapus relasi CPL-BK-MK"
+                                                                aria-label="Hapus relasi"
+                                                            >
+                                                                <i class="bi bi-x-lg"></i>
+                                                            </button>
+                                                            @endif
+                                                        </div>
+                                                        <span class="save-status small text-muted"></span>
                                                     </form>
                                                 @endif
                                                 @if ($isLocked)
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (badge) {
                     const linked = !!result.linked;
-                    badge.textContent = linked ? 'Terkait' : 'x';
+                    badge.textContent = linked ? 'Terkait' : '';
                     badge.className = 'badge ' + (linked ? 'bg-success' : 'bg-white text-dark') + ' link-status-badge';
 
                     if (clearBtn) {

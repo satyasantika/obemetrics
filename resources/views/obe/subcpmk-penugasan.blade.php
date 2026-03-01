@@ -98,19 +98,6 @@
                                                     <input type="hidden" name="subcpmk_id" value="{{ $subcpmk->id }}">
                                                     <input type="hidden" name="mk_id" value="{{ $mk->id }}">
                                                     <input type="hidden" name="semester_id" value="{{ $selectedSemesterId }}">
-                                                    <div class="mb-1 d-flex align-items-center justify-content-between gap-1">
-                                                        <span class="badge {{ $linkedObj ? 'bg-success-subtle text-success-emphasis border border-success-subtle' : '' }} link-status-badge">
-                                                            {{ $linkedObj ? 'Terkait' : '' }}
-                                                        </span>
-                                                        <button
-                                                            type="button"
-                                                            class="btn btn-outline-danger btn-sm py-0 px-2 rounded-pill clear-bobot-btn {{ $linkedObj ? '' : 'd-none' }}"
-                                                            title="Hapus relasi SubCPMK-Penugasan"
-                                                            aria-label="Hapus relasi"
-                                                        >
-                                                            <i class="bi bi-x-lg"></i>
-                                                        </button>
-                                                    </div>
                                                     <div class="d-flex align-items-center gap-1">
                                                         <input
                                                             class="form-control form-control-sm bobot-input text-end border-primary-subtle"
@@ -123,8 +110,21 @@
                                                             placeholder="bobot %"
                                                             value="{{ $bobot !== null ? $bobot : '' }}"
                                                         >
-                                                        <span class="save-status small text-muted"></span>
                                                     </div>
+                                                    <div class="mt-1 d-flex align-items-center justify-content-between gap-1">
+                                                        <span class="badge {{ $linkedObj ? 'bg-success-subtle text-success-emphasis border border-success-subtle' : '' }} link-status-badge">
+                                                            {{ $linkedObj ? 'Terkait' : '' }}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn-outline-danger btn-sm py-0 px-2 rounded-pill clear-bobot-btn {{ $linkedObj ? '' : 'd-none' }}"
+                                                            title="Hapus relasi SubCPMK-Penugasan"
+                                                            aria-label="Hapus relasi"
+                                                        >
+                                                            <i class="bi bi-x-lg"></i>
+                                                        </button>
+                                                    </div>
+                                                    <span class="save-status small text-muted"></span>
                                                 </form>
                                             </td>
                                         @empty
@@ -226,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 if (badge) {
                     const linked = !!result.linked;
-                    badge.textContent = linked ? 'Terkait' : 'x';
+                    badge.textContent = linked ? 'Terkait' : '';
                     badge.className = 'badge ' + (linked
                         ? 'bg-success-subtle text-success-emphasis border border-success-subtle'
                         : 'bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle') + ' link-status-badge';

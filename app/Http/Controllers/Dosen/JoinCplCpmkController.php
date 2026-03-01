@@ -53,24 +53,52 @@ class JoinCplCpmkController extends Controller
         $joincplcpmk = JoinCplCpmk::where('join_cpl_bk_id', $joincplbk->id)
                                         ->where('cpmk_id', $cpmk->id)
                                         ->first();
+        $expectsJson = $request->expectsJson() || $request->ajax();
+
         if ($request->has('is_linked')) {
             if (!$joincplcpmk) {
-            JoinCplCpmk::create([
-                'join_cpl_bk_id' => $joincplbk->id,
-                'cpmk_id' => $cpmk->id,
-                'mk_id' => $request->mk_id,
-            ]);
+                JoinCplCpmk::create([
+                    'join_cpl_bk_id' => $joincplbk->id,
+                    'cpmk_id' => $cpmk->id,
+                    'mk_id' => $request->mk_id,
+                ]);
             }
+
+            if ($expectsJson) {
+                return response()->json([
+                    'status' => 'ok',
+                    'linked' => true,
+                    'message' => $cpmk->kode . ' telah diinteraksi dengan ' . $joincplbk->cpl->kode,
+                ]);
+            }
+
             return to_route('mks.joincplcpmks.index',$request->mk_id)
                     ->with('success', $cpmk->kode . ' telah diinteraksi dengan ' . $joincplbk->cpl->kode);
         } else {
             if ($joincplcpmk) {
                 if ($joincplcpmk->subcpmks()->exists()) {
+                    if ($expectsJson) {
+                        return response()->json([
+                            'status' => 'error',
+                            'linked' => true,
+                            'message' => 'Interaksi tidak dapat diubah karena sudah dipakai pada data SubCPMK.',
+                        ], 422);
+                    }
+
                     return to_route('mks.joincplcpmks.index',$request->mk_id)
                             ->with('error', 'Interaksi tidak dapat diubah karena sudah dipakai pada data SubCPMK.');
                 }
                 $joincplcpmk->delete();
                 }
+
+            if ($expectsJson) {
+                return response()->json([
+                    'status' => 'ok',
+                    'linked' => false,
+                    'message' => $cpmk->kode . ' sudah tidak berinteraksi dengan ' . $joincplbk->cpl->kode,
+                ]);
+            }
+
             return to_route('mks.joincplcpmks.index',$request->mk_id)
                     ->with('warning', $cpmk->kode . ' sudah tidak berinteraksi dengan ' . $joincplbk->cpl->kode);
         }

@@ -45,29 +45,34 @@
                                         </td>
                                         @forelse ($joincplbks as $joincplbk)
                                             <td>
-                                                <form action="{{ route('joincplcpmks.update',[$joincplbk->id,$cpmk->id]) }}" method="POST">
+                                                @php
+                                                $pairKey = $joincplbk->id.'|'.$cpmk->id;
+                                                $cek = isset($linkedPairMap[$pairKey]);
+                                                $isLocked = isset($lockedPairMap[$pairKey]);
+                                                @endphp
+                                                <form action="{{ route('joincplcpmks.update',[$joincplbk->id,$cpmk->id]) }}" method="POST" class="live-cplcpmk-form" data-is-locked="{{ $isLocked ? '1' : '0' }}">
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="cpmk_id" value="{{ $cpmk->id }}">
                                                     <input type="hidden" name="mk_id" value="{{ $mk->id }}">
-                                                    @php
-                                                    $pairKey = $joincplbk->id.'|'.$cpmk->id;
-                                                    $cek = isset($linkedPairMap[$pairKey]);
-                                                    $isLocked = isset($lockedPairMap[$pairKey]);
-                                                    @endphp
-                                                    <div class="form-check form-switch">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="form-check form-switch mb-0">
                                                         <input
                                                             class="form-check-input"
                                                             type="checkbox"
                                                             name="is_linked"
                                                             id="is_linked_{{ $joincplbk->id }}_{{ $cpmk->id }}"
-                                                            onchange="this.form.submit()"
+                                                            onchange="this.form.requestSubmit()"
                                                             @checked($cek)
                                                             @disabled($isLocked)
                                                         >
+                                                        </div>
+                                                        <span class="save-status small text-muted"></span>
                                                     </div>
                                                 </form>
-                                                <span class="badge text-success" style="display: {{ $cek ? 'inline' : 'none' }};">{{ $cek ? $joincplbk->cpl->kode : '' }}</span>
+                                                <div class="mt-1">
+                                                    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle link-status-badge {{ $cek ? '' : 'd-none' }}">{{ $joincplbk->cpl->kode }}</span>
+                                                </div>
                                                 @if ($isLocked)
                                                     <span class="badge bg-secondary">terkunci</span>
                                                 @endif
@@ -92,6 +97,93 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const forms = document.querySelectorAll('.live-cplcpmk-form');
+
+    forms.forEach(function (form) {
+        const checkbox = form.querySelector('input[name="is_linked"]');
+        const statusEl = form.querySelector('.save-status');
+        const badge = form.closest('td')?.querySelector('.link-status-badge');
+        const isLocked = form.getAttribute('data-is-locked') === '1';
+
+        if (!checkbox) {
+            return;
+        }
+
+        const setStatus = function (text, tone) {
+            if (!statusEl) {
+                return;
+            }
+
+            statusEl.textContent = text;
+            statusEl.className = 'save-status small text-' + tone;
+
+            if (tone === 'success') {
+                setTimeout(function () {
+                    statusEl.textContent = '';
+                    statusEl.className = 'save-status small text-muted';
+                }, 1200);
+            }
+        };
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            if (checkbox.disabled) {
+                return;
+            }
+
+            const previousValue = !checkbox.checked;
+            const formData = new FormData(form);
+            checkbox.disabled = true;
+            setStatus('menyimpan...', 'muted');
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    return response.json().then(function (payload) {
+                        throw new Error(payload?.message || 'Gagal menyimpan');
+                    }).catch(function () {
+                        throw new Error('Gagal menyimpan');
+                    });
+                }
+
+                return response.json();
+            })
+            .then(function (result) {
+                setStatus('tersimpan', 'success');
+
+                if (badge) {
+                    badge.classList.toggle('d-none', !result.linked);
+                }
+            })
+            .catch(function (error) {
+                checkbox.checked = previousValue;
+                setStatus(String(error?.message || 'Gagal menyimpan'), 'danger');
+
+                if (isLocked) {
+                    checkbox.checked = true;
+                }
+            })
+            .finally(function () {
+                checkbox.disabled = isLocked;
+            });
+        });
+    });
+});
+</script>
+@endpush
 
 
 @endsection

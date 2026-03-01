@@ -132,8 +132,8 @@
                                                                         placeholder="0-100"
                                                                         value="{{ $nilaiObj->nilai ?? '' }}"
                                                                     >
-                                                                    <span class="save-status small text-muted"></span>
                                                                 </div>
+                                                                <span class="save-status small text-muted"></span>
                                                             </form>
                                                         </td>
                                                     @empty
@@ -232,7 +232,6 @@ document.addEventListener('DOMContentLoaded', function () {
     forms.forEach(function (form) {
         const input = form.querySelector('input[name="nilai"]');
         const statusEl = form.querySelector('.save-status');
-        let debounceTimer = null;
         let activeController = null;
         let lastSubmittedValue = (input?.value ?? '').trim();
         let isSubmitting = false;
@@ -335,23 +334,15 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         };
 
-        const submitDebounced = function () {
-            if (debounceTimer) {
-                clearTimeout(debounceTimer);
-            }
-
-            setStatus('menunggu...', 'muted');
-            debounceTimer = setTimeout(function () {
-                debounceTimer = null;
-                submitLive(false);
-            }, 350);
-        };
-
         if (input) {
             updateInputBorderState();
-            input.addEventListener('input', submitDebounced);
             input.addEventListener('input', updateInputBorderState);
-            input.addEventListener('change', function () {
+            input.addEventListener('keydown', function (event) {
+                if (event.key !== 'Enter') {
+                    return;
+                }
+
+                event.preventDefault();
                 updateInputBorderState();
                 submitLive(true);
             });
