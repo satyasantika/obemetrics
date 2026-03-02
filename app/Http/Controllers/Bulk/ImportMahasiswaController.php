@@ -155,8 +155,8 @@ class ImportMahasiswaController extends Controller
 
         session()->forget('import_mahasiswa_preview');
 
-        return redirect()->to($this->resolveReturnUrl($request, $preview))
-                        ->with('success', "{$savedCount} data mahasiswa berhasil disimpan.");
+        return to_route('mahasiswas.index')
+                ->with('success', "{$savedCount} data mahasiswa berhasil disimpan.");
     }
 
     public function downloadTemplate(Request $request)

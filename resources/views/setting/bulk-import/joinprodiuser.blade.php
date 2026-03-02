@@ -2,11 +2,11 @@
 
 @section('content')
 <div class="container">
-    <div class="row justify-content-center">
+    <div class="row justify-content-left">
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    Import Data Join Prodi User
+                    Import Data Dosen Prodi
                     @stack('header')
                 </div>
 

@@ -8,9 +8,15 @@
         </a>
     </li>
     <li class="nav-item">
-        <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*', 'permissions.*', 'rolepermissions.*', 'userroles.*', 'userpermissions.*') ? 'active' : '' }}">
+        <a href="{{ route('roles.index') }}" class="nav-link {{ request()->routeIs('roles.*', 'rolepermissions.*') ? 'active' : '' }}">
             <i class="nav-icon fas fa-user-shield"></i>
-            <p>Role & Permission</p>
+            <p>Role</p>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a href="{{ route('permissions.index') }}" class="nav-link {{ request()->routeIs('permissions.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-key"></i>
+            <p>Permission</p>
         </a>
     </li>
     <li class="nav-item">
@@ -56,13 +62,13 @@
             <li class="nav-item">
                 <a href="{{ route('setting.import.admin-master') }}" class="nav-link {{ request()->routeIs('setting.import.admin-master*') ? 'active' : '' }}">
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Admin Master</p>
+                    <p>Program Studi</p>
                 </a>
             </li>
             <li class="nav-item">
                 <a href="{{ route('setting.import.users') }}" class="nav-link {{ request()->routeIs('setting.import.users*') ? 'active' : '' }}">
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Users</p>
+                    <p>Dosen</p>
                 </a>
             </li>
             <li class="nav-item">
@@ -74,7 +80,7 @@
             <li class="nav-item">
                 <a href="{{ route('setting.import.joinprodiusers') }}" class="nav-link {{ request()->routeIs('setting.import.joinprodiusers*') ? 'active' : '' }}">
                     <i class="far fa-circle nav-icon"></i>
-                    <p>Join Prodi User</p>
+                    <p>Dosen Prodi</p>
                 </a>
             </li>
             <li class="nav-item">

@@ -1,5 +1,5 @@
 <div class="modal fade" id="modalCreateEvaluasi" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form action="{{ route('evaluasis.store') }}" method="POST">
                 @csrf
@@ -35,7 +35,7 @@
     $evaluasiDestroyRouteTemplate = route('evaluasis.destroy', ['evaluasi' => '__EVALUASI__']);
 @endphp
 <div class="modal fade" id="modalEditEvaluasi" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form id="formEditEvaluasi" action="#" method="POST">
                 @csrf

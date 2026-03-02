@@ -82,7 +82,7 @@ class EvaluasisDataTable extends DataTable
             Column::make('nama'),
             Column::make('kategori'),
             Column::make('deskripsi'),
-            Column::make('updated_at'),
+            // Column::make('updated_at'),
             Column::computed('action')
                     ->exportable(false)
                     ->printable(false)

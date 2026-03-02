@@ -1,5 +1,5 @@
 <div class="modal fade" id="modalCreateKontrakmk" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <form action="{{ route('kontrakmks.store') }}" method="POST">
                 @csrf
@@ -71,7 +71,7 @@
     $kontrakmkDestroyRouteTemplate = route('kontrakmks.destroy', ['kontrakmk' => '__KONTRAKMK__']);
 @endphp
 <div class="modal fade" id="modalEditKontrakmk" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <form id="formEditKontrakmk" action="#" method="POST">
                 @csrf

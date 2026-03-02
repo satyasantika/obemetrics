@@ -35,6 +35,9 @@ class KontrakMksDataTable extends DataTable
                 $action .= '</div>';
                 return $action;
             })
+            ->addColumn('prodi', function($row) {
+                return $row->mahasiswa->prodi ? $row->mahasiswa->prodi->jenjang.' - '.$row->mahasiswa->prodi->nama : '';
+            })
             ->addColumn('mahasiswa', function($row) {
                 return $row->mahasiswa->nama ?? '';
             })
@@ -45,10 +48,16 @@ class KontrakMksDataTable extends DataTable
                 return $row->user->name ?? '';
             })
             ->addColumn('semester', function($row) {
-                return $row->mk->cpmks->first()->semester ?? '';
+                return $row->semester->kode ?? '';
+            })
+            ->filterColumn('semester', function($query, $keyword) {
+                $query->where('semesters.kode', 'like', "%{$keyword}%");
             })
             ->filterColumn('mahasiswa', function($query, $keyword) {
                 $query->where('mahasiswas.nama', 'like', "%{$keyword}%");
+            })
+            ->filterColumn('prodi', function($query, $keyword) {
+                $query->where('prodis.nama', 'like', "%{$keyword}%");
             })
             ->filterColumn('mata_kuliah', function($query, $keyword) {
                 $query->where('mks.nama', 'like', "%{$keyword}%");
@@ -129,6 +138,10 @@ class KontrakMksDataTable extends DataTable
                 ->title('mahasiswa')
                 ->searchable(true)
                 ->orderable(true),
+            Column::computed('prodi')
+                ->title('prodi')
+                ->searchable(true)
+                ->orderable(true),
             Column::computed('mata_kuliah')
                 ->title('mata kuliah')
                 ->searchable(true)
@@ -141,12 +154,13 @@ class KontrakMksDataTable extends DataTable
                 ->title('semester')
                 ->searchable(true)
                 ->orderable(true),
+            Column::make('kelas'),
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false)
                   ->searchable(false)
                   ->orderable(false)
-                  ->width(175)
+                  ->width(50)
                   ->addClass('text-center'),
         ];
     }

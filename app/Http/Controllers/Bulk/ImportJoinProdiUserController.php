@@ -188,8 +188,8 @@ class ImportJoinProdiUserController extends Controller
             $message .= " {$errorCount} data gagal disimpan karena data prodi/dosen tidak ditemukan.";
         }
 
-        return redirect()->to($this->resolveReturnUrl($request, $preview))
-                        ->with('success', $message);
+        return to_route('prodis.index')
+                ->with('success', $message);
     }
 
     public function downloadTemplate(Request $request)

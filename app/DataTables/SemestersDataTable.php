@@ -79,11 +79,11 @@ class SemestersDataTable extends DataTable
         return [
             Column::make('kode'),
             Column::make('nama'),
-            Column::make('updated_at'),
+            Column::make('deskripsi'),
             Column::computed('action')
                     ->exportable(false)
                     ->printable(false)
-                    ->width(180)
+                    ->width(50)
                     ->addClass('text-center'),
         ];
     }

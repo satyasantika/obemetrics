@@ -93,11 +93,11 @@ class MahasiswasDataTable extends DataTable
             Column::make('nim'),
             Column::make('nama'),
             Column::make('prodi_id')->title('Prodi'),
-            Column::make('updated_at'),
+            // Column::make('updated_at'),
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false)
-                  ->width(175)
+                  ->width(50)
                   ->addClass('text-center'),
         ];
     }
