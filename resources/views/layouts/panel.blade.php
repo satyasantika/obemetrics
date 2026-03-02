@@ -127,9 +127,11 @@
 
     <footer class="main-footer">
         <div class="float-right d-none d-sm-inline">
-            Env: <span class="fw-semibold text-uppercase">{{ config('app.env') }}</span>
-            &middot; Laravel {{ app()->version() }}
-            &middot; PHP {{ PHP_VERSION }}
+            LPMPP Universitas Siliwangi
+                                <a href="https://lpmpp.unsil.ac.id" target="_blank">
+                                    <i class="bi bi-globe me-1"></i>
+                                    lpmpp.unsil.ac.id
+                                </a>
         </div>
         <strong>
             &copy; {{ now()->year }} {{ config('app.name', 'OBEmetrics') }}.

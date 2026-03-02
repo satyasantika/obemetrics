@@ -486,7 +486,13 @@
     </section>
 
     <footer>
-        {{ $brandName }} • {{ date('Y') }} • Built with Laravel {{ Illuminate\Foundation\Application::VERSION }}
+        © {{ date('Y') }} {{ $brandName }}. All rights reserved.<br>
+                                Lembaga Penjaminan Mutu dan Pengembangan Pembelajaran<br>Universitas Siliwangi
+                                <br>
+                                <a href="https://lpmpp.unsil.ac.id" target="_blank">
+                                    <i class="bi bi-globe me-1"></i>
+                                    lpmpp.unsil.ac.id
+                                </a>
     </footer>
 </div>
 </body>

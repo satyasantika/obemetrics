@@ -193,7 +193,13 @@
                             </div>
 
                             <div class="auth-copyright">
-                                © {{ date('Y') }} {{ $appName }}. All rights reserved.
+                                © {{ date('Y') }} {{ $appName }}. All rights reserved.<br>
+                                Lembaga Penjaminan Mutu dan Pengembangan Pembelajaran<br>Universitas Siliwangi
+                                <br>
+                                <a href="https://lpmpp.unsil.ac.id" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-globe me-1"></i>
+                                    lpmpp.unsil.ac.id
+                                </a>
                             </div>
                         </form>
                     </div>
