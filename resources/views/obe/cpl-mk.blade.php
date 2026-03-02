@@ -26,12 +26,10 @@
                             <table class="table table-hover align-middle nilai-matrix-table mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="sticky-col" rowspan="2">MATA KULIAH</th>
+                                        <th class="sticky-col" rowspan="2" width="500">MATA KULIAH</th>
                                         @forelse ($cplHeaderGroups as $group)
-                                            <th colspan="{{ $group['colspan'] }}" class="text-center">
-                                                <strong data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $group['cpl_nama'] }}">
-                                                    {{ $group['cpl_kode'] }}
-                                                </strong>
+                                            <th colspan="{{ $group['colspan'] }}" class="sticky-col">
+                                                <a tabindex="0" class="btn btn-sm btn-outline-primary btn-block" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $group['cpl_kode'] }}" data-content="{{ $group['cpl_nama'] }}" data-bs-content="{{ $group['cpl_nama'] }}">{{ $group['cpl_kode'] }}</a>
                                             </th>
                                         @empty
                                             <th></th>
@@ -40,9 +38,7 @@
                                     <tr>
                                         @forelse ($cplBkColumns as $column)
                                             <th class="small fw-normal text-center">
-                                                <strong data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $column['bk_nama'] }}">
-                                                {{ $column['bk_kode'] }}
-                                                </strong>
+                                                <a tabindex="0" class="btn btn-sm btn-outline-secondary btn-block" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $column['bk_kode'] }}" data-content="{{ $column['bk_nama'] }}" data-bs-content="{{ $column['bk_nama'] }}">{{ $column['bk_kode'] }}</a>
                                             </th>
                                         @empty
                                             <th></th>
@@ -53,16 +49,14 @@
                                 @forelse ($mks as $mk)
                                     <tr style="vertical-align: text-top;">
                                         <th class="sticky-col">
-                                            <span class="text-secondary fw-lighter">{{ $mk->kode }}</span><br>
-                                            <span data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $mk->nama }}">
-                                                {{ $mk->nama }}
-                                            </span>
+                                            {{-- <span class="text-secondary fw-lighter">{{ $mk->kode }}</span><br> --}}
+                                            <a tabindex="0" class="btn btn-sm btn-outline-secondary text-start" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $mk->kode }} ({{ $mk->sks }} SKS)" data-content="{{ $mk->nama }}" data-bs-content="{{ $mk->nama }}">{{ $mk->nama }}</a>
                                             <br>
                                             @php
                                                 $totalBobot = (float) ($mkTotalBobotMap[$mk->id] ?? 0);
                                             @endphp
                                             <span class="total-bobot-label text-{{ $totalBobot == 100 ? 'primary' : 'danger' }}">
-                                                (Rekap Bobot: <span class="total-bobot-value">{{ $totalBobot }}</span>%)
+                                                (Rekap: <span class="total-bobot-value">{{ $totalBobot }}</span>%)
                                             </span>
                                         </th>
                                         @forelse ($cplBkColumns as $column)
@@ -146,6 +140,18 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    if (window.bootstrap && typeof window.bootstrap.Popover === 'function') {
+        document.querySelectorAll('[data-toggle="popover"]').forEach(function (el) {
+            if (!el.getAttribute('data-bs-content') && el.getAttribute('data-content')) {
+                el.setAttribute('data-bs-content', el.getAttribute('data-content'));
+            }
+            if (!el.getAttribute('data-bs-trigger') && el.getAttribute('data-trigger')) {
+                el.setAttribute('data-bs-trigger', el.getAttribute('data-trigger'));
+            }
+            window.bootstrap.Popover.getOrCreateInstance(el);
+        });
+    }
+
     const forms = document.querySelectorAll('form[action*="joincplmks"]');
 
     forms.forEach(function (form) {
@@ -350,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function () {
     left: 0;
     background: var(--bs-white);
     z-index: 15;
-    min-width: 280px;
+    /* min-width: 280px; */
 }
 
 .nilai-matrix-table thead .sticky-col {

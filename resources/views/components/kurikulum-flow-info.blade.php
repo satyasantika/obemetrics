@@ -13,6 +13,7 @@
     $reportsReady = $joinCplMkExists;
 @endphp
 
+@if (!$reportsReady)
 <div class="card border-0 shadow-sm mb-3">
     <div class="card-body bg-light-subtle">
         <div class="fw-semibold">Panduan Alur Kurikulum</div>
@@ -26,21 +27,22 @@
         </div>
 
         @if (!$dataComplete)
-            <div class="alert alert-warning mt-3 mb-0 py-2 px-3">
-                Lengkapi data master terlebih dahulu (Profil, CPL, BK, dan MK) melalui menu sidebar.
-            </div>
+        <div class="alert alert-warning mt-3 mb-0 py-2 px-3">
+            Lengkapi data master terlebih dahulu (Profil, CPL, BK, dan MK) melalui menu sidebar.
+        </div>
         @elseif (!$joinProfilCplBKExists)
-            <div class="alert alert-warning mt-3 mb-0 py-2 px-3">
-                Data master sudah lengkap. Lanjutkan dengan upload data interaksi pada menu sidebar.
-            </div>
+        <div class="alert alert-warning mt-3 mb-0 py-2 px-3">
+            Data master sudah lengkap. Lanjutkan dengan upload data interaksi pada menu sidebar.
+        </div>
         @elseif (!$joinCplMkExists)
-            <div class="alert alert-warning mt-3 mb-0 py-2 px-3">
-                Interaksi sudah lengkap. Lanjutkan dengan pengisian bobot CPL tiap MK.
-            </div>
+        <div class="alert alert-warning mt-3 mb-0 py-2 px-3">
+            Interaksi sudah lengkap. Lanjutkan dengan pengisian bobot CPL tiap MK.
+        </div>
         @else
-            <div class="alert alert-success mt-3 mb-0 py-2 px-3">
-                Seluruh prasyarat sudah terpenuhi. Menu laporan kini siap digunakan.
-            </div>
+        <div class="alert alert-success mt-3 mb-0 py-2 px-3">
+            Seluruh prasyarat sudah terpenuhi. Menu laporan kini siap digunakan.
+        </div>
         @endif
     </div>
 </div>
+@endif

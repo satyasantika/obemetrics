@@ -42,8 +42,7 @@
                                     <tr>
                                         @forelse ($profils as $profil)
                                             <th class="small fw-normal" style="min-width: 240px;">
-                                                <strong class="d-block">{{ $profil->nama }}</strong>
-                                                <small class="text-muted">{{ $profil->deskripsi }}</small>
+                                                <a tabindex="0" class="btn btn-sm btn-outline-secondary text-start" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="Profil {{ $profil->nama }}" data-content="{{ $profil->deskripsi }}" data-bs-content="{{ $profil->deskripsi }}">{{ $profil->nama }}</a>
                                             </th>
                                         @empty
                                             <th></th>
@@ -54,9 +53,7 @@
                                 @forelse ($cpls as $cpl)
                                     <tr style="vertical-align: text-top;">
                                         <td class="sticky-col">
-                                            <strong>{{ $cpl->kode }}</strong>
-                                            <br>
-                                            <small class="text-muted">{{ $cpl->nama }}</small>
+                                            <a tabindex="0" class="btn btn-sm btn-outline-secondary" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $cpl->kode }}" data-content="{{ $cpl->nama }}" data-bs-content="{{ $cpl->nama }}">{{ $cpl->kode }}</a>
                                         </td>
                                         @forelse ($profils as $profil)
                                             <td>
@@ -112,6 +109,18 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    if (window.bootstrap && typeof window.bootstrap.Popover === 'function') {
+        document.querySelectorAll('[data-toggle="popover"]').forEach(function (el) {
+            if (!el.getAttribute('data-bs-content') && el.getAttribute('data-content')) {
+                el.setAttribute('data-bs-content', el.getAttribute('data-content'));
+            }
+            if (!el.getAttribute('data-bs-trigger') && el.getAttribute('data-trigger')) {
+                el.setAttribute('data-bs-trigger', el.getAttribute('data-trigger'));
+            }
+            window.bootstrap.Popover.getOrCreateInstance(el);
+        });
+    }
+
     const forms = document.querySelectorAll('.live-profilcpl-form');
 
     forms.forEach(function (form) {

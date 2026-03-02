@@ -33,10 +33,7 @@
                                         <tr>
                                             @forelse ($bks as $bk)
                                                 <th>
-                                                    <strong data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $bk->nama }}">
-                                                        {{ $bk->kode }}
-                                                    </strong><br>
-                                                    <small class="text-muted">{{ $bk->nama }}</small>
+                                                    <a tabindex="0" class="btn btn-sm btn-outline-secondary" role="button" data-toggle="popover"  data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $bk->kode }}" data-content="{{ $bk->nama }}" data-bs-content="{{ $bk->nama }}">{{ $bk->kode }}</a><br>
                                                 </th>
                                             @empty
                                                 <th></th>
@@ -47,10 +44,7 @@
                                     @forelse ($cpls as $cpl)
                                         <tr class="matriks-row" style="vertical-align: text-top;">
                                             <td class="sticky-col">
-                                                <strong data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $cpl->nama }}">
-                                                    {{ $cpl->kode }}
-                                                </strong><br>
-                                                <small class="text-muted">{{ $cpl->nama }}</small>
+                                                <a tabindex="0" class="btn btn-sm btn-outline-secondary" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $cpl->kode }}" data-content="{{ $cpl->nama }}" data-bs-content="{{ $cpl->nama }}">{{ $cpl->kode }}</a><br>
                                             </td>
                                             @forelse ($bks as $bk)
                                                 @php
@@ -113,6 +107,18 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    if (window.bootstrap && typeof window.bootstrap.Popover === 'function') {
+        document.querySelectorAll('[data-toggle="popover"]').forEach(function (el) {
+            if (!el.getAttribute('data-bs-content') && el.getAttribute('data-content')) {
+                el.setAttribute('data-bs-content', el.getAttribute('data-content'));
+            }
+            if (!el.getAttribute('data-bs-trigger') && el.getAttribute('data-trigger')) {
+                el.setAttribute('data-bs-trigger', el.getAttribute('data-trigger'));
+            }
+            window.bootstrap.Popover.getOrCreateInstance(el);
+        });
+    }
+
     const forms = document.querySelectorAll('.live-cplbk-form');
 
     forms.forEach(function (form) {

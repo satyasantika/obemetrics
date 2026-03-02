@@ -20,7 +20,7 @@
             <div class="border rounded-3 p-3 mb-3 bg-light-subtle">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                     <span class="h6 mb-0">Program Studi {{ $prodi->jenjang }} {{ $prodi->nama }}</span>
-                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateKurikulum-{{ $prodi->id }}">
+                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#modalCreateKurikulum-{{ $prodi->id }}">
                         <i class="bi bi-plus-circle"></i> Tambah Kurikulum
                     </button>
                 </div>
@@ -41,10 +41,10 @@
                             </div>
 
                             <div class="d-flex align-items-center gap-2 flex-wrap mt-3">
-                                <a href="{{ route('kurikulums.profils.index',[$kurikulum->id]) }}" class="btn btn-outline-success btn-sm">
+                                <a href="{{ route('kurikulums.profils.index',[$kurikulum->id]) }}" class="btn btn-outline-success btn-sm rounded-pill">
                                     <i class="bi bi-eye"></i> Detail Selengkapnya
                                 </a>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalEditKurikulum-{{ $kurikulum->id }}">
+                                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#modalEditKurikulum-{{ $kurikulum->id }}">
                                     <i class="bi bi-pencil-square"></i> Edit
                                 </button>
                             </div>
@@ -59,7 +59,7 @@
             </div>
 
             <div class="modal fade" id="modalCreateKurikulum-{{ $prodi->id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <form action="{{ route('prodis.kurikulums.store', $prodi->id) }}" method="post">
                             @csrf
@@ -94,8 +94,8 @@
                                 <span class="text-danger">(*) Wajib diisi.</span>
                             </div>
                             <div class="modal-footer">
-                                <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-dismiss="modal">Close</button>
-                                <button class="btn btn-success btn-sm" type="submit"><i class="bi bi-save"></i> Save</button>
+                                <button class="btn btn-outline-secondary btn-sm rounded-pill" type="button" data-bs-dismiss="modal">Close</button>
+                                <button class="btn btn-outline-success btn-sm rounded-pill" type="submit"><i class="bi bi-save"></i> Save</button>
                             </div>
                         </form>
                     </div>
@@ -104,7 +104,7 @@
 
             @foreach ($prodi->kurikulums as $kurikulumModal)
                 <div class="modal fade" id="modalEditKurikulum-{{ $kurikulumModal->id }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                             <form action="{{ route('prodis.kurikulums.update',[$prodi->id,$kurikulumModal->id]) }}" method="post">
                                 @csrf
