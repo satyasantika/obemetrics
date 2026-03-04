@@ -14,6 +14,7 @@ use App\Models\Penugasan;
 use App\Models\Semester;
 use App\Models\Subcpmk;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -189,14 +190,23 @@ class ImportMkMasterController extends Controller
                 return back()->with('error', 'Tidak ada data valid untuk dipreview.');
             }
 
+            $previewPayload = [
+                'target' => $target,
+                'semester_id' => $request->semester_id,
+                'filename' => $request->file('file')->getClientOriginalName(),
+                'rows' => $previewRows,
+                'token' => (string) Str::uuid(),
+            ];
+
             session([
-                $this->previewSessionKey($mk, $target) => [
-                    'target' => $target,
-                    'semester_id' => $request->semester_id,
-                    'filename' => $request->file('file')->getClientOriginalName(),
-                    'rows' => $previewRows,
-                ],
+                $this->previewSessionKey($mk, $target) => $previewPayload,
             ]);
+
+            Cache::put(
+                $this->previewCacheKey($mk, $target, (string) ($previewPayload['token'] ?? '')),
+                $previewPayload,
+                now()->addHours(2)
+            );
 
             return to_route('setting.import.mk-master', $this->withReturnUrl([
                 'mk' => $mk->id,
@@ -222,6 +232,15 @@ class ImportMkMasterController extends Controller
         $meta = self::TARGETS[$target];
         $preview = session($this->previewSessionKey($mk, $target), []);
         $rows = $preview['rows'] ?? [];
+        $previewToken = (string) $request->input('preview_token', '');
+
+        if (empty($rows) && $previewToken !== '') {
+            $cachedPreview = Cache::get($this->previewCacheKey($mk, $target, $previewToken), []);
+            if (!empty($cachedPreview) && is_array($cachedPreview)) {
+                $preview = $cachedPreview;
+                $rows = $preview['rows'] ?? [];
+            }
+        }
 
         Log::info('Import MK Master commit requested', [
             'mk_id' => $mk->id,
@@ -299,6 +318,11 @@ class ImportMkMasterController extends Controller
         }
 
         session()->forget($this->previewSessionKey($mk, $target));
+
+        $tokenToForget = (string) ($preview['token'] ?? $previewToken ?? '');
+        if ($tokenToForget !== '') {
+            Cache::forget($this->previewCacheKey($mk, $target, $tokenToForget));
+        }
 
         Log::info('Import MK Master commit finished', [
             'mk_id' => $mk->id,
@@ -507,7 +531,14 @@ class ImportMkMasterController extends Controller
     public function clear(Mk $mk, Request $request)
     {
         $target = $this->resolveTarget($request->input('target'));
+        $preview = session($this->previewSessionKey($mk, $target), []);
+        $token = (string) ($request->input('preview_token') ?: ($preview['token'] ?? ''));
+
         session()->forget($this->previewSessionKey($mk, $target));
+
+        if ($token !== '') {
+            Cache::forget($this->previewCacheKey($mk, $target, $token));
+        }
 
         return to_route('setting.import.mk-master', $this->withReturnUrl([
             'mk' => $mk->id,
@@ -879,6 +910,11 @@ class ImportMkMasterController extends Controller
     private function previewSessionKey(Mk $mk, string $target): string
     {
         return 'import_mk_master_' . $mk->id . '_' . $target;
+    }
+
+    private function previewCacheKey(Mk $mk, string $target, string $token): string
+    {
+        return 'import_mk_master_cache_' . $mk->id . '_' . $target . '_' . $token;
     }
 
     private function assertSemester(?string $semesterId): void

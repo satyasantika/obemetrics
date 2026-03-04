@@ -23,11 +23,14 @@
 
                     @php
                         $selectedSemesterId = old('semester_id') ?? request('semester_id') ?? ($preview['semester_id'] ?? '');
+                        $requiresSemester = !empty($targets[$target]['requires_semester']);
+                        $semesterReady = (string) $selectedSemesterId !== '';
                     @endphp
 
-                    <form action="{{ route('setting.import.mk-master.upload', $mk->id) }}" method="POST" enctype="multipart/form-data">
+                    <form id="import-form" action="{{ route('setting.import.mk-master.upload', $mk->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="target" id="target" value="{{ $target }}">
+                        <input type="hidden" id="target-requires-semester" value="{{ $requiresSemester ? '1' : '0' }}">
                         <input type="hidden" name="return_url" value="{{ $returnUrl }}">
                         <div class="row mt-2">
                             <div class="col-md-3 text-end">Import Data <span class="text-danger">*</span></div>
@@ -64,7 +67,10 @@
                             <div class="col">
                                 <input type="file" name="file" class="form-control" accept=".csv,.xlsx,.ods" required>
                                 <small class="text-muted d-block mt-1">
-                                    Unduh template: <a href="#" id="download-template">template-import.xlsx</a>
+                                    Unduh template: <a href="#" id="download-template" @if($requiresSemester && !$semesterReady) class="text-muted" style="pointer-events:none;" aria-disabled="true" @endif>template-import.xlsx</a>
+                                </small>
+                                <small id="semester-required-note" class="text-danger d-block mt-1" @if(!($requiresSemester && !$semesterReady)) style="display:none;" @endif>
+                                    Pilih semester terlebih dahulu untuk mengunduh template dan upload.
                                 </small>
                             </div>
                         </div>
@@ -76,7 +82,7 @@
                                     $directSaveTargets = ['mk_bundle', 'join_subcpmk_penugasans', 'join_cpl_cpmks'];
                                     $isDirectSaveTarget = in_array($target, $directSaveTargets, true);
                                 @endphp
-                                <button type="submit" class="btn btn-primary btn-sm">
+                                <button id="btn-upload" type="submit" class="btn btn-primary btn-sm" @if($requiresSemester && !$semesterReady) disabled @endif>
                                     <i class="bi bi-upload"></i>
                                     {{ $isDirectSaveTarget ? 'Upload & Simpan Langsung' : 'Upload & Preview' }}
                                 </button>
@@ -98,6 +104,7 @@
                         <form action="{{ route('setting.import.mk-master.clear', $mk->id) }}" method="POST" class="float-end" style="display:inline;">
                             @csrf
                             <input type="hidden" name="target" value="{{ $target }}">
+                            <input type="hidden" name="preview_token" value="{{ $preview['token'] ?? '' }}">
                             <input type="hidden" name="return_url" value="{{ $returnUrl }}">
                             <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus preview data?');">
                                 <i class="bi bi-x-circle"></i> Kosongkan Preview
@@ -119,6 +126,7 @@
                         <form action="{{ route('setting.import.mk-master.commit', $mk->id) }}" method="POST">
                             @csrf
                             <input type="hidden" name="target" value="{{ $target }}">
+                            <input type="hidden" name="preview_token" value="{{ $preview['token'] ?? '' }}">
                             <input type="hidden" name="semester_id" value="{{ $preview['semester_id'] ?? '' }}">
                             <input type="hidden" name="return_url" value="{{ $returnUrl }}">
 
@@ -190,10 +198,33 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const targetSelect = document.getElementById('target');
+    const targetRequiresSemesterInput = document.getElementById('target-requires-semester');
     const semesterSelect = document.getElementById('semester_id');
     const downloadTemplate = document.getElementById('download-template');
+    const btnUpload = document.getElementById('btn-upload');
+    const semesterRequiredNote = document.getElementById('semester-required-note');
     const selectAll = document.getElementById('select-all');
     const rowChecks = document.querySelectorAll('.row-check:not([disabled])');
+
+    function updateSemesterGuard() {
+        const requiresSemester = targetRequiresSemesterInput && targetRequiresSemesterInput.value === '1';
+        const hasSemester = semesterSelect && semesterSelect.value !== '';
+        const shouldLock = requiresSemester && !hasSemester;
+
+        if (downloadTemplate) {
+            downloadTemplate.setAttribute('aria-disabled', shouldLock ? 'true' : 'false');
+            downloadTemplate.style.pointerEvents = shouldLock ? 'none' : '';
+            downloadTemplate.classList.toggle('text-muted', shouldLock);
+        }
+
+        if (btnUpload) {
+            btnUpload.disabled = shouldLock;
+        }
+
+        if (semesterRequiredNote) {
+            semesterRequiredNote.style.display = shouldLock ? 'block' : 'none';
+        }
+    }
 
     function updateTemplateLink() {
         if (!targetSelect || !downloadTemplate) {
@@ -213,6 +244,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const fileName = 'import-' + label.toLowerCase().replace(/\s+/g, '-') + '-' + mataKuliah  + '.xlsx';
         downloadTemplate.href = url;
         downloadTemplate.textContent = fileName;
+        updateSemesterGuard();
     }
 
     if (targetSelect) {
@@ -221,8 +253,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (semesterSelect) {
-        semesterSelect.addEventListener('change', updateTemplateLink);
+        semesterSelect.addEventListener('change', function () {
+            updateTemplateLink();
+            updateSemesterGuard();
+        });
     }
+
+    updateSemesterGuard();
 
     if (selectAll) {
         selectAll.addEventListener('change', function () {
