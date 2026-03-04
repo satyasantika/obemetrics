@@ -50,7 +50,7 @@
         </a>
     </li>
 
-    <li class="nav-item {{ request()->routeIs('setting.import.*') ? 'menu-open' : '' }}">
+    {{-- <li class="nav-item {{ request()->routeIs('setting.import.*') ? 'menu-open' : '' }}">
         <a href="#" class="nav-link {{ request()->routeIs('setting.import.*') ? 'active' : '' }}">
             <i class="nav-icon fas fa-file-import"></i>
             <p>
@@ -90,5 +90,5 @@
                 </a>
             </li>
         </ul>
-    </li>
+    </li> --}}
 @endcan

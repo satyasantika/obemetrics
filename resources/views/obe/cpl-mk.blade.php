@@ -26,9 +26,9 @@
                             <table class="table table-hover align-middle nilai-matrix-table mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="sticky-col" rowspan="2" width="500">MATA KULIAH</th>
+                                        <th class="sticky-col bg-white" rowspan="2" width="500">MATA KULIAH</th>
                                         @forelse ($cplHeaderGroups as $group)
-                                            <th colspan="{{ $group['colspan'] }}" class="sticky-col">
+                                            <th colspan="{{ $group['colspan'] }}" class="text-center">
                                                 <a tabindex="0" class="btn btn-sm btn-outline-primary btn-block" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $group['cpl_kode'] }}" data-content="{{ $group['cpl_nama'] }}" data-bs-content="{{ $group['cpl_nama'] }}">{{ $group['cpl_kode'] }}</a>
                                             </th>
                                         @empty
@@ -49,7 +49,6 @@
                                 @forelse ($mks as $mk)
                                     <tr style="vertical-align: text-top;">
                                         <th class="sticky-col">
-                                            {{-- <span class="text-secondary fw-lighter">{{ $mk->kode }}</span><br> --}}
                                             <a tabindex="0" class="btn btn-sm btn-outline-secondary text-start" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $mk->kode }} ({{ $mk->sks }} SKS)" data-content="{{ $mk->nama }}" data-bs-content="{{ $mk->nama }}">{{ $mk->nama }}</a>
                                             <br>
                                             @php
@@ -344,23 +343,31 @@ document.addEventListener('DOMContentLoaded', function () {
     overflow: auto;
 }
 
-.nilai-matrix-table thead th {
+.nilai-matrix-table thead tr:first-child th {
     position: sticky;
     top: 0;
     background: var(--bs-light);
-    z-index: 20;
+    z-index: 30;
+}
+
+.nilai-matrix-table thead tr:nth-child(2) th {
+    position: sticky;
+    top: 56px;
+    background: var(--bs-light);
+    z-index: 29;
 }
 
 .nilai-matrix-table .sticky-col {
     position: sticky;
     left: 0;
     background: var(--bs-white);
-    z-index: 15;
+    z-index: 21;
     /* min-width: 280px; */
 }
 
 .nilai-matrix-table thead .sticky-col {
-    z-index: 25;
+    z-index: 35;
+    background: var(--bs-light);
 }
 </style>
 @endpush

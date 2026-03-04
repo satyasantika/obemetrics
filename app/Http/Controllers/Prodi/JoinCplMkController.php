@@ -72,6 +72,12 @@ class JoinCplMkController extends Controller
             $cplBkColumns = $cplBkColumns->merge($bkColumns);
         }
 
+        $joinCplBkOrderMap = $cplBkColumns
+            ->filter(fn ($column) => ($column['type'] ?? null) === 'bk' && !empty($column['join_cpl_bk_id']))
+            ->pluck('join_cpl_bk_id')
+            ->values()
+            ->flip();
+
         $linkedRows = JoinCplMk::query()
             ->where('kurikulum_id', $kurikulum->id)
             ->whereIn('mk_id', $mks->pluck('id'))
@@ -115,6 +121,23 @@ class JoinCplMkController extends Controller
                     ? [($row->join_cpl_bk_id . '|' . $row->mk_id) => true]
                     : [];
             });
+
+        $mkOrderByBkMap = $linkedRows
+            ->filter(fn ($row) => !empty($row->join_cpl_bk_id) && $joinCplBkOrderMap->has($row->join_cpl_bk_id))
+            ->groupBy('mk_id')
+            ->map(function ($rows) use ($joinCplBkOrderMap) {
+                return $rows
+                    ->map(fn ($row) => (int) $joinCplBkOrderMap->get($row->join_cpl_bk_id))
+                    ->min();
+            });
+
+        $mks = $mks->sortBy(function ($mk) use ($mkOrderByBkMap) {
+            $bkOrder = $mkOrderByBkMap->has($mk->id) ? (int) $mkOrderByBkMap->get($mk->id) : \PHP_INT_MAX;
+            $nama = mb_strtolower((string) ($mk->nama ?? ''));
+            $kode = mb_strtolower((string) ($mk->kode ?? ''));
+
+            return sprintf('%010d|%s|%s', $bkOrder, $nama, $kode);
+        })->values();
 
         return view('obe.cpl-mk')
                 ->with('kurikulum', $kurikulum)

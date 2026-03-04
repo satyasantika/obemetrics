@@ -221,7 +221,7 @@
 
 @foreach ($mks as $mk)
 <div class="modal fade" id="modalSetDosen-{{ $mk->id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content border-0 shadow-sm rounded-4 overflow-hidden">
             <div class="modal-header bg-light-subtle border-bottom">
                 <h5 class="modal-title">Set Dosen Pengampu - {{ $mk->kode }} {{ $mk->nama }}</h5>

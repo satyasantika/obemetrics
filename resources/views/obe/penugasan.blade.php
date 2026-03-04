@@ -197,7 +197,7 @@
 </div>
 
 <div class="modal fade" id="modalCreatePenugasan" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form action="{{ route('mks.penugasans.store', $mk->id) }}" method="post">
                 @csrf
@@ -252,7 +252,7 @@
 
 @foreach ($penugasans as $penugasan)
 <div class="modal fade" id="modalEditPenugasan-{{ $penugasan->id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form action="{{ route('mks.penugasans.update',[$mk->id,$penugasan->id]) }}" method="post">
                 @csrf

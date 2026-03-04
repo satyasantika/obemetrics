@@ -56,7 +56,7 @@
 </div>
 
 <div class="modal fade" id="modalCreateCpmk" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form action="{{ route('mks.cpmks.store', $mk) }}" method="post">
                 @csrf
@@ -96,7 +96,7 @@
 
 @foreach ($cpmks as $cpmk)
 <div class="modal fade" id="modalEditCpmk-{{ $cpmk->id }}" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <form action="{{ route('mks.cpmks.update',[$mk->id,$cpmk->id]) }}" method="post">
                 @csrf
