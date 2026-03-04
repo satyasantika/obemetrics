@@ -39,8 +39,8 @@ return new class extends Migration
         // user pada prodi
         Schema::create('join_prodi_users', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('user_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('user_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->boolean('status_pimpinan')->default(0);
             $table->timestamps();
         });
@@ -63,7 +63,7 @@ return new class extends Migration
             $table->text('deskripsi')->nullable();
             $table->integer('target_capaian_lulusan')->nullable();
             $table->boolean('status_aktif')->default(0);
-            $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
 
@@ -73,7 +73,7 @@ return new class extends Migration
             $table->string('kode')->nullable();
             $table->string('nama')->nullable();
             $table->text('deskripsi')->nullable();
-            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
 
@@ -82,7 +82,7 @@ return new class extends Migration
             $table->uuid('id')->primary('id');
             $table->text('nama')->nullable();
             $table->text('deskripsi')->nullable();
-            $table->foreignUuid('profil_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('profil_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
 
@@ -92,15 +92,15 @@ return new class extends Migration
             $table->string('kode')->nullable();
             $table->text('nama')->nullable();
             $table->string('cakupan')->nullable();
-            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
         // interaksi profil-cpl
         Schema::create('join_profil_cpls', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->foreignUuid('profil_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('cpl_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('profil_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('cpl_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
         // bahan kajian
@@ -109,15 +109,15 @@ return new class extends Migration
             $table->string('kode')->nullable();
             $table->text('nama')->nullable();
             $table->text('deskripsi')->nullable();
-            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
         // interaksi cpl-bk
         Schema::create('join_cpl_bks', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->foreignUuid('cpl_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('bk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('cpl_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('bk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
         // mata kuliah
@@ -131,32 +131,32 @@ return new class extends Migration
             $table->integer('sks_praktik')->default(0);
             $table->integer('sks_lapangan')->default(0);
             $table->text('deskripsi')->nullable();
-            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
         // interaksi cpl-mk
         Schema::create('join_cpl_mks', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
             $table->foreignUuid('join_cpl_bk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->double('bobot')->default(100)->nullable();
-            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
         // interaksi mk-dosen
         Schema::create('join_mk_users', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('user_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('user_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->boolean('koordinator')->default(0);
             $table->timestamps();
         });
         // cpmk
         Schema::create('cpmks', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->string('kode')->nullable();
             $table->text('nama')->nullable();
             $table->text('deskripsi')->nullable();
@@ -165,9 +165,9 @@ return new class extends Migration
         // interaksi cpl-cpmk (diambil dari tabel join_cpl_bks dan join_cpl_mks)
         Schema::create('join_cpl_cpmks', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->foreignUuid('join_cpl_bk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('cpmk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('join_cpl_bk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('cpmk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
 
@@ -182,8 +182,8 @@ return new class extends Migration
             $table->text('indikator')->nullable();
             $table->text('evaluasi')->nullable();
             $table->double('bobot')->nullable();
-            $table->foreignUuid('join_cpl_cpmk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('join_cpl_cpmk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
         // evaluasi
@@ -202,19 +202,19 @@ return new class extends Migration
             $table->string('kode')->nullable();
             $table->string('nama')->nullable();
             $table->double('bobot')->nullable();
-            $table->foreignUuId('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuId('evaluasi_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuId('semester_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuId('mk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuId('evaluasi_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuId('semester_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->text('deskripsi')->nullable();
             $table->timestamps();
         });
         // SubCPMK pada tugas mata kuliah
         Schema::create('join_subcpmk_penugasans', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->foreignUuid('subcpmk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('subcpmk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->foreignUuid('penugasan_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->double('bobot')->nullable()->default(100);
             $table->timestamps();
         });
@@ -225,7 +225,7 @@ return new class extends Migration
             $table->index('nim');
             $table->string('nama')->nullable();
             $table->string('angkatan')->nullable();
-            $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->timestamps();
@@ -234,10 +234,10 @@ return new class extends Migration
         Schema::create('kontrak_mks', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
             $table->string('kelas')->nullable();
-            $table->foreignUuid('mahasiswa_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('user_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete(); // dosen pengampu
-            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('mahasiswa_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('user_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade'); // dosen pengampu
+            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->double('nilai_angka')->nullable();
             $table->string('nilai_huruf')->nullable();
             $table->timestamps();
@@ -246,10 +246,10 @@ return new class extends Migration
          // penilaian mahasiswa pada penugasan
         Schema::create('nilais', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('penugasan_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('mahasiswa_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
-            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->nullOnDelete();
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('penugasan_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('mahasiswa_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->double('nilai')->nullable();
             $table->text('komentar')->nullable();
             $table->timestamps();
