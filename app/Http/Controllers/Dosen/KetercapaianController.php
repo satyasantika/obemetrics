@@ -510,7 +510,7 @@ class KetercapaianController extends Controller
             ->leftJoin('cpls as cpl', 'cpl.id', '=', 'jcb.cpl_id')
             ->where('p.mk_id', $mk->id)
             ->selectRaw("p.id as penugasan_id, p.kode as penugasan_kode, p.nama as penugasan_nama, COALESCE(p.bobot, 0) as bobot, COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), ''), p.kode) as workcloud, GROUP_CONCAT(DISTINCT CONCAT(cpl.kode, ' - ', cpl.nama) ORDER BY cpl.kode SEPARATOR '||') as cpl_items, GROUP_CONCAT(DISTINCT CONCAT(cpmk.kode, ' - ', cpmk.nama) ORDER BY cpmk.kode SEPARATOR '||') as cpmk_items")
-            ->groupBy('p.id', 'p.kode', 'p.nama', 'p.bobot', DB::raw("COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), ''), p.kode)"))
+            ->groupBy('p.id', 'p.kode', 'p.nama', 'p.bobot', 'e.workcloud', 'e.kategori', 'e.kode')
             ->orderBy('p.kode');
 
         if ($semesterId) {
