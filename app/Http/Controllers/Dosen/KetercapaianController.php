@@ -7,6 +7,8 @@ use App\Models\KontrakMk;
 use App\Models\Mk;
 use App\Models\Nilai;
 use App\Models\Semester;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -476,5 +478,543 @@ class KetercapaianController extends Controller
             'hierarchyData',
             'rnData'
         );
+    }
+
+    public function laporan(Mk $mk)
+    {
+        $baseData = $this->buildNilaiPageData($mk);
+        $currentUserId = auth()->id();
+
+        /** @var Collection<int, \App\Models\Semester> $semesters */
+        $semesters = collect($baseData['semesters'] ?? []);
+        $semester = $semesters->firstWhere('id', $baseData['defaultSemesterId'] ?? null) ?? $semesters->first();
+        $semesterId = $semester?->id;
+
+        $kelasList = collect($baseData['kelasList'] ?? [])
+            ->reject(fn ($kelas) => (string) $kelas === '__SEMUA_KELAS__')
+            ->values();
+
+        $targetKelulusan = (float) ($mk->kurikulum->target_capaian_lulusan ?? 100);
+        $gradeOrder = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D', 'E'];
+
+        $assessmentPlanRowsQuery = DB::table('penugasans as p')
+            ->leftJoin('evaluasis as e', 'e.id', '=', 'p.evaluasi_id')
+            ->leftJoin('join_subcpmk_penugasans as jsp', function ($join) {
+                $join->on('jsp.penugasan_id', '=', 'p.id')
+                    ->on('jsp.mk_id', '=', 'p.mk_id');
+            })
+            ->leftJoin('subcpmks as s', 's.id', '=', 'jsp.subcpmk_id')
+            ->leftJoin('join_cpl_cpmks as jcc', 'jcc.id', '=', 's.join_cpl_cpmk_id')
+            ->leftJoin('cpmks as cpmk', 'cpmk.id', '=', 'jcc.cpmk_id')
+            ->leftJoin('join_cpl_bks as jcb', 'jcb.id', '=', 'jcc.join_cpl_bk_id')
+            ->leftJoin('cpls as cpl', 'cpl.id', '=', 'jcb.cpl_id')
+            ->where('p.mk_id', $mk->id)
+            ->selectRaw("p.id as penugasan_id, p.kode as penugasan_kode, p.nama as penugasan_nama, COALESCE(p.bobot, 0) as bobot, COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), ''), p.kode) as workcloud, GROUP_CONCAT(DISTINCT CONCAT(cpl.kode, ' - ', cpl.nama) ORDER BY cpl.kode SEPARATOR '||') as cpl_items, GROUP_CONCAT(DISTINCT CONCAT(cpmk.kode, ' - ', cpmk.nama) ORDER BY cpmk.kode SEPARATOR '||') as cpmk_items")
+            ->groupBy('p.id', 'p.kode', 'p.nama', 'p.bobot', DB::raw("COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), ''), p.kode)"))
+            ->orderBy('p.kode');
+
+        if ($semesterId) {
+            $assessmentPlanRowsQuery->where(function ($query) use ($semesterId) {
+                $query->where('p.semester_id', $semesterId)
+                    ->orWhereNull('p.semester_id');
+            });
+        }
+
+        $assessmentPlan = $assessmentPlanRowsQuery
+            ->get()
+            ->map(function ($row) {
+                return [
+                    'penugasan_id' => (string) $row->penugasan_id,
+                    'workcloud' => (string) $row->workcloud,
+                    'penugasan' => trim((string) ($row->penugasan_kode . ' - ' . $row->penugasan_nama)),
+                    'bobot' => round((float) $row->bobot, 2),
+                    'cpl_items' => collect(explode('||', (string) ($row->cpl_items ?? '')))->filter()->unique()->values()->all(),
+                    'cpmk_items' => collect(explode('||', (string) ($row->cpmk_items ?? '')))->filter()->unique()->values()->all(),
+                ];
+            })
+            ->values();
+
+        $nilaiColumns = $assessmentPlan
+            ->map(function ($item) {
+                return [
+                    'penugasan_id' => $item['penugasan_id'],
+                    'label' => $item['workcloud'] ?: '-',
+                    'asesmen' => $item['penugasan'] ?? '-',
+                    'cpl_label' => collect($item['cpl_items'])->map(function ($text) {
+                        return explode(' - ', (string) $text)[0] ?? '-';
+                    })->filter()->unique()->implode(', '),
+                    'bobot' => $item['bobot'],
+                ];
+            })
+            ->values();
+
+        $kontrakRowsQuery = DB::table('kontrak_mks as km')
+            ->join('mahasiswas as m', 'm.id', '=', 'km.mahasiswa_id')
+            ->where('km.mk_id', $mk->id)
+            ->whereNotNull('km.mahasiswa_id')
+            ->whereNotNull('km.semester_id')
+            ->selectRaw("COALESCE(NULLIF(TRIM(km.kelas), ''), 'Tanpa Kelas') as kelas_key, km.mahasiswa_id, m.nim, m.nama, km.nilai_angka, km.nilai_huruf")
+            ->orderBy('m.nim');
+
+        if ($semesterId) {
+            $kontrakRowsQuery->where('km.semester_id', $semesterId);
+        }
+        if ($currentUserId) {
+            $kontrakRowsQuery->where('km.user_id', $currentUserId);
+        }
+
+        $kontrakRows = collect($kontrakRowsQuery->get());
+
+        $nilaiRowsQuery = DB::table('kontrak_mks as km')
+            ->join('nilais as n', function ($join) {
+                $join->on('n.mk_id', '=', 'km.mk_id')
+                    ->on('n.mahasiswa_id', '=', 'km.mahasiswa_id')
+                    ->on('n.semester_id', '=', 'km.semester_id');
+            })
+            ->where('km.mk_id', $mk->id)
+            ->whereNotNull('km.mahasiswa_id')
+            ->whereNotNull('km.semester_id')
+            ->selectRaw("COALESCE(NULLIF(TRIM(km.kelas), ''), 'Tanpa Kelas') as kelas_key, km.mahasiswa_id, n.penugasan_id, AVG(n.nilai) as avg_nilai")
+            ->groupBy('kelas_key', 'km.mahasiswa_id', 'n.penugasan_id');
+
+        if ($semesterId) {
+            $nilaiRowsQuery->where('km.semester_id', $semesterId);
+        }
+        if ($currentUserId) {
+            $nilaiRowsQuery->where('km.user_id', $currentUserId);
+        }
+
+        $nilaiRows = $nilaiRowsQuery->get();
+        $nilaiByClassMahasiswa = [];
+        foreach ($nilaiRows as $row) {
+            $kelasKey = (string) $row->kelas_key;
+            $mahasiswaId = (string) $row->mahasiswa_id;
+            $penugasanId = (string) $row->penugasan_id;
+            $nilaiByClassMahasiswa[$kelasKey][$mahasiswaId][$penugasanId] = round((float) $row->avg_nilai, 2);
+        }
+
+        $penugasanCplMapQuery = DB::table('join_subcpmk_penugasans as jsp')
+            ->join('subcpmks as s', 's.id', '=', 'jsp.subcpmk_id')
+            ->join('join_cpl_cpmks as jcc', 'jcc.id', '=', 's.join_cpl_cpmk_id')
+            ->join('join_cpl_bks as jcb', 'jcb.id', '=', 'jcc.join_cpl_bk_id')
+            ->join('cpls as c', 'c.id', '=', 'jcb.cpl_id')
+            ->where('jsp.mk_id', $mk->id)
+            ->select('jsp.penugasan_id', 'c.id as cpl_id')
+            ->distinct();
+
+        $cplRows = DB::table('cpls as c')
+            ->joinSub(
+                DB::query()->fromSub($penugasanCplMapQuery, 'pcm')
+                    ->select('pcm.cpl_id')
+                    ->distinct(),
+                'used_cpl',
+                function ($join) {
+                    $join->on('used_cpl.cpl_id', '=', 'c.id');
+                }
+            )
+            ->select('c.id', 'c.kode', 'c.nama')
+            ->orderBy('c.kode')
+            ->get();
+
+        $achievementRowsQuery = DB::table('kontrak_mks as km')
+            ->join('nilais as n', function ($join) {
+                $join->on('n.mk_id', '=', 'km.mk_id')
+                    ->on('n.mahasiswa_id', '=', 'km.mahasiswa_id')
+                    ->on('n.semester_id', '=', 'km.semester_id');
+            })
+            ->joinSub($penugasanCplMapQuery, 'pcm', function ($join) {
+                $join->on('pcm.penugasan_id', '=', 'n.penugasan_id');
+            })
+            ->where('km.mk_id', $mk->id)
+            ->whereNotNull('km.mahasiswa_id')
+            ->whereNotNull('km.semester_id')
+            ->selectRaw("COALESCE(NULLIF(TRIM(km.kelas), ''), 'Tanpa Kelas') as kelas_key, pcm.cpl_id, AVG(n.nilai) as avg_capaian")
+            ->groupBy('kelas_key', 'pcm.cpl_id');
+
+        if ($semesterId) {
+            $achievementRowsQuery->where('km.semester_id', $semesterId);
+        }
+        if ($currentUserId) {
+            $achievementRowsQuery->where('km.user_id', $currentUserId);
+        }
+
+        $achievementRows = $achievementRowsQuery->get();
+        $achievementData = [];
+        foreach ($achievementRows as $row) {
+            $achievementData[(string) $row->kelas_key][(string) $row->cpl_id] = round((float) $row->avg_capaian, 2);
+        }
+
+        $componentRowsQuery = DB::table('penugasans as p')
+            ->join('evaluasis as e', 'e.id', '=', 'p.evaluasi_id')
+            ->join('join_subcpmk_penugasans as jsp', function ($join) {
+                $join->on('jsp.penugasan_id', '=', 'p.id');
+            })
+            ->join('subcpmks as s', 's.id', '=', 'jsp.subcpmk_id')
+            ->join('join_cpl_cpmks as jcc', 'jcc.id', '=', 's.join_cpl_cpmk_id')
+            ->join('join_cpl_bks as jcb', 'jcb.id', '=', 'jcc.join_cpl_bk_id')
+            ->join('cpls as c', 'c.id', '=', 'jcb.cpl_id')
+            ->where('p.mk_id', $mk->id)
+            ->selectRaw("c.id as cpl_id, COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), '')) as workcloud, COALESCE(SUM(COALESCE(jsp.bobot,0) * COALESCE(p.bobot,0)),0) as total_bobot")
+            ->whereNotNull(DB::raw("COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), ''))"))
+            ->groupBy('c.id', DB::raw("COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), ''))"))
+            ->orderBy(DB::raw("COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), ''))"));
+
+        if ($semesterId) {
+            $componentRowsQuery->where(function ($query) use ($semesterId) {
+                $query->where('p.semester_id', $semesterId)
+                    ->orWhereNull('p.semester_id');
+            });
+        }
+
+        $componentsDataByCpl = [];
+        foreach ($componentRowsQuery->get() as $row) {
+            $componentsDataByCpl[(string) $row->cpl_id][] = [
+                'workcloud' => (string) $row->workcloud,
+                'bobot' => round((float) $row->total_bobot / 100, 2),
+            ];
+        }
+
+        $totalsQuery = DB::table('kontrak_mks as km')
+            ->where('km.mk_id', $mk->id)
+            ->whereNotNull('km.mahasiswa_id')
+            ->whereNotNull('km.semester_id')
+            ->selectRaw("COALESCE(NULLIF(TRIM(km.kelas), ''), 'Tanpa Kelas') as kelas_key, COUNT(*) as total_mahasiswa")
+            ->groupBy('kelas_key');
+
+        if ($semesterId) {
+            $totalsQuery->where('km.semester_id', $semesterId);
+        }
+        if ($currentUserId) {
+            $totalsQuery->where('km.user_id', $currentUserId);
+        }
+
+        $totalsByClass = [];
+        foreach ($totalsQuery->get() as $row) {
+            $totalsByClass[(string) $row->kelas_key] = (int) $row->total_mahasiswa;
+        }
+
+        $gradeCountQuery = DB::table('kontrak_mks as km')
+            ->where('km.mk_id', $mk->id)
+            ->whereNotNull('km.mahasiswa_id')
+            ->whereNotNull('km.semester_id')
+            ->whereNotNull('km.nilai_huruf')
+            ->whereIn('km.nilai_huruf', $gradeOrder)
+            ->selectRaw("COALESCE(NULLIF(TRIM(km.kelas), ''), 'Tanpa Kelas') as kelas_key, km.nilai_huruf, COUNT(*) as jumlah")
+            ->groupBy('kelas_key', 'km.nilai_huruf');
+
+        if ($semesterId) {
+            $gradeCountQuery->where('km.semester_id', $semesterId);
+        }
+        if ($currentUserId) {
+            $gradeCountQuery->where('km.user_id', $currentUserId);
+        }
+
+        $gradeCountsByClass = [];
+        foreach ($gradeCountQuery->get() as $row) {
+            $gradeCountsByClass[(string) $row->kelas_key][(string) $row->nilai_huruf] = (int) $row->jumlah;
+        }
+
+        $hierarchyData = collect($baseData['hierarchyData'] ?? [])->values()->all();
+        $rnData = $baseData['rnData'] ?? [];
+
+        $assessmentBobotByPenugasan = $assessmentPlan
+            ->mapWithKeys(function ($item) {
+                return [(string) ($item['penugasan_id'] ?? '') => (float) ($item['bobot'] ?? 0)];
+            })
+            ->all();
+
+        $angkaToHuruf = function ($nilaiAngka) {
+            if ($nilaiAngka === null) {
+                return null;
+            }
+
+            $nilai = (float) $nilaiAngka;
+            return match (true) {
+                $nilai >= 85 => 'A',
+                $nilai >= 77 => 'A-',
+                $nilai >= 68.5 => 'B+',
+                $nilai >= 61 => 'B',
+                $nilai >= 53 => 'B-',
+                $nilai >= 45 => 'C+',
+                $nilai >= 37 => 'C',
+                $nilai >= 29 => 'C-',
+                $nilai >= 21 => 'D',
+                default => 'E',
+            };
+        };
+
+        $reportByClass = [];
+        foreach ($kelasList as $kelas) {
+            $kelasKey = (string) $kelas;
+
+            $studentRows = $kontrakRows
+                ->where('kelas_key', $kelasKey)
+                ->values()
+                ->map(function ($item) use ($nilaiColumns, $nilaiByClassMahasiswa, $kelasKey, $assessmentBobotByPenugasan, $angkaToHuruf) {
+                    $mahasiswaId = (string) $item->mahasiswa_id;
+                    $scores = [];
+                    $weightedSum = 0.0;
+                    $weightedDenom = 0.0;
+
+                    foreach ($nilaiColumns as $column) {
+                        $penugasanId = (string) $column['penugasan_id'];
+                        $nilai = $nilaiByClassMahasiswa[$kelasKey][$mahasiswaId][$penugasanId] ?? null;
+                        $scores[$penugasanId] = $nilai;
+
+                        if ($nilai !== null) {
+                            $bobot = (float) ($assessmentBobotByPenugasan[$penugasanId] ?? 0);
+                            if ($bobot > 0) {
+                                $weightedSum += ((float) $nilai) * $bobot;
+                                $weightedDenom += $bobot;
+                            }
+                        }
+                    }
+
+                    $nilaiAkhir = $weightedDenom > 0 ? round($weightedSum / $weightedDenom, 2) : null;
+
+                    return [
+                        'nim' => $item->nim,
+                        'nama' => $item->nama,
+                        'nilai_akhir' => $nilaiAkhir,
+                        'nilai_huruf' => $angkaToHuruf($nilaiAkhir),
+                        'scores' => $scores,
+                    ];
+                })
+                ->all();
+
+            $avgPerColumn = [];
+            foreach ($nilaiColumns as $column) {
+                $penugasanId = (string) $column['penugasan_id'];
+                $values = collect($studentRows)
+                    ->map(fn ($row) => $row['scores'][$penugasanId] ?? null)
+                    ->filter(fn ($value) => $value !== null)
+                    ->values();
+
+                $avgPerColumn[$penugasanId] = $values->isNotEmpty() ? round((float) $values->avg(), 2) : null;
+            }
+
+            $averageFinalScore = collect($studentRows)
+                ->map(fn ($row) => $row['nilai_akhir'])
+                ->filter(fn ($value) => $value !== null)
+                ->avg();
+
+            $rnMap = $avgPerColumn;
+            $ketercapaianDetailRows = collect($hierarchyData)
+                ->flatMap(function ($cpl) use ($rnMap) {
+                    $cpmks = collect($cpl['cpmks'] ?? []);
+
+                    return $cpmks->flatMap(function ($cpmk) use ($cpl, $rnMap) {
+                        $subcpmks = collect($cpmk['subcpmks'] ?? []);
+
+                        return $subcpmks->flatMap(function ($subcpmk) use ($cpl, $cpmk, $rnMap) {
+                            $sources = collect($subcpmk['sources'] ?? []);
+
+                            return $sources->map(function ($source) use ($cpl, $cpmk, $subcpmk, $rnMap) {
+                                $pk = ((float) ($source['pk'] ?? 0)) / 100;
+                                $rn = (float) ($rnMap[(string) ($source['penugasan_id'] ?? '')] ?? 0);
+                                $pkrn = ($pk * $rn) / 100;
+
+                                $sourceLabel = trim((string) ($source['kode'] ?? '-'));
+                                $sourceKategori = trim((string) ($source['kategori'] ?? ''));
+                                if ($sourceKategori !== '' && $sourceKategori !== '-') {
+                                    $sourceLabel .= ' - ' . $sourceKategori;
+                                }
+
+                                $cplCode = (string) ($cpl['kode'] ?? '-');
+                                $cpmkCode = (string) ($cpmk['kode'] ?? '-');
+                                $subcpmkCode = (string) ($subcpmk['kode'] ?? '-');
+
+                                $cplLabel = $cplCode . ' - ' . (string) ($cpl['nama'] ?? '-');
+                                $cpmkLabel = $cpmkCode . ' - ' . (string) ($cpmk['nama'] ?? '-');
+                                $subcpmkLabel = $subcpmkCode . ' - ' . (string) ($subcpmk['nama'] ?? '-');
+
+                                return [
+                                    'cpl_key' => (string) ($cpl['kode'] ?? '-') . '|' . (string) ($cpl['nama'] ?? '-'),
+                                    'cpl_code' => $cplCode,
+                                    'cpl' => $cplLabel,
+                                    'cpmk_key' => (string) ($cpmk['kode'] ?? '-') . '|' . (string) ($cpmk['nama'] ?? '-'),
+                                    'cpmk_code' => $cpmkCode,
+                                    'cpmk' => $cpmkLabel,
+                                    'subcpmk_key' => (string) ($subcpmk['kode'] ?? '-') . '|' . (string) ($subcpmk['nama'] ?? '-'),
+                                    'subcpmk_code' => $subcpmkCode,
+                                    'subcpmk' => $subcpmkLabel,
+                                    'indikator' => (string) ($subcpmk['indikator'] ?? '-'),
+                                    'source' => $sourceLabel !== '' ? $sourceLabel : '-',
+                                    'pk_raw' => $pk,
+                                    'pk' => round($pk, 2),
+                                    'rn_raw' => $rn,
+                                    'rn' => round($rn, 2),
+                                    'pkrn_raw' => $pkrn,
+                                    'pkrn' => round($pkrn, 2),
+                                ];
+                            });
+                        });
+                    });
+                })
+                ->values()
+                ->all();
+
+            $detailCollection = collect($ketercapaianDetailRows);
+
+            $cplStats = $detailCollection
+                ->groupBy('cpl_code')
+                ->map(function ($rows) {
+                    $pk = (float) $rows->sum('pk_raw');
+                    $pkrn = (float) $rows->sum('pkrn_raw');
+                    $ratio = $pk > 0 ? ($pkrn / $pk) * 100 : null;
+
+                    return [
+                        'ratio' => $ratio !== null ? round($ratio, 2) : null,
+                    ];
+                })
+                ->all();
+
+            $cpmkStats = $detailCollection
+                ->groupBy(function ($row) {
+                    return ($row['cpl_code'] ?? '-') . '||' . ($row['cpmk_code'] ?? '-');
+                })
+                ->map(function ($rows) {
+                    $pk = (float) $rows->sum('pk_raw');
+                    $pkrn = (float) $rows->sum('pkrn_raw');
+                    $ratio = $pk > 0 ? ($pkrn / $pk) * 100 : null;
+                    return $ratio !== null ? round($ratio, 2) : null;
+                })
+                ->all();
+
+            $subcpmkStats = $detailCollection
+                ->groupBy(function ($row) {
+                    return ($row['cpl_code'] ?? '-') . '||' . ($row['cpmk_code'] ?? '-') . '||' . ($row['subcpmk_code'] ?? '-');
+                })
+                ->map(function ($rows) {
+                    $pk = (float) $rows->sum('pk_raw');
+                    $pkrn = (float) $rows->sum('pkrn_raw');
+                    $ratio = $pk > 0 ? ($pkrn / $pk) * 100 : null;
+                    return $ratio !== null ? round($ratio, 2) : null;
+                })
+                ->all();
+
+            $ketercapaianDetailRows = $detailCollection
+                ->map(function ($row) use ($cplStats, $cpmkStats, $subcpmkStats) {
+                    $cplCode = (string) ($row['cpl_code'] ?? '-');
+                    $cpmkKey = (string) ($row['cpl_code'] ?? '-') . '||' . (string) ($row['cpmk_code'] ?? '-');
+                    $subcpmkKey = (string) ($row['cpl_code'] ?? '-') . '||' . (string) ($row['cpmk_code'] ?? '-') . '||' . (string) ($row['subcpmk_code'] ?? '-');
+
+                    $row['cpl_ratio'] = $cplStats[$cplCode]['ratio'] ?? null;
+                    $row['cpmk_ratio'] = $cpmkStats[$cpmkKey] ?? null;
+                    $row['subcpmk_ratio'] = $subcpmkStats[$subcpmkKey] ?? null;
+
+                    return $row;
+                })
+                ->values()
+                ->all();
+
+            $ketercapaianRows = $cplRows->map(function ($cpl) use ($cplStats, $targetKelulusan) {
+                $kode = (string) ($cpl->kode ?? '');
+                $ratio = $cplStats[$kode]['ratio'] ?? null;
+
+                return [
+                    'kode' => $cpl->kode,
+                    'nama' => $cpl->nama,
+                    'pk_total' => null,
+                    'pk_rn' => null,
+                    'ratio' => $ratio,
+                    'status' => $ratio === null ? null : ((float) $ratio >= $targetKelulusan),
+                ];
+            })->all();
+
+            $achievementTableRows = $cplRows->map(function ($cpl) use ($componentsDataByCpl, $targetKelulusan, $cplStats) {
+                $kode = (string) ($cpl->kode ?? '');
+                $avg = $cplStats[$kode]['ratio'] ?? null;
+                $components = collect($componentsDataByCpl[(string) $cpl->id] ?? [])
+                    ->map(function ($item) {
+                        return trim(($item['workcloud'] ?? '-') . ' (' . number_format((float) ($item['bobot'] ?? 0), 2) . '%)');
+                    })
+                    ->values()
+                    ->all();
+
+                return [
+                    'kode' => $cpl->kode,
+                    'nama' => $cpl->nama,
+                    'components' => $components,
+                    'avg' => $avg,
+                    'status' => $avg === null ? null : ((float) $avg >= $targetKelulusan),
+                ];
+            })->all();
+
+            $counts = array_fill_keys($gradeOrder, 0);
+            foreach ($studentRows as $studentRow) {
+                $grade = (string) ($studentRow['nilai_huruf'] ?? '');
+                if (isset($counts[$grade])) {
+                    $counts[$grade]++;
+                }
+            }
+
+            $reportByClass[$kelasKey] = [
+                'assessment_plan' => $assessmentPlan->all(),
+                'nilai_columns' => $nilaiColumns->all(),
+                'nilai_rows' => $studentRows,
+                'avg_per_column' => $avgPerColumn,
+                'avg_final_score' => $averageFinalScore !== null ? round((float) $averageFinalScore, 2) : null,
+                'achievement_rows' => $achievementTableRows,
+                'ketercapaian_rows' => $ketercapaianRows,
+                'ketercapaian_detail_rows' => $ketercapaianDetailRows,
+                'grade_distribution' => [
+                    'total' => count($studentRows),
+                    'counts' => $counts,
+                ],
+            ];
+        }
+
+        return view('obe.report.pdf-workcloud-mk', [
+            'mk' => $mk,
+            'semester' => $semester,
+            'kelasList' => $kelasList,
+            'targetKelulusan' => $targetKelulusan,
+            'gradeOrder' => $gradeOrder,
+            'reportByClass' => $reportByClass,
+        ]);
+    }
+
+    public function downloadLaporanPdf(Mk $mk)
+    {
+        $kelasRequested = trim((string) request()->query('kelas', ''));
+        $mode = trim((string) request()->query('mode', 'view'));
+        if ($kelasRequested === '') {
+            abort(404);
+        }
+
+        $view = $this->laporan($mk);
+        $data = $view->getData();
+
+        $kelasList = collect($data['kelasList'] ?? []);
+        if (!$kelasList->contains($kelasRequested)) {
+            abort(404);
+        }
+
+        $reportByClass = $data['reportByClass'] ?? [];
+        $classReport = $reportByClass[$kelasRequested] ?? null;
+        if ($classReport === null) {
+            abort(404);
+        }
+
+        $pdf = Pdf::loadView('obe.report.pdf-workcloud-mk-download', [
+            'mk' => $mk,
+            'semester' => $data['semester'] ?? null,
+            'targetKelulusan' => $data['targetKelulusan'] ?? 100,
+            'gradeOrder' => $data['gradeOrder'] ?? [],
+            'kelas' => $kelasRequested,
+            'data' => $classReport,
+            'downloadedAt' => now()->format('d-m-Y H:i:s'),
+        ])
+            ->setOption('isPhpEnabled', true)
+            ->setPaper('a4', 'landscape');
+
+        $filename = 'laporan-mk-' . Str::slug((string) $mk->kode, '-') . '-kelas-' . Str::slug($kelasRequested, '-') . '.pdf';
+
+        if ($mode === 'download') {
+            return $pdf->download($filename);
+        }
+
+        return $pdf->stream($filename);
     }
 }

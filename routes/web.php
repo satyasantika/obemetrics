@@ -103,6 +103,8 @@ Route::middleware('auth')->group(function () {
         Route::resource('mks.achievements', App\Http\Controllers\Dosen\AchievementController::class)->only('index');
         Route::resource('mks.ketercapaians', App\Http\Controllers\Dosen\KetercapaianController::class)->only('index');
         Route::get('mks/{mk}/spyderweb', [App\Http\Controllers\Dosen\KetercapaianController::class, 'spyderWeb'])->name('mks.spyderweb');
+        Route::get('mks/{mk}/laporan/download', [App\Http\Controllers\Dosen\KetercapaianController::class, 'downloadLaporanPdf'])->name('mks.laporan.download');
+        Route::get('mks/{mk}/laporan', [App\Http\Controllers\Dosen\KetercapaianController::class, 'laporan'])->name('mks.laporan');
     });
 
     // Bulk Upload Nilai MK

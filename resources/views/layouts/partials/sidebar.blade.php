@@ -45,6 +45,7 @@
                     'mks.achievements.*',
                     'mks.ketercapaians.*',
                     'mks.spyderweb',
+                    'mks.laporan',
                     'setting.import.mk-master*'
                 );
 
@@ -397,6 +398,12 @@
                             <a href="{{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? route('mks.spyderweb', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.spyderweb') ? 'active' : '' }} {{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? '' : 'disabled' }}" @if(!($mkPenilaianComplete && $mkHasKontrakAccess)) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-bullseye"></i>
                                 <p>Jaring Laba-laba</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? route('mks.laporan', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.laporan') ? 'active' : '' }} {{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? '' : 'disabled' }}" @if(!($mkPenilaianComplete && $mkHasKontrakAccess)) aria-disabled="true" tabindex="-1" @endif>
+                                <i class="nav-icon fas fa-file-alt"></i>
+                                <p>Laporan ke Prodi</p>
                             </a>
                         </li>
 
