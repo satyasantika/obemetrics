@@ -330,9 +330,14 @@ class ImportMkMasterController extends Controller
     {
         $target = $this->resolveTarget($request->query('target'));
         $meta = self::TARGETS[$target];
+        $semesterId = (string) $request->query('semester_id', '');
+
+        if (!empty($meta['requires_semester']) && $semesterId === '') {
+            return redirect()->to($this->resolveReturnUrl($request))
+                ->with('error', 'Semester wajib dipilih sebelum mengunduh template.');
+        }
 
         if ($target === 'mk_bundle') {
-            $semesterId = (string) $request->query('semester_id', '');
             $this->assertSemester($semesterId);
 
             $spreadsheet = $this->buildMkBundleTemplate($mk, $semesterId);
@@ -348,7 +353,6 @@ class ImportMkMasterController extends Controller
         }
 
         if ($target === 'join_subcpmk_penugasans') {
-            $semesterId = (string) $request->query('semester_id', '');
             $this->assertSemester($semesterId);
 
             $subcpmks = Subcpmk::query()
