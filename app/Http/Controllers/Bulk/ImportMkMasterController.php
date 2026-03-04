@@ -15,6 +15,7 @@ use App\Models\Semester;
 use App\Models\Subcpmk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -222,7 +223,22 @@ class ImportMkMasterController extends Controller
         $preview = session($this->previewSessionKey($mk, $target), []);
         $rows = $preview['rows'] ?? [];
 
+        Log::info('Import MK Master commit requested', [
+            'mk_id' => $mk->id,
+            'target' => $target,
+            'preview_rows' => is_array($rows) ? count($rows) : 0,
+            'selected_count' => count((array) $request->input('selected', [])),
+            'semester_id' => $request->input('semester_id') ?: ($preview['semester_id'] ?? null),
+            'session_driver' => config('session.driver'),
+        ]);
+
         if (empty($rows)) {
+            Log::warning('Import MK Master commit aborted: preview rows not found in session', [
+                'mk_id' => $mk->id,
+                'target' => $target,
+                'session_key' => $this->previewSessionKey($mk, $target),
+            ]);
+
             return to_route('setting.import.mk-master', $this->withReturnUrl([
                 'mk' => $mk->id,
                 'target' => $target,
@@ -247,11 +263,22 @@ class ImportMkMasterController extends Controller
 
         foreach ($selectedIndexes as $idx) {
             if (!isset($rows[$idx])) {
+                Log::warning('Import MK Master commit skip: selected index not found', [
+                    'mk_id' => $mk->id,
+                    'target' => $target,
+                    'selected_index' => $idx,
+                ]);
                 continue;
             }
 
             if (($rows[$idx]['can_save'] ?? true) === false) {
                 $skipped[] = 'Baris ' . ($idx + 2) . ': ' . ($rows[$idx]['status_message'] ?? 'Data tidak valid.');
+                Log::warning('Import MK Master commit skip: row not saveable', [
+                    'mk_id' => $mk->id,
+                    'target' => $target,
+                    'selected_index' => $idx,
+                    'status_message' => $rows[$idx]['status_message'] ?? 'Data tidak valid.',
+                ]);
                 continue;
             }
 
@@ -260,10 +287,35 @@ class ImportMkMasterController extends Controller
                 $saved++;
             } catch (\Throwable $e) {
                 $skipped[] = 'Baris ' . ($idx + 2) . ': ' . $e->getMessage();
+                Log::error('Import MK Master commit row failed', [
+                    'mk_id' => $mk->id,
+                    'target' => $target,
+                    'selected_index' => $idx,
+                    'row' => $rows[$idx],
+                    'semester_id' => $semesterId,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 
         session()->forget($this->previewSessionKey($mk, $target));
+
+        Log::info('Import MK Master commit finished', [
+            'mk_id' => $mk->id,
+            'target' => $target,
+            'saved' => $saved,
+            'skipped' => count($skipped),
+        ]);
+
+        if ($saved === 0) {
+            $message = 'Tidak ada data yang berhasil diproses.';
+            if (!empty($skipped)) {
+                $message .= ' Penyebab: ' . implode(' | ', array_slice($skipped, 0, 5));
+            }
+
+            return redirect()->to($this->resolveReturnUrl($request))
+                ->with('error', $message);
+        }
 
         $message = "{$saved} baris berhasil diproses.";
         if (!empty($skipped)) {
