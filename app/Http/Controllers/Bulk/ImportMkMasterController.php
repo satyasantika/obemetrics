@@ -352,40 +352,41 @@ class ImportMkMasterController extends Controller
 
     public function template(Mk $mk, Request $request)
     {
-        $target = $this->resolveTarget($request->query('target'));
-        $meta = self::TARGETS[$target];
-        $semesterId = (string) $request->query('semester_id', '');
+        try {
+            $target = $this->resolveTarget($request->query('target'));
+            $meta = self::TARGETS[$target];
+            $semesterId = (string) $request->query('semester_id', '');
 
-        if (!empty($meta['requires_semester']) && $semesterId === '') {
-            return redirect()->to($this->resolveReturnUrl($request))
-                ->with('error', 'Semester wajib dipilih sebelum mengunduh template.');
-        }
+            if (!empty($meta['requires_semester']) && $semesterId === '') {
+                return redirect()->to($this->resolveReturnUrl($request))
+                    ->with('error', 'Semester wajib dipilih sebelum mengunduh template.');
+            }
 
-        if ($target === 'mk_bundle') {
-            $this->assertSemester($semesterId);
+            if ($target === 'mk_bundle') {
+                $this->assertSemester($semesterId);
 
-            $spreadsheet = $this->buildMkBundleTemplate($mk, $semesterId);
-            $writer = new Xlsx($spreadsheet);
-            $waktuDownload = now()->format('YmdHis');
-            $fileName = 'import' . $waktuDownload . '-master-mk-' . Str::slug((string) ($mk->kode ?? 'mk'), '-') . '.xlsx';
+                $spreadsheet = $this->buildMkBundleTemplate($mk, $semesterId);
+                $writer = new Xlsx($spreadsheet);
+                $waktuDownload = now()->format('YmdHis');
+                $fileName = 'import' . $waktuDownload . '-master-mk-' . Str::slug((string) ($mk->kode ?? 'mk'), '-') . '.xlsx';
 
-            return response()->streamDownload(function () use ($writer) {
-                $writer->save('php://output');
-            }, $fileName, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            ]);
-        }
+                return response()->streamDownload(function () use ($writer) {
+                    $writer->save('php://output');
+                }, $fileName, [
+                    'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                ]);
+            }
 
-        if ($target === 'join_subcpmk_penugasans') {
-            $this->assertSemester($semesterId);
+            if ($target === 'join_subcpmk_penugasans') {
+                $this->assertSemester($semesterId);
 
-            $subcpmks = Subcpmk::query()
-                ->where('semester_id', $semesterId)
-                ->whereHas('joinCplCpmk', function ($query) use ($mk) {
-                    $query->where('mk_id', $mk->id);
-                })
-                ->orderBy('kode')
-                ->get();
+                $subcpmks = Subcpmk::query()
+                    ->where('semester_id', $semesterId)
+                    ->whereHas('joinCplCpmk', function ($query) use ($mk) {
+                        $query->where('mk_id', $mk->id);
+                    })
+                    ->orderBy('kode')
+                    ->get();
 
             $penugasans = Penugasan::query()
                 ->where('mk_id', $mk->id)
@@ -446,12 +447,12 @@ class ImportMkMasterController extends Controller
             $waktu_download = now()->format('YmdHis');
             $fileName = 'import' . $waktu_download . '-subcpmk-penugasan-matrix-' . Str::slug((string) ($mk->kode ?? 'mk'), '-') . '.xlsx';
 
-            return response()->streamDownload(function () use ($writer) {
-                $writer->save('php://output');
-            }, $fileName, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            ]);
-        }
+                return response()->streamDownload(function () use ($writer) {
+                    $writer->save('php://output');
+                }, $fileName, [
+                    'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                ]);
+            }
 
         if ($target === 'join_cpl_cpmks') {
             $joinCplBks = $mk->joinCplMks->pluck('joinCplBk')->flatten()->filter()->unique('id')->values();
@@ -521,11 +522,22 @@ class ImportMkMasterController extends Controller
         $waktu_download = now()->format('YmdHis');
         $fileName = 'import' . $waktu_download . '-' .Str::slug($meta['label'], '-') . '-' . Str::slug((string) ($mk->kode ?? 'mk'), '-') . '.xlsx';
 
-        return response()->streamDownload(function () use ($writer) {
-            $writer->save('php://output');
-        }, $fileName, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ]);
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('Import MK Master template request failed', [
+                'mk_id' => $mk->id,
+                'target' => (string) $request->query('target', ''),
+                'semester_id' => (string) $request->query('semester_id', ''),
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->to($this->resolveReturnUrl($request))
+                ->with('error', 'Gagal mengunduh template: ' . $e->getMessage());
+        }
     }
 
     public function clear(Mk $mk, Request $request)
