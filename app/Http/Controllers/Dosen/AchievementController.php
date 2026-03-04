@@ -125,7 +125,13 @@ class AchievementController extends Controller
             ->where('p.mk_id', $mk->id)
             ->selectRaw("COALESCE(p.semester_id, jsp.semester_id) as semester_id, c.id as cpl_id, COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), '')) as workcloud, COALESCE(SUM(COALESCE(jsp.bobot,0) * COALESCE(p.bobot,0)),0) as total_bobot")
             ->whereNotNull(DB::raw("COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), ''))"))
-            ->groupBy(DB::raw('COALESCE(p.semester_id, jsp.semester_id)'), 'c.id', DB::raw("COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), ''))"))
+            ->groupBy(
+                DB::raw('COALESCE(p.semester_id, jsp.semester_id)'),
+                'c.id',
+                'e.workcloud',
+                'e.kategori',
+                'e.kode'
+            )
             ->orderBy(DB::raw("COALESCE(NULLIF(TRIM(e.workcloud), ''), NULLIF(TRIM(e.kategori), ''), NULLIF(TRIM(e.kode), ''))"))
             ->get();
 
