@@ -29,10 +29,6 @@ class RolesDataTable extends DataTable
                 $action .= ' <button type="button" class="btn btn-success btn-sm action js-role-modal-trigger" data-bs-toggle="modal" data-bs-target="#modalSetRolePermission" data-role-id="'.$row->id.'" data-role-name="'.$name.'" title="SET Permission"><i class="bi bi-person-gear"></i> P</button>';
                 return $action;
             })
-            // ->editColumn('name', function($row){
-            //     $setpermissionbutton = $row->name.' <a href="'.route('rolepermissions.edit',$row->id).'" class="btn btn-success btn-sm action">SET permission</a>';
-            //     return $setpermissionbutton;
-            // })
             ->rawColumns(['action','name'])
             ->setRowId('id');
     }

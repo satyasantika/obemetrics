@@ -11,7 +11,7 @@
                 </div>
 
                 <div class="card-body">
-                     <form action="{{ route('setting.import.kontrakmks') }}" method="POST" enctype="multipart/form-data">
+                     <form action="{{ route('settings.import.kontrakmks') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('kontrakmks.index') }}">
                         <div class="row mt-3">
@@ -36,7 +36,7 @@
                             <div class="col">
                                 <input type="file" name="file" class="form-control" accept=".csv,.xlsx,.ods" required>
                                 <small class="text-muted d-block mt-1">
-                                    Unduh template: <a href="{{ route('setting.import.kontrakmks.template') }}">template-import-kontrakmk.xlsx</a>
+                                    Unduh template: <a href="{{ route('settings.import.kontrakmks.template') }}">template-import-kontrakmk.xlsx</a>
                                 </small>
                             </div>
                         </div>
@@ -63,7 +63,7 @@
             <div class="card mt-3">
                 <div class="card-header">
                     <span class="h5">Preview Data Kontrak MK @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>
-                    <form action="{{ route('setting.import.kontrakmks.clear') }}" method="POST" class="float-end" style="display: inline;">
+                    <form action="{{ route('settings.import.kontrakmks.clear') }}" method="POST" class="float-end" style="display: inline;">
                         @csrf
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('kontrakmks.index') }}">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus preview data?');">
@@ -78,7 +78,7 @@
                             <label for="select-all" class="form-check-label">Pilih semua</label>
                         </div>
                     </div>
-                    <form action="{{ route('setting.import.kontrakmks.commit') }}" method="POST">
+                    <form action="{{ route('settings.import.kontrakmks.commit') }}" method="POST">
                         @csrf
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('kontrakmks.index') }}">
                         <div class="table-responsive">

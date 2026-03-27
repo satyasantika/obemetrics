@@ -17,7 +17,7 @@
                     <div class="row mb-2">
                         <div class="col">
                             <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateCpmk"><i class="bi bi-plus-circle"></i> Tambah CPMK</button>
-                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'cpmks']) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-1 float-end"><i class="bi bi-upload"></i> Tambah Banyak CPMK</a>
+                            <a href="{{ route('settings.import.mk-master', ['mk' => $mk->id, 'target' => 'cpmks']) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-1 float-end"><i class="bi bi-upload"></i> Tambah Banyak CPMK</a>
                         </div>
                     </div>
 

@@ -122,7 +122,7 @@ class ImportUserController extends Controller
         $rows = $preview['rows'] ?? [];
 
         if (empty($rows)) {
-            return redirect()->route('setting.import.users')
+            return redirect()->route('settings.import.users')
                             ->with('error', 'Tidak ada data preview untuk diproses.');
         }
 
@@ -200,7 +200,7 @@ class ImportUserController extends Controller
     public function clearPreview()
     {
         session()->forget('import_user_preview');
-        return redirect()->route('setting.import.users')
+        return redirect()->route('settings.import.users')
                         ->with('success', 'Data preview berhasil dihapus.');
     }
 
@@ -217,6 +217,6 @@ class ImportUserController extends Controller
             $candidate = (string) url()->previous();
         }
 
-        return $candidate !== '' ? $candidate : route('setting.import.users');
+        return $candidate !== '' ? $candidate : route('settings.import.users');
     }
 }

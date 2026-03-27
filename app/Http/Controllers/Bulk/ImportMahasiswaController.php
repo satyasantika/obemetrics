@@ -127,7 +127,7 @@ class ImportMahasiswaController extends Controller
         $rows = $preview['rows'] ?? [];
 
         if (empty($rows)) {
-            return redirect()->route('setting.import.mahasiswas')
+            return redirect()->route('settings.import.mahasiswas')
                             ->with('error', 'Tidak ada data preview untuk diproses.');
         }
 
@@ -210,7 +210,7 @@ class ImportMahasiswaController extends Controller
     public function clearPreview()
     {
         session()->forget('import_mahasiswa_preview');
-        return redirect()->route('setting.import.mahasiswas')
+        return redirect()->route('settings.import.mahasiswas')
                         ->with('success', 'Data preview berhasil dihapus.');
     }
 
@@ -227,6 +227,6 @@ class ImportMahasiswaController extends Controller
             $candidate = (string) url()->previous();
         }
 
-        return $candidate !== '' ? $candidate : route('setting.import.mahasiswas');
+        return $candidate !== '' ? $candidate : route('settings.import.mahasiswas');
     }
 }

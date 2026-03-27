@@ -21,7 +21,7 @@
                         <div class="col"><strong>{{ $kurikulum->prodi->jenjang }} {{ $kurikulum->prodi->nama }}</strong></div>
                     </div>
 
-                    <form action="{{ route('setting.import.kurikulum-master.upload', $kurikulum->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('settings.import.kurikulum-master.upload', $kurikulum->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="target" id="target" value="{{ $target }}">
                         <input type="hidden" name="return_url" value="{{ $returnUrl }}">
@@ -68,7 +68,7 @@
                 <div class="card mt-3">
                     <div class="card-header">
                         <span class="h5">Preview @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>
-                        <form action="{{ route('setting.import.kurikulum-master.clear', $kurikulum->id) }}" method="POST" class="float-end" style="display:inline;">
+                        <form action="{{ route('settings.import.kurikulum-master.clear', $kurikulum->id) }}" method="POST" class="float-end" style="display:inline;">
                             @csrf
                             <input type="hidden" name="target" value="{{ $target }}">
                             <input type="hidden" name="return_url" value="{{ $returnUrl }}">
@@ -89,7 +89,7 @@
                             $showStatus = in_array($target, $statusTargets, true);
                         @endphp
 
-                        <form action="{{ route('setting.import.kurikulum-master.commit', $kurikulum->id) }}" method="POST">
+                        <form action="{{ route('settings.import.kurikulum-master.commit', $kurikulum->id) }}" method="POST">
                             @csrf
                             <input type="hidden" name="target" value="{{ $target }}">
                             <input type="hidden" name="return_url" value="{{ $returnUrl }}">
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const target = targetSelect.value || '';
-        const base = '{{ route("setting.import.kurikulum-master.template", $kurikulum->id) }}';
+        const base = '{{ route("settings.import.kurikulum-master.template", $kurikulum->id) }}';
         const url = base + '?target=' + encodeURIComponent(target);
         const label = '{{ $targets[$target]["label"] }}' || 'template';
         const prodiSegment = '{{ Str::slug((string) ($kurikulum->prodi->jenjang . '-' . $kurikulum->prodi->nama ?? 'kurikulum'), '-') }}';

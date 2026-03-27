@@ -130,7 +130,7 @@ class JoinProdiUsersDataTable extends DataTable
                         Button::make([
                                         'text'   => '<i class="bi bi-upload"></i> Banyak User',
                                         'className' => 'btn btn-success',
-                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('setting.import.admin-master', ['target' => 'joinprodiusers']).'"; }',
+                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('settings.import.admin-master', ['target' => 'joinprodiusers']).'"; }',
                                     ]),
                                 ]);
     }

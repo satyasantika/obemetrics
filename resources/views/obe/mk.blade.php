@@ -18,8 +18,8 @@
                     <div class="row mb-2">
                         <div class="col">
                             <button type="button" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateMk"><i class="bi bi-plus-circle"></i> Tambah Mata Kuliah</button>
-                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'joinmkusers']) }}" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold shadow-sm float-end"><i class="bi bi-upload"></i> Import Dosen Pengampu</a>
-                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'mks']) }}" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm float-end me-1"><i class="bi bi-upload"></i> Upload Banyak MK</a>
+                            <a href="{{ route('settings.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'joinmkusers']) }}" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold shadow-sm float-end"><i class="bi bi-upload"></i> Import Dosen Pengampu</a>
+                            <a href="{{ route('settings.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'mks']) }}" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm float-end me-1"><i class="bi bi-upload"></i> Upload Banyak MK</a>
                         </div>
                     </div>
 

@@ -17,7 +17,7 @@
                 <div class="card-body bg-light-subtle">
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_cpl_mks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-1 float-end"><i class="bi bi-upload"></i> Import Interaksi CPL >< MK</a>
+                            <a href="{{ route('settings.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_cpl_mks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-1 float-end"><i class="bi bi-upload"></i> Import Interaksi CPL >< MK</a>
                         </div>
                     </div>
                     <div class="row">
@@ -72,7 +72,7 @@
                                                 @elseif (!$isAvailable)
                                                     <span class="text-muted">-</span>
                                                 @else
-                                                    <form action="{{ route('joincplmks.update', ['cpl' => $column['cpl_id'], 'mk' => $mk->id]) }}" method="POST" data-is-locked="{{ $isLocked ? '1' : '0' }}">
+                                                    <form action="{{ route('kurikulums.joincplmks.update', ['kurikulum' => $kurikulum->id, 'cpl' => $column['cpl_id'], 'mk' => $mk->id]) }}" method="POST" data-is-locked="{{ $isLocked ? '1' : '0' }}">
                                                         @csrf
                                                         @method('PUT')
                                                         <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">

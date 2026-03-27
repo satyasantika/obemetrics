@@ -16,7 +16,7 @@
                 <div class="card-body">
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'join_cpl_cpmks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-1 float-end"><i class="bi bi-upload"></i> Import Interaksi CPL-CPMK</a>
+                            <a href="{{ route('settings.import.mk-master', ['mk' => $mk->id, 'target' => 'join_cpl_cpmks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-1 float-end"><i class="bi bi-upload"></i> Import Interaksi CPL-CPMK</a>
                         </div>
                     </div>
                     <div class="row">
@@ -50,7 +50,7 @@
                                                 $cek = isset($linkedPairMap[$pairKey]);
                                                 $isLocked = isset($lockedPairMap[$pairKey]);
                                                 @endphp
-                                                <form action="{{ route('joincplcpmks.update',[$joincplbk->id,$cpmk->id]) }}" method="POST" class="live-cplcpmk-form" data-is-locked="{{ $isLocked ? '1' : '0' }}">
+                                                <form action="{{ route('mks.joincplcpmks.update', ['mk' => $mk->id, 'joincplbk' => $joincplbk->id, 'cpmk' => $cpmk->id]) }}" method="POST" class="live-cplcpmk-form" data-is-locked="{{ $isLocked ? '1' : '0' }}">
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="cpmk_id" value="{{ $cpmk->id }}">

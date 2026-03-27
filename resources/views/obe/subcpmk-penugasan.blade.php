@@ -23,7 +23,7 @@
                                         <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $selectedSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
                                     @endforeach
                                 </select>
-                                <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'join_subcpmk_penugasans', 'semester_id' => $selectedSemesterId]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-upload"></i> Import banyak SubCPMK untuk Penugasan</a>
+                                <a href="{{ route('settings.import.mk-master', ['mk' => $mk->id, 'target' => 'join_subcpmk_penugasans', 'semester_id' => $selectedSemesterId]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-upload"></i> Import banyak SubCPMK untuk Penugasan</a>
                             </div>
                         </div>
                         <div class="col-md-6 d-flex">
@@ -91,7 +91,7 @@
                                                     $linkedObj = $linkByKey[$cellKey] ?? null;
                                                     $bobot = $linkedObj?->bobot;
                                                 @endphp
-                                                <form action="{{ route('joinsubcpmkpenugasans.update',[$subcpmk->id,$penugasan->id]) }}" method="POST">
+                                                <form action="{{ route('mks.joinsubcpmkpenugasans.update',[$mk->id,$subcpmk->id,$penugasan->id]) }}" method="POST">
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="penugasan_id" value="{{ $penugasan->id }}">

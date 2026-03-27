@@ -254,7 +254,7 @@ class ImportKurikulumMasterController extends Controller
                 ],
             ]);
 
-            return to_route('setting.import.kurikulum-master', $this->withReturnUrl([
+            return to_route('settings.import.kurikulum-master', $this->withReturnUrl([
                 'kurikulum' => $kurikulum->id,
                 'target' => $target,
             ], $request))
@@ -280,7 +280,7 @@ class ImportKurikulumMasterController extends Controller
         $semesterId = $request->input('semester_id') ?: ($preview['semester_id'] ?? null);
 
         if (empty($rows)) {
-            return to_route('setting.import.kurikulum-master', $this->withReturnUrl([
+            return to_route('settings.import.kurikulum-master', $this->withReturnUrl([
                 'kurikulum' => $kurikulum->id,
                 'target' => $target,
             ], $request))
@@ -288,7 +288,7 @@ class ImportKurikulumMasterController extends Controller
         }
 
         if (!empty($meta['requires_semester']) && empty($semesterId)) {
-            return to_route('setting.import.kurikulum-master', $this->withReturnUrl([
+            return to_route('settings.import.kurikulum-master', $this->withReturnUrl([
                 'kurikulum' => $kurikulum->id,
                 'target' => $target,
             ], $request))
@@ -533,7 +533,7 @@ class ImportKurikulumMasterController extends Controller
         $target = $this->resolveTarget($request->input('target'));
         session()->forget($this->previewSessionKey($kurikulum, $target));
 
-        return to_route('setting.import.kurikulum-master', $this->withReturnUrl([
+        return to_route('settings.import.kurikulum-master', $this->withReturnUrl([
             'kurikulum' => $kurikulum->id,
             'target' => $target,
         ], $request))

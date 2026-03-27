@@ -149,7 +149,7 @@ class ImportJoinProdiUserController extends Controller
         $rows = $preview['rows'] ?? [];
 
         if (empty($rows)) {
-            return redirect()->route('setting.import.joinprodiusers')
+            return redirect()->route('settings.import.joinprodiusers')
                             ->with('error', 'Tidak ada data preview untuk diproses.');
         }
 
@@ -235,7 +235,7 @@ class ImportJoinProdiUserController extends Controller
     public function clearPreview()
     {
         session()->forget('import_joinprodiuser_preview');
-        return redirect()->route('setting.import.joinprodiusers')
+        return redirect()->route('settings.import.joinprodiusers')
                         ->with('success', 'Data preview berhasil dihapus.');
     }
 
@@ -252,6 +252,6 @@ class ImportJoinProdiUserController extends Controller
             $candidate = (string) url()->previous();
         }
 
-        return $candidate !== '' ? $candidate : route('setting.import.joinprodiusers');
+        return $candidate !== '' ? $candidate : route('settings.import.joinprodiusers');
     }
 }

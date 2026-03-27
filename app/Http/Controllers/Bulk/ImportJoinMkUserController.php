@@ -152,7 +152,7 @@ class ImportJoinMkUserController extends Controller
         $rows = $preview['rows'] ?? [];
 
         if (empty($rows)) {
-            return redirect()->route('setting.import.joinmkusers')
+            return redirect()->route('settings.import.joinmkusers')
                             ->with('error', 'Tidak ada data preview untuk diproses.');
         }
 
@@ -244,7 +244,7 @@ class ImportJoinMkUserController extends Controller
     public function clearPreview()
     {
         session()->forget('import_joinmkuser_preview');
-        return redirect()->route('setting.import.joinmkusers')
+        return redirect()->route('settings.import.joinmkusers')
                         ->with('success', 'Data preview berhasil dihapus.');
     }
 
@@ -261,6 +261,6 @@ class ImportJoinMkUserController extends Controller
             $candidate = (string) url()->previous();
         }
 
-        return $candidate !== '' ? $candidate : route('setting.import.joinmkusers');
+        return $candidate !== '' ? $candidate : route('settings.import.joinmkusers');
     }
 }

@@ -69,7 +69,7 @@
                                     @impersonating($guard = null)
                                         <a class="dropdown-item" href="{{ route('impersonate.leave') }}">Back to Admin</a>
                                     @endImpersonating
-                                    <a class="dropdown-item" href="{{ route('mypassword.change') }}">Ubah Password</a>
+                                    <a class="dropdown-item" href="{{ route('password.change') }}">Ubah Password</a>
                                     <a class="dropdown-item" href="{{ route('logout') }}"
                                        onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">

@@ -27,7 +27,7 @@
                         $semesterReady = (string) $selectedSemesterId !== '';
                     @endphp
 
-                    <form id="import-form" action="{{ route('setting.import.mk-master.upload', $mk->id) }}" method="POST" enctype="multipart/form-data">
+                    <form id="import-form" action="{{ route('settings.import.mk-master.upload', $mk->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="target" id="target" value="{{ $target }}">
                         <input type="hidden" id="target-requires-semester" value="{{ $requiresSemester ? '1' : '0' }}">
@@ -101,7 +101,7 @@
                 <div class="card mt-3">
                     <div class="card-header">
                         <span class="h5">Preview @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>
-                        <form action="{{ route('setting.import.mk-master.clear', $mk->id) }}" method="POST" class="float-end" style="display:inline;">
+                        <form action="{{ route('settings.import.mk-master.clear', $mk->id) }}" method="POST" class="float-end" style="display:inline;">
                             @csrf
                             <input type="hidden" name="target" value="{{ $target }}">
                             <input type="hidden" name="preview_token" value="{{ $preview['token'] ?? '' }}">
@@ -123,7 +123,7 @@
                             $showStatus = in_array($target, $statusTargets, true);
                         @endphp
 
-                        <form action="{{ route('setting.import.mk-master.commit', $mk->id) }}" method="POST">
+                        <form action="{{ route('settings.import.mk-master.commit', $mk->id) }}" method="POST">
                             @csrf
                             <input type="hidden" name="target" value="{{ $target }}">
                             <input type="hidden" name="preview_token" value="{{ $preview['token'] ?? '' }}">
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const target = targetSelect.value || '';
-        const base = '{{ route("setting.import.mk-master.template", $mk->id) }}';
+        const base = '{{ route("settings.import.mk-master.template", $mk->id) }}';
         const params = new URLSearchParams();
         params.set('target', target);
         if (semesterSelect && semesterSelect.value) {

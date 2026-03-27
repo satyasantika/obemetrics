@@ -11,7 +11,7 @@
 
                 <div class="card-body">
 
-                    <form action="{{ route('setting.import.admin-master.upload') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('settings.import.admin-master.upload') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="target" id="target" value="{{ $target }}">
                         <input type="hidden" name="return_url" value="{{ $returnUrl }}">
@@ -51,7 +51,7 @@
                 <div class="card mt-3">
                     <div class="card-header">
                         <span class="h5">Preview @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>
-                        <form action="{{ route('setting.import.admin-master.clear') }}" method="POST" class="float-end" style="display:inline;">
+                        <form action="{{ route('settings.import.admin-master.clear') }}" method="POST" class="float-end" style="display:inline;">
                             @csrf
                             <input type="hidden" name="target" value="{{ $target }}">
                             <input type="hidden" name="return_url" value="{{ $returnUrl }}">
@@ -73,7 +73,7 @@
                             $showStatus = in_array($target, ['users', 'joinprodiusers'], true);
                         @endphp
 
-                        <form action="{{ route('setting.import.admin-master.commit') }}" method="POST">
+                        <form action="{{ route('settings.import.admin-master.commit') }}" method="POST">
                             @csrf
                             <input type="hidden" name="target" value="{{ $target }}">
                             <input type="hidden" name="return_url" value="{{ $returnUrl }}">
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const target = targetSelect.value;
-        const base = '{{ route("setting.import.admin-master.template") }}';
+        const base = '{{ route("settings.import.admin-master.template") }}';
         const url = base + '?target=' + encodeURIComponent(target);
         const label = '{{ $targets[$target]["label"] }}' || 'template';
         const fileName = 'template-import-' + label.toLowerCase().replace(/\s+/g, '-') + '-by-admin.xlsx';

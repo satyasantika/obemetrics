@@ -166,12 +166,12 @@ class ImportKontrakMkController extends Controller
         $semesterId = $preview['semester_id'] ?? null;
 
         if (empty($rows)) {
-            return redirect()->route('setting.import.kontrakmks')
+            return redirect()->route('settings.import.kontrakmks')
                             ->with('error', 'Tidak ada data preview untuk diproses.');
         }
 
         if (!$semesterId) {
-            return redirect()->route('setting.import.kontrakmks')
+            return redirect()->route('settings.import.kontrakmks')
                             ->with('error', 'Semester tidak ditemukan dalam preview.');
         }
 
@@ -261,7 +261,7 @@ class ImportKontrakMkController extends Controller
     public function clearPreview()
     {
         session()->forget('import_kontrakmk_preview');
-        return redirect()->route('setting.import.kontrakmks')
+        return redirect()->route('settings.import.kontrakmks')
                         ->with('success', 'Data preview berhasil dihapus.');
     }
 
@@ -278,6 +278,6 @@ class ImportKontrakMkController extends Controller
             $candidate = (string) url()->previous();
         }
 
-        return $candidate !== '' ? $candidate : route('setting.import.kontrakmks');
+        return $candidate !== '' ? $candidate : route('settings.import.kontrakmks');
     }
 }

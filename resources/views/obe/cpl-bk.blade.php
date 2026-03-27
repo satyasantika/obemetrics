@@ -17,7 +17,7 @@
                 <div class="card-body bg-light-subtle">
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_cpl_bks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm float-end me-1"><i class="bi bi-upload"></i> Import Interaksi CPL >< BK</a>
+                            <a href="{{ route('settings.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_cpl_bks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm float-end me-1"><i class="bi bi-upload"></i> Import Interaksi CPL >< BK</a>
                         </div>
                     </div>
 
@@ -53,7 +53,7 @@
                                                     $isLocked = isset($lockedPairMap[$pairKey]);
                                                 @endphp
                                                 <td>
-                                                    <form action="{{ route('joincplbks.update',[$cpl->id,$bk->id]) }}" method="POST" class="live-cplbk-form" data-is-locked="{{ $isLocked ? '1' : '0' }}">
+                                                    <form action="{{ route('kurikulums.joincplbks.update',[$kurikulum->id,$cpl->id,$bk->id]) }}" method="POST" class="live-cplbk-form" data-is-locked="{{ $isLocked ? '1' : '0' }}">
                                                         @csrf
                                                         @method('PUT')
                                                         <input type="hidden" name="cpl_id" value="{{ $cpl->id }}">

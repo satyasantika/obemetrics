@@ -36,7 +36,7 @@
                             : '-semua-kelas';
                     @endphp
 
-                    <form action="{{ route('setting.import.nilais', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST" enctype="multipart/form-data" class="mt-3">
+                    <form action="{{ route('settings.import.nilais', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST" enctype="multipart/form-data" class="mt-3">
                         @csrf
                         <input type="hidden" name="kelas" value="{{ $kelasFilter ?? '__SEMUA_KELAS__' }}">
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mks.nilais.index', [$mk->id]) }}">
@@ -47,7 +47,7 @@
                             <div class="col">
                                 <input type="file" name="file" class="form-control" accept=".csv,.xlsx,.ods" required>
                                 <small class="text-muted d-block mt-1">
-                                    Unduh template: <a href="{{ route('setting.import.nilais.template', array_merge(['mk' => $mk->id], $kelasQuery)) }}">template-import-nilai-{{ \Illuminate\Support\Str::slug($mk->kode ?? 'mk', '-') }}{{ $templateSuffix }}.xlsx</a>
+                                    Unduh template: <a href="{{ route('settings.import.nilais.template', array_merge(['mk' => $mk->id], $kelasQuery)) }}">template-import-nilai-{{ \Illuminate\Support\Str::slug($mk->kode ?? 'mk', '-') }}{{ $templateSuffix }}.xlsx</a>
                                 </small>
                             </div>
                         </div>
@@ -72,7 +72,7 @@
             <div class="card mt-3">
                 <div class="card-header">
                     <span class="h5">Preview Nilai @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>
-                    <form action="{{ route('setting.import.nilais.clear', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST" class="float-end" style="display: inline;">
+                    <form action="{{ route('settings.import.nilais.clear', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST" class="float-end" style="display: inline;">
                         @csrf
                         <input type="hidden" name="kelas" value="{{ $kelasFilter ?? '__SEMUA_KELAS__' }}">
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mks.nilais.index', [$mk->id]) }}">
@@ -87,7 +87,7 @@
                         <label for="select-all" class="form-check-label">Pilih semua baris valid</label>
                     </div>
 
-                    <form action="{{ route('setting.import.nilais.commit', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST">
+                    <form action="{{ route('settings.import.nilais.commit', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST">
                         @csrf
                         <input type="hidden" name="kelas" value="{{ $kelasFilter ?? '__SEMUA_KELAS__' }}">
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mks.nilais.index', [$mk->id]) }}">

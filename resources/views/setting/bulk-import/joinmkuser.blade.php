@@ -11,7 +11,7 @@
                 </div>
 
                 <div class="card-body">
-                     <form action="{{ route('setting.import.joinmkusers') }}" method="POST" enctype="multipart/form-data">
+                     <form action="{{ route('settings.import.joinmkusers') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('home') }}">
                         <div class="row mt-3">
@@ -19,7 +19,7 @@
                                 <label for="file" class="form-label">File Upload <span class="text-danger">*</span></label>
                                 <input type="file" name="file" class="form-control" accept=".csv,.xlsx,.ods" required>
                                 <small class="text-muted d-block mt-1">
-                                    Unduh template: <a href="{{ route('setting.import.joinmkusers.template') }}">template-import-user-mata-kuliah.xlsx</a>
+                                    Unduh template: <a href="{{ route('settings.import.joinmkusers.template') }}">template-import-user-mata-kuliah.xlsx</a>
                                 </small>
                             </div>
                         </div>
@@ -46,7 +46,7 @@
             <div class="card mt-3">
                 <div class="card-header">
                     <span class="h5">Preview Data Join MK User @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>
-                    <form action="{{ route('setting.import.joinmkusers.clear') }}" method="POST" class="float-end" style="display: inline;">
+                    <form action="{{ route('settings.import.joinmkusers.clear') }}" method="POST" class="float-end" style="display: inline;">
                         @csrf
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('home') }}">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus preview data?');">
@@ -61,7 +61,7 @@
                             <label for="select-all" class="form-check-label">Pilih semua</label>
                         </div>
                     </div>
-                    <form action="{{ route('setting.import.joinmkusers.commit') }}" method="POST">
+                    <form action="{{ route('settings.import.joinmkusers.commit') }}" method="POST">
                         @csrf
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('home') }}">
                         <div class="table-responsive">

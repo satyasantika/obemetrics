@@ -208,7 +208,7 @@ class ImportMkMasterController extends Controller
                 now()->addHours(2)
             );
 
-            return to_route('setting.import.mk-master', $this->withReturnUrl([
+            return to_route('settings.import.mk-master', $this->withReturnUrl([
                 'mk' => $mk->id,
                 'target' => $target,
                 'semester_id' => $request->semester_id,
@@ -258,7 +258,7 @@ class ImportMkMasterController extends Controller
                 'session_key' => $this->previewSessionKey($mk, $target),
             ]);
 
-            return to_route('setting.import.mk-master', $this->withReturnUrl([
+            return to_route('settings.import.mk-master', $this->withReturnUrl([
                 'mk' => $mk->id,
                 'target' => $target,
                 'semester_id' => $request->input('semester_id') ?: ($preview['semester_id'] ?? null),
@@ -268,7 +268,7 @@ class ImportMkMasterController extends Controller
 
         $semesterId = $request->input('semester_id') ?: ($preview['semester_id'] ?? null);
         if (!empty($meta['requires_semester']) && empty($semesterId)) {
-            return to_route('setting.import.mk-master', $this->withReturnUrl([
+            return to_route('settings.import.mk-master', $this->withReturnUrl([
                 'mk' => $mk->id,
                 'target' => $target,
                 'semester_id' => $semesterId,
@@ -552,7 +552,7 @@ class ImportMkMasterController extends Controller
             Cache::forget($this->previewCacheKey($mk, $target, $token));
         }
 
-        return to_route('setting.import.mk-master', $this->withReturnUrl([
+        return to_route('settings.import.mk-master', $this->withReturnUrl([
             'mk' => $mk->id,
             'target' => $target,
             'semester_id' => $request->input('semester_id'),

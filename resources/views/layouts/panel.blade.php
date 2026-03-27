@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
-    @if (request()->routeIs('setting.import.*'))
+    @if (request()->routeIs('settings.import.*'))
         <style>
             .content-wrapper .card {
                 border: 0;
@@ -100,7 +100,7 @@
                         @impersonating($guard = null)
                             <a class="dropdown-item" href="{{ route('impersonate.leave') }}">Back to Admin</a>
                         @endImpersonating
-                        <a class="dropdown-item" href="{{ route('mypassword.change') }}">Ubah Password</a>
+                        <a class="dropdown-item" href="{{ route('password.change') }}">Ubah Password</a>
                         <a class="dropdown-item" href="{{ route('logout') }}"
                            onclick="event.preventDefault(); document.getElementById('logout-form-panel').submit();">
                             Logout

@@ -67,7 +67,7 @@
                                     <div class="mb-3">
                                         <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold shadow-sm js-sort-tab" data-sort-key="nama" data-sort-label="Urutkan Nama" data-next-direction="asc">Urutkan Nama</button>
                                         <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold shadow-sm js-sort-tab" data-sort-key="nim" data-sort-label="Urutkan NIM" data-next-direction="asc">Urutkan NIM</button>
-                                        <a href="{{ route('setting.import.nilais', array_merge(['mk' => $mk->id], $kelasQuery)) }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm float-end">
+                                        <a href="{{ route('settings.import.nilais', array_merge(['mk' => $mk->id], $kelasQuery)) }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm float-end">
                                             <i class="bi bi-upload"></i> Import Nilai {{ $kelasLabel }}
                                         </a>
                                     </div>

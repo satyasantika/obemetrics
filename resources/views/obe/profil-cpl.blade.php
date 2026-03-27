@@ -18,7 +18,7 @@
                     {{-- @include('layouts.alert') --}}
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('setting.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_profil_cpls', 'return_url' => request()->fullUrl()]) }}" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm float-end me-1"><i class="bi bi-upload"></i> Import Interaksi Profil >< CPL</a>
+                            <a href="{{ route('settings.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_profil_cpls', 'return_url' => request()->fullUrl()]) }}" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm float-end me-1"><i class="bi bi-upload"></i> Import Interaksi Profil >< CPL</a>
                         </div>
                     </div>
 
@@ -57,7 +57,7 @@
                                         </td>
                                         @forelse ($profils as $profil)
                                             <td>
-                                                <form action="{{ route('joinprofilcpls.update',[$profil->id,$cpl->id]) }}" method="POST" class="live-profilcpl-form">
+                                                <form action="{{ route('kurikulums.joinprofilcpls.update',[$kurikulum->id,$profil->id,$cpl->id]) }}" method="POST" class="live-profilcpl-form">
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="profil_id" value="{{ $profil->id }}">

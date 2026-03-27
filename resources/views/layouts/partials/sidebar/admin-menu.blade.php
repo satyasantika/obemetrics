@@ -50,8 +50,8 @@
         </a>
     </li>
 
-    {{-- <li class="nav-item {{ request()->routeIs('setting.import.*') ? 'menu-open' : '' }}">
-        <a href="#" class="nav-link {{ request()->routeIs('setting.import.*') ? 'active' : '' }}">
+    {{-- <li class="nav-item {{ request()->routeIs('settings.import.*') ? 'menu-open' : '' }}">
+        <a href="#" class="nav-link {{ request()->routeIs('settings.import.*') ? 'active' : '' }}">
             <i class="nav-icon fas fa-file-import"></i>
             <p>
                 Bulk Import
@@ -60,31 +60,31 @@
         </a>
         <ul class="nav nav-treeview">
             <li class="nav-item">
-                <a href="{{ route('setting.import.admin-master') }}" class="nav-link {{ request()->routeIs('setting.import.admin-master*') ? 'active' : '' }}">
+                <a href="{{ route('settings.import.admin-master') }}" class="nav-link {{ request()->routeIs('settings.import.admin-master*') ? 'active' : '' }}">
                     <i class="far fa-circle nav-icon"></i>
                     <p>Program Studi</p>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('setting.import.users') }}" class="nav-link {{ request()->routeIs('setting.import.users*') ? 'active' : '' }}">
+                <a href="{{ route('settings.import.users') }}" class="nav-link {{ request()->routeIs('settings.import.users*') ? 'active' : '' }}">
                     <i class="far fa-circle nav-icon"></i>
                     <p>Dosen</p>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('setting.import.mahasiswas') }}" class="nav-link {{ request()->routeIs('setting.import.mahasiswas*') ? 'active' : '' }}">
+                <a href="{{ route('settings.import.mahasiswas') }}" class="nav-link {{ request()->routeIs('settings.import.mahasiswas*') ? 'active' : '' }}">
                     <i class="far fa-circle nav-icon"></i>
                     <p>Mahasiswa</p>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('setting.import.joinprodiusers') }}" class="nav-link {{ request()->routeIs('setting.import.joinprodiusers*') ? 'active' : '' }}">
+                <a href="{{ route('settings.import.joinprodiusers') }}" class="nav-link {{ request()->routeIs('settings.import.joinprodiusers*') ? 'active' : '' }}">
                     <i class="far fa-circle nav-icon"></i>
                     <p>Dosen Prodi</p>
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{{ route('setting.import.kontrakmks') }}" class="nav-link {{ request()->routeIs('setting.import.kontrakmks*') ? 'active' : '' }}">
+                <a href="{{ route('settings.import.kontrakmks') }}" class="nav-link {{ request()->routeIs('settings.import.kontrakmks*') ? 'active' : '' }}">
                     <i class="far fa-circle nav-icon"></i>
                     <p>Kontrak MK</p>
                 </a>

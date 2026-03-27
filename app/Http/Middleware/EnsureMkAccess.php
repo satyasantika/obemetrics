@@ -58,7 +58,7 @@ class EnsureMkAccess
             'mks.achievements.*',
             'mks.ketercapaians.*',
             'mks.spyderweb',
-            'setting.import.nilais*'
+            'settings.import.nilais*'
         );
     }
 

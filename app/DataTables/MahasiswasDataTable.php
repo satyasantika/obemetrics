@@ -79,7 +79,7 @@ class MahasiswasDataTable extends DataTable
                         Button::make([
                                         'text'   => '<i class="bi bi-upload"></i> Import',
                                         'className' => 'btn btn-success',
-                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('setting.import.mahasiswas').'"; }',
+                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('settings.import.mahasiswas').'"; }',
                                     ]),
                                 ]);
     }

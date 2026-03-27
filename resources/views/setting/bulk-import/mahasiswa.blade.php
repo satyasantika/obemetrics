@@ -14,7 +14,7 @@
                      @php
                         $selectedProdi = old('prodi_id') ?? ($preview['prodi_id'] ?? request('prodi_id'));
                     @endphp
-                    <form action="{{ route('setting.import.mahasiswas') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('settings.import.mahasiswas') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mahasiswas.index') }}">
                         {{-- identitas kurikulum --}}
@@ -67,7 +67,7 @@
             <div class="card mt-3">
                 <div class="card-header">
                     <span class="h5">Preview Data Mahasiswa @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>
-                    <form action="{{ route('setting.import.mahasiswas.clear') }}" method="POST" class="float-end" style="display: inline;">
+                    <form action="{{ route('settings.import.mahasiswas.clear') }}" method="POST" class="float-end" style="display: inline;">
                         @csrf
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mahasiswas.index') }}">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus preview data?');">
@@ -82,7 +82,7 @@
                             <label for="select-all" class="form-check-label">Pilih semua</label>
                         </div>
                     </div>
-                    <form action="{{ route('setting.import.mahasiswas.commit') }}" method="POST">
+                    <form action="{{ route('settings.import.mahasiswas.commit') }}" method="POST">
                         @csrf
                         <input type="hidden" name="prodi_id" value="{{ $preview['prodi_id'] }}">
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mahasiswas.index') }}">
@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const selectedOption = prodiSelect.options[prodiSelect.selectedIndex];
             const kodeProdi = selectedOption.getAttribute('data-kode');
 
-            let url = '{{ route("setting.import.mahasiswas.template") }}';
+            let url = '{{ route("settings.import.mahasiswas.template") }}';
             let fileName = 'template-import-mahasiswa';
 
             if (prodiId) {

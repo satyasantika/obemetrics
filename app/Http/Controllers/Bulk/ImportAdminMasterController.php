@@ -102,7 +102,7 @@ class ImportAdminMasterController extends Controller
                 ],
             ]);
 
-            return to_route('setting.import.admin-master', $this->withReturnUrl([
+            return to_route('settings.import.admin-master', $this->withReturnUrl([
                 'target' => $target,
             ], $request))
                 ->with('success', 'Data berhasil dibaca. Silakan pilih data yang akan diproses.');
@@ -124,7 +124,7 @@ class ImportAdminMasterController extends Controller
         $rows = $preview['rows'] ?? [];
 
         if (empty($rows)) {
-            return to_route('setting.import.admin-master', $this->withReturnUrl([
+            return to_route('settings.import.admin-master', $this->withReturnUrl([
                 'target' => $target,
             ], $request))
                 ->with('error', 'Tidak ada data preview untuk diproses.');
@@ -195,7 +195,7 @@ class ImportAdminMasterController extends Controller
         $target = $this->resolveTarget($request->input('target'));
         session()->forget($this->previewSessionKey($target));
 
-        return to_route('setting.import.admin-master', $this->withReturnUrl([
+        return to_route('settings.import.admin-master', $this->withReturnUrl([
             'target' => $target,
         ], $request))
             ->with('success', 'Preview berhasil dikosongkan.');

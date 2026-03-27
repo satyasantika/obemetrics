@@ -34,7 +34,7 @@
                                 @endforeach
                             </select>
                             <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold shadow-sm mt-2" data-bs-toggle="modal" data-bs-target="#modalCreatePenugasan"><i class="bi bi-plus-circle"></i> Tambah Tagihan</button>
-                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'penugasans']) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-2"><i class="bi bi-upload"></i> Import Banyak Tagihan</a>
+                            <a href="{{ route('settings.import.mk-master', ['mk' => $mk->id, 'target' => 'penugasans']) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-2"><i class="bi bi-upload"></i> Import Banyak Tagihan</a>
                         </div>
                         <div class="col-md-6 d-flex">
                             <div class="p-3 p-lg-4 rounded-3 border border-primary-subtle bg-primary-subtle text-primary-emphasis h-100 w-100 d-flex flex-column justify-content-between text-md-end text-start">

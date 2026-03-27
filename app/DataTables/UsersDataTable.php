@@ -95,7 +95,7 @@ class UsersDataTable extends DataTable
                         Button::make([
                                         'text'   => '<i class="bi bi-upload"></i> Import',
                                         'className' => 'btn btn-success',
-                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('setting.import.admin-master', ['target' => 'users']).'"; }',
+                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('settings.import.admin-master', ['target' => 'users']).'"; }',
                                     ]),
                                 ]);
     }

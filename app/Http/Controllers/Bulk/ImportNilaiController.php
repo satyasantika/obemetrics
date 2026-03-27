@@ -47,7 +47,7 @@ class ImportNilaiController extends Controller
 
             $penugasans = $mk->penugasans()->orderBy('kode')->get();
             if ($penugasans->isEmpty()) {
-                return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
+                return to_route('settings.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                     ->with('error', 'Belum ada penugasan pada mata kuliah ini.');
             }
 
@@ -62,7 +62,7 @@ class ImportNilaiController extends Controller
             $namaCol = array_search('nama mahasiswa', $normalizedHeader, true);
 
             if ($nimCol === false) {
-                return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
+                return to_route('settings.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                     ->with('error', 'Header wajib memiliki kolom "nim".');
             }
 
@@ -78,7 +78,7 @@ class ImportNilaiController extends Controller
             }
 
             if (!empty($missingHeaders)) {
-                return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
+                return to_route('settings.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                     ->with('error', 'Header penugasan belum lengkap. Kolom yang belum ada: ' . implode(', ', $missingHeaders));
             }
 
@@ -159,7 +159,7 @@ class ImportNilaiController extends Controller
             }
 
             if (empty($previewRows)) {
-                return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
+                return to_route('settings.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                     ->with('error', 'Tidak ada data valid di file yang diunggah.');
             }
 
@@ -201,7 +201,7 @@ class ImportNilaiController extends Controller
             session()->forget($this->previewSessionKey($mk, $kelasFilter));
 
             if ($savedRows === 0) {
-                return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
+                return to_route('settings.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                     ->with('error', 'Import gagal diproses. Tidak ada baris valid untuk disimpan.');
             }
 
@@ -213,7 +213,7 @@ class ImportNilaiController extends Controller
             return redirect()->to($this->resolveReturnUrl($request))
                 ->with('success', $message);
         } catch (\Throwable $exception) {
-            return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
+            return to_route('settings.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                 ->with('error', 'Terjadi kesalahan saat membaca file: ' . $exception->getMessage());
         }
     }
@@ -231,7 +231,7 @@ class ImportNilaiController extends Controller
         $rows = $preview['rows'] ?? [];
 
         if (empty($rows)) {
-            return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
+            return to_route('settings.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                 ->with('error', 'Tidak ada preview import untuk diproses.');
         }
 
@@ -286,7 +286,7 @@ class ImportNilaiController extends Controller
 
         $penugasans = $mk->penugasans()->orderBy('kode')->get();
         if ($penugasans->isEmpty()) {
-            return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
+            return to_route('settings.import.nilais', ['mk' => $mk->id, 'kelas' => $request->query('kelas', $request->input('kelas'))])
                 ->with('error', 'Tidak bisa membuat template karena belum ada penugasan.');
         }
 
@@ -375,7 +375,7 @@ class ImportNilaiController extends Controller
         $kelasFilter = $this->resolveKelasScope(request());
         session()->forget($this->previewSessionKey($mk, $kelasFilter));
 
-        return to_route('setting.import.nilais', ['mk' => $mk->id, 'kelas' => request()->query('kelas', request()->input('kelas'))])
+        return to_route('settings.import.nilais', ['mk' => $mk->id, 'kelas' => request()->query('kelas', request()->input('kelas'))])
             ->with('success', 'Preview import nilai berhasil dikosongkan.');
     }
 
