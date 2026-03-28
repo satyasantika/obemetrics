@@ -301,7 +301,11 @@
 
         .modern-panel-shell .content-wrapper {
             min-height: calc(100vh - 9rem) !important;
-            background: transparent;
+            background:
+                radial-gradient(circle at 88% 6%, rgba(123, 155, 139, 0.14), rgba(123, 155, 139, 0) 38%),
+                radial-gradient(circle at 14% 92%, rgba(214, 191, 159, 0.18), rgba(214, 191, 159, 0) 44%),
+                linear-gradient(180deg, rgba(251, 246, 238, 0.86), rgba(245, 238, 228, 0.68));
+            border-top: 1px solid rgba(96, 84, 68, 0.06);
         }
 
         .modern-panel-shell .content-wrapper .content {
@@ -403,6 +407,16 @@
                 max-width: 45vw;
                 font-size: 0.82rem;
                 margin-left: 0.25rem;
+            }
+
+            .modern-panel-shell .content-wrapper {
+                background:
+                    radial-gradient(circle at 85% 2%, rgba(123, 155, 139, 0.12), rgba(123, 155, 139, 0) 32%),
+                    linear-gradient(180deg, rgba(250, 244, 235, 0.9), rgba(244, 236, 225, 0.74));
+            }
+
+            .modern-panel-shell .content-wrapper .content {
+                padding-top: 0.82rem !important;
             }
 
             .modern-panel-shell .main-footer.app-footer {
@@ -675,6 +689,37 @@
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<script>
+    (function () {
+        if (!window.jQuery || !jQuery.fn || !jQuery.fn.dataTable) {
+            return;
+        }
+
+        jQuery.extend(true, jQuery.fn.dataTable.defaults, {
+            language: {
+                search: 'Cari:',
+                lengthMenu: 'Tampilkan _MENU_ entri per halaman',
+                info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ entri',
+                infoEmpty: 'Menampilkan 0 sampai 0 dari 0 entri',
+                infoFiltered: '(disaring dari _MAX_ total entri)',
+                zeroRecords: 'Data tidak ditemukan',
+                emptyTable: 'Tidak ada data tersedia',
+                processing: 'Memproses...',
+                loadingRecords: 'Memuat...',
+                paginate: {
+                    first: 'Pertama',
+                    last: 'Terakhir',
+                    next: 'Berikutnya',
+                    previous: 'Sebelumnya'
+                },
+                aria: {
+                    sortAscending: ': aktifkan untuk mengurutkan kolom naik',
+                    sortDescending: ': aktifkan untuk mengurutkan kolom turun'
+                }
+            }
+        });
+    })();
+</script>
 <script>
     (function () {
         var labelEl = document.getElementById('topbar-menu-label');

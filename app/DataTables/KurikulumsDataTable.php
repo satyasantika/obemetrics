@@ -59,6 +59,29 @@ class KurikulumsDataTable extends DataTable
                     ->dom("<'row mb-2'<'col-auto'B><'col-auto'f><'col-auto'l>>" .
                         "rt" .
                         "<'row mt-2 float-end'<'col-auto'i><'col-auto'p>>")
+                    ->parameters([
+                        'language' => [
+                            'search' => 'Cari:',
+                            'lengthMenu' => 'Tampilkan _MENU_ entri per halaman',
+                            'info' => 'Menampilkan _START_ sampai _END_ dari _TOTAL_ entri',
+                            'infoEmpty' => 'Menampilkan 0 sampai 0 dari 0 entri',
+                            'infoFiltered' => '(disaring dari _MAX_ total entri)',
+                            'zeroRecords' => 'Data tidak ditemukan',
+                            'emptyTable' => 'Tidak ada data tersedia',
+                            'processing' => 'Memproses...',
+                            'loadingRecords' => 'Memuat...',
+                            'paginate' => [
+                                'first' => 'Pertama',
+                                'last' => 'Terakhir',
+                                'next' => 'Berikutnya',
+                                'previous' => 'Sebelumnya',
+                            ],
+                            'aria' => [
+                                'sortAscending' => ': aktifkan untuk mengurutkan kolom naik',
+                                'sortDescending' => ': aktifkan untuk mengurutkan kolom turun',
+                            ],
+                        ],
+                    ])
                     ->orderBy(0, 'asc')
                     ->selectStyleSingle()
                     ->setTableAttribute('class', 'table table-striped table-bordered table-hover')
