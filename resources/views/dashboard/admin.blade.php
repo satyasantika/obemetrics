@@ -3,81 +3,48 @@
 @endpush
 
 @push('styles')
-<style>
-    .admin-hero {
-        border: 1px solid var(--bs-primary-border-subtle);
-    }
-
-    .admin-stat-link {
-        display: block;
-        border-radius: 1rem;
-        transition: transform .2s ease, box-shadow .2s ease;
-    }
-
-    .admin-stat-link:hover {
-        transform: translateY(-2px);
-    }
-
-    .admin-stat-card {
-        border: 1px solid var(--bs-border-color);
-        border-radius: 1rem;
-        background: var(--bs-body-bg);
-    }
-
-    .admin-stat-value {
-        font-size: 1.6rem;
-        line-height: 1.1;
-        letter-spacing: -.02em;
-    }
-
-    .admin-stat-icon {
-        min-width: 2.1rem;
-        min-height: 2.1rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-    }
-</style>
+    @include('dashboard.partials.dashboard-stats-styles')
 @endpush
 
 <div class="row g-3 mt-1">
     @php
         $stats = [
-            ['key' => 'users', 'label' => 'User', 'icon' => 'bi bi-people-fill', 'route' => 'users.index'],
-            ['key' => 'roles', 'label' => 'Role', 'icon' => 'bi bi-person-badge-fill', 'route' => 'roles.index'],
-            ['key' => 'permissions', 'label' => 'Permission', 'icon' => 'bi bi-shield-lock-fill', 'route' => 'permissions.index'],
-            ['key' => 'prodis', 'label' => 'Prodi', 'icon' => 'bi bi-journal-bookmark-fill', 'route' => 'prodis.index'],
-            ['key' => 'mahasiswas', 'label' => 'Mahasiswa', 'icon' => 'bi bi-mortarboard-fill', 'route' => 'mahasiswas.index'],
-            ['key' => 'semesters', 'label' => 'Semester', 'icon' => 'bi bi-calendar3', 'route' => 'semesters.index'],
-            ['key' => 'evaluasis', 'label' => 'Evaluasi', 'icon' => 'bi bi-clipboard2-check-fill', 'route' => 'evaluasis.index'],
-            ['key' => 'kontrakmks', 'label' => 'Kontrak MK', 'icon' => 'bi bi-file-earmark-text-fill', 'route' => 'kontrakmks.index'],
+            ['key' => 'users', 'label' => 'User', 'icon' => 'fas fa-users-cog', 'route' => 'users.index'],
+            ['key' => 'roles', 'label' => 'Role', 'icon' => 'fas fa-user-shield', 'route' => 'roles.index'],
+            ['key' => 'permissions', 'label' => 'Permission', 'icon' => 'fas fa-key', 'route' => 'permissions.index'],
+            ['key' => 'prodis', 'label' => 'Prodi', 'icon' => 'fas fa-book-reader', 'route' => 'prodis.index'],
+            ['key' => 'mahasiswas', 'label' => 'Mahasiswa', 'icon' => 'fas fa-user-graduate', 'route' => 'mahasiswas.index'],
+            ['key' => 'semesters', 'label' => 'Semester', 'icon' => 'fas fa-calendar-alt', 'route' => 'semesters.index'],
+            ['key' => 'evaluasis', 'label' => 'Evaluasi', 'icon' => 'fas fa-clipboard-check', 'route' => 'evaluasis.index'],
+            ['key' => 'kontrakmks', 'label' => 'Kontrak MK', 'icon' => 'fas fa-file-signature', 'route' => 'kontrakmks.index'],
         ];
     @endphp
 
     <div class="col-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-0 border-bottom">
-                <div class="fw-semibold">Statistik Data</div>
-                <small class="text-muted">Ringkasan jumlah data utama ruang admin.</small>
+        <div class="dashboard-stats-container">
+            <div class="dashboard-stats-header">
+                <div class="dashboard-stats-title">Statistik Data</div>
+                <div class="dashboard-stats-subtitle">Ringkasan jumlah data utama ruang admin.</div>
             </div>
-            <div class="card-body">
-                <div class="row g-3">
+            <div class="dashboard-stats-content">
+                <div class="dashboard-stats-grid">
                     @foreach($stats as $item)
                         @can('read '.strtolower(str_replace(' ', '', $item['label'])).'s')
-                            <div class="col-12 col-sm-6 col-lg-3">
-                                <div class="card h-100 shadow-sm admin-stat-card">
-                                    <div class="card-body d-flex align-items-center justify-content-between gap-2">
-                                        <div>
-                                            <div class="text-muted small">{{ $item['label'] }}</div>
-                                            <div class="admin-stat-value mb-0 fw-bold">{{ number_format($adminStats[$item['key']] ?? 0) }}</div>
+                            <a href="{{ route($item['route']) }}" class="dashboard-stat-link">
+                                <div class="dashboard-stat-card">
+                                    <div class="dashboard-stat-icon">
+                                        <i class="{{ $item['icon'] }}"></i>
+                                    </div>
+                                    <div class="dashboard-stat-card-content">
+                                        <div class="dashboard-stat-label">{{ $item['label'] }}</div>
+                                        <div class="dashboard-stat-value">{{ number_format($adminStats[$item['key']] ?? 0) }}</div>
+                                        <div class="dashboard-stat-footer">
+                                            <span>Lihat detail</span>
+                                            <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
                                         </div>
-                                        <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle admin-stat-icon">
-                                            <i class="{{ $item['icon'] }}"></i>
-                                        </span>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                         @endcan
                     @endforeach
                 </div>

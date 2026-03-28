@@ -17,14 +17,15 @@
 
         <div class="d-flex flex-column gap-3 mt-3">
             @if($admin)
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-primary-subtle text-primary-emphasis border-0 border-bottom border-primary-subtle fw-semibold d-flex align-items-center gap-2">
+                {{-- <div class="card border-0 shadow-sm"> --}}
+                    <hr>
+                    <div class="h2">
                         <i class="bi bi-shield-lock-fill"></i>
                         <span>Dashboard Admin</span>
                     </div>
-                    <div class="card-body">
+                    {{-- <div class="card-body"> --}}
                         @includeWhen($admin, 'dashboard.admin')
-                    </div>
+                    {{-- </div> --}}
                 </div>
             @endif
             @if($prodi)
