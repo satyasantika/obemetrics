@@ -1,5 +1,20 @@
 @extends('layouts.panel')
 
+@push('styles')
+<style>
+    #preview-table th.preview-select-col,
+    #preview-table td.preview-select-col {
+        text-align: center;
+        /* vertical-align: middle; */
+    }
+
+    #preview-table td.preview-select-col .form-check-input {
+        float: none;
+        margin: 0;
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="container">
     <div class="row justify-content-left">
@@ -90,7 +105,7 @@
                             <table class="table table-bordered" id="preview-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 40px;">Pilih</th>
+                                        <th class="preview-select-col" style="width: 40px;">Pilih</th>
                                         <th>NIM</th>
                                         <th>Nama</th>
                                         <th>Angkatan</th>
@@ -102,7 +117,7 @@
                                 <tbody>
                                     @foreach ($preview['rows'] as $index => $row)
                                         <tr class="{{ $row['exists'] ? 'table-warning' : '' }}">
-                                            <td>
+                                            <td class="preview-select-col">
                                                 <input
                                                     type="checkbox"
                                                     name="selected[]"
