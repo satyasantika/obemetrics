@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Spatie\Permission\Models\Role;
 
 class ImportJoinProdiUserController extends Controller
 {
@@ -156,6 +157,7 @@ class ImportJoinProdiUserController extends Controller
         $selectedIndexes = $request->input('selected', []);
         $savedCount = 0;
         $errorCount = 0;
+        $affectedUserIds = [];
 
         foreach ($selectedIndexes as $idx) {
             if (!isset($rows[$idx])) {
@@ -169,7 +171,7 @@ class ImportJoinProdiUserController extends Controller
                 continue;
             }
 
-            JoinProdiUser::updateOrCreate(
+            $joinProdiUser = JoinProdiUser::updateOrCreate(
                 [
                     'prodi_id' => $row['prodi_actual_id'],
                     'user_id' => $row['dosen_id'],
@@ -178,7 +180,14 @@ class ImportJoinProdiUserController extends Controller
                     'status_pimpinan' => (bool) ($row['status_pimpinan'] ?? false),
                 ]
             );
+
+            $affectedUserIds[] = (int) $joinProdiUser->user_id;
+            $this->syncPimpinanProdiRole((int) $joinProdiUser->user_id);
             $savedCount++;
+        }
+
+        foreach (array_values(array_unique($affectedUserIds)) as $affectedUserId) {
+            $this->syncPimpinanProdiRole((int) $affectedUserId);
         }
 
         session()->forget('import_joinprodiuser_preview');
@@ -253,5 +262,33 @@ class ImportJoinProdiUserController extends Controller
         }
 
         return $candidate !== '' ? $candidate : route('settings.import.joinprodiusers');
+    }
+
+    private function syncPimpinanProdiRole(int $userId): void
+    {
+        $roleName = 'pimpinan prodi';
+
+        $user = User::query()->find($userId);
+        if (!$user) {
+            return;
+        }
+
+        $role = Role::findOrCreate($roleName, $user->getDefaultGuardName());
+
+        $isPimpinan = JoinProdiUser::query()
+            ->where('user_id', $userId)
+            ->where('status_pimpinan', true)
+            ->exists();
+
+        if ($isPimpinan) {
+            if (!$user->hasRole($role)) {
+                $user->assignRole($role);
+            }
+            return;
+        }
+
+        if ($user->hasRole($role)) {
+            $user->removeRole($role);
+        }
     }
 }

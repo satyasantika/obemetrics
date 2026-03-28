@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Spatie\Permission\Models\Role;
 
 class ImportAdminMasterController extends Controller
 {
@@ -133,6 +134,7 @@ class ImportAdminMasterController extends Controller
         $selectedIndexes = $request->input('selected', []);
         $saved = 0;
         $skipped = [];
+        $affectedJoinProdiUserIds = [];
 
         foreach ($selectedIndexes as $idx) {
             if (!isset($rows[$idx])) {
@@ -145,10 +147,23 @@ class ImportAdminMasterController extends Controller
             }
 
             try {
+                if ($target === 'joinprodiusers' && isset($rows[$idx]['nidn'])) {
+                    $affectedJoinProdiUserIds[] = trim((string) $rows[$idx]['nidn']);
+                }
                 $this->persistRow($target, $rows[$idx]);
                 $saved++;
             } catch (\Throwable $e) {
                 $skipped[] = 'Baris ' . ($idx + 2) . ': ' . $e->getMessage();
+            }
+        }
+
+        if ($target === 'joinprodiusers' && !empty($affectedJoinProdiUserIds)) {
+            $affectedUsers = User::query()
+                ->whereIn('nidn', array_values(array_unique($affectedJoinProdiUserIds)))
+                ->get(['id']);
+
+            foreach ($affectedUsers as $affectedUser) {
+                $this->syncPimpinanProdiRole((int) $affectedUser->id);
             }
         }
 
@@ -248,7 +263,7 @@ class ImportAdminMasterController extends Controller
                     throw new \RuntimeException('User dosen tidak ditemukan untuk NIDN: ' . $nidn);
                 }
 
-                JoinProdiUser::updateOrCreate(
+                $joinProdiUser = JoinProdiUser::updateOrCreate(
                     [
                         'prodi_id' => $prodi->id,
                         'user_id' => $user->id,
@@ -257,6 +272,8 @@ class ImportAdminMasterController extends Controller
                         'status_pimpinan' => in_array(Str::lower(trim((string) ($row['status_pimpinan'] ?? ''))), ['ya', 'y', 'yes', '1', 'true', 'ketua prodi', 'kaprodi'], true),
                     ]
                 );
+
+                $this->syncPimpinanProdiRole((int) $joinProdiUser->user_id);
                 return;
         }
 
@@ -307,6 +324,34 @@ class ImportAdminMasterController extends Controller
         }
 
         return $text;
+    }
+
+    private function syncPimpinanProdiRole(int $userId): void
+    {
+        $roleName = 'pimpinan prodi';
+
+        $user = User::query()->find($userId);
+        if (!$user) {
+            return;
+        }
+
+        $role = Role::findOrCreate($roleName, $user->getDefaultGuardName());
+
+        $isPimpinan = JoinProdiUser::query()
+            ->where('user_id', $userId)
+            ->where('status_pimpinan', true)
+            ->exists();
+
+        if ($isPimpinan) {
+            if (!$user->hasRole($role)) {
+                $user->assignRole($role);
+            }
+            return;
+        }
+
+        if ($user->hasRole($role)) {
+            $user->removeRole($role);
+        }
     }
 
     private function decoratePreviewRow(string $target, array $row): array

@@ -11,6 +11,7 @@ use App\Models\JoinMkUser;
 use App\Models\Prodi;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 
 class JoinProdiUserController extends Controller
 {
@@ -66,11 +67,33 @@ class JoinProdiUserController extends Controller
             'status_pimpinan' => 'nullable|boolean',
         ]);
 
+        $statusPimpinan = (bool) ($validated['status_pimpinan'] ?? false);
+
         $namaProdi = strtoupper($joinprodiuser->prodi->nama);
         $namaUser = strtoupper($joinprodiuser->user->name);
         $joinprodiuser->fill([
-            'status_pimpinan' => (bool) ($validated['status_pimpinan'] ?? false),
+            'status_pimpinan' => $statusPimpinan,
         ])->save();
+
+        $roleName = 'pimpinan prodi';
+        $user = $joinprodiuser->user;
+        $role = Role::findOrCreate($roleName, $user->getDefaultGuardName());
+
+        if ($statusPimpinan) {
+            if (!$user->hasRole($role)) {
+                $user->assignRole($role);
+            }
+        } else {
+            $stillPimpinanInOtherProdi = JoinProdiUser::query()
+                ->where('user_id', $user->id)
+                ->where('status_pimpinan', true)
+                ->where('id', '!=', $joinprodiuser->id)
+                ->exists();
+
+            if (!$stillPimpinanInOtherProdi && $user->hasRole($role)) {
+                $user->removeRole($role);
+            }
+        }
 
         return to_route('prodis.joinprodiusers.index',$prodi)->with('success','User '.$namaUser.' pada Prodi '.$namaProdi.' telah diperbarui');
     }
