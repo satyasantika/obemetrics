@@ -1,15 +1,13 @@
-<aside class="main-sidebar sidebar-dark-primary elevation-4">
+<aside class="main-sidebar elevation-0 app-sidebar">
     <a href="{{ auth()->check() ? route('home') : url('/') }}" class="brand-link">
-        <img src="{{ asset('images/logo-unsil.png') }}"
-             alt="Logo UNSIL"
-             class="brand-image img-circle elevation-2"
-             style="opacity: .95; width: 28px; height: 28px; object-fit: cover;"
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
-        <span class="brand-image img-circle elevation-2 d-none align-items-center justify-content-center"
-              style="opacity:.95; width:28px; height:28px;">
-            <i class="fas fa-university" style="font-size:.9rem;"></i>
+        <span class="brand-mark" aria-hidden="true">
+            <i class="bi bi-bullseye"></i>
+            <i class="bi bi-bar-chart-line-fill brand-mark-accent"></i>
         </span>
-        <span class="brand-text font-weight-light">{{ config('app.name', 'Laravel') }}</span>
+        <span class="brand-copy">
+            <span class="brand-eyebrow">Outcome-Based Education</span>
+            <span class="brand-text">{{ config('app.name', 'OBEmetrics') }}</span>
+        </span>
     </a>
 
     <div class="sidebar">
