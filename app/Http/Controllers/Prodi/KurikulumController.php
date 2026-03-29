@@ -34,7 +34,7 @@ class KurikulumController extends Controller
         $name = strtoupper($request->name);
         Kurikulum::create($request->all());
 
-        return to_route('home')->with('success','kurikulum '.$name.' telah ditambahkan');
+        return to_route('ruang.prodi')->with('success','kurikulum '.$name.' telah ditambahkan');
     }
 
     public function edit(Prodi $prodi, Kurikulum $kurikulum)
@@ -48,7 +48,7 @@ class KurikulumController extends Controller
         $data = $request->all();
         $kurikulum->fill($data)->save();
 
-        return to_route('home')->with('success','Kurikulum '.$name.' telah diperbarui');
+        return to_route('ruang.prodi')->with('success','Kurikulum '.$name.' telah diperbarui');
     }
 
     public function destroy(Prodi $prodi, Kurikulum $kurikulum)

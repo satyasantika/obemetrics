@@ -179,3 +179,17 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Keep Bootstrap modals at document root to avoid stacking/overflow issues.
+    const kurikulumModals = document.querySelectorAll('[id^="modalCreateKurikulum-"], [id^="modalEditKurikulum-"]');
+    kurikulumModals.forEach(function (modalEl) {
+        if (modalEl.parentElement !== document.body) {
+            document.body.appendChild(modalEl);
+        }
+    });
+});
+</script>
+@endpush
