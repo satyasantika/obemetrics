@@ -69,6 +69,7 @@
 @php
     $kontrakmkUpdateRouteTemplate = route('kontrakmks.update', ['kontrakmk' => '__KONTRAKMK__']);
     $kontrakmkDestroyRouteTemplate = route('kontrakmks.destroy', ['kontrakmk' => '__KONTRAKMK__']);
+    $isPimpinanProdi = auth()->check() && auth()->user()->hasRole('pimpinan prodi');
 @endphp
 <div class="modal fade" id="modalEditKontrakmk" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl">
@@ -84,12 +85,21 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Program Studi</label>
-                            <select name="prodi_id" class="form-select" id="editKontrakmkProdiId" required>
+                            <select
+                                @unless($isPimpinanProdi) name="prodi_id" @endunless
+                                class="form-select"
+                                id="editKontrakmkProdiId"
+                                required
+                                @if($isPimpinanProdi) disabled aria-disabled="true" @endif
+                            >
                                 <option value="">-Pilih Program Studi-</option>
                                 @foreach (($prodis ?? collect()) as $prodi)
                                     <option value="{{ $prodi->id }}">{{ $prodi->jenjang }} - {{ $prodi->nama }}</option>
                                 @endforeach
                             </select>
+                            @if($isPimpinanProdi)
+                                <input type="hidden" name="prodi_id" id="editKontrakmkProdiIdHidden">
+                            @endif
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Mahasiswa</label>
@@ -172,6 +182,10 @@
 
                     document.getElementById('modalEditKontrakmkTitle').textContent = `Edit Kontrak MK - #${id}`;
                     document.getElementById('editKontrakmkProdiId').value = prodiId;
+                    const prodiHiddenInput = document.getElementById('editKontrakmkProdiIdHidden');
+                    if (prodiHiddenInput) {
+                        prodiHiddenInput.value = prodiId;
+                    }
                     document.getElementById('editKontrakmkMahasiswaId').value = mahasiswaId;
                     document.getElementById('editKontrakmkMkId').value = mkId;
                     document.getElementById('editKontrakmkUserId').value = userId;

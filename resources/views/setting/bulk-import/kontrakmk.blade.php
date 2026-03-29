@@ -103,7 +103,7 @@
                                             $rowClass = $hasError ? 'table-danger' : ($row['exists'] ? 'table-warning' : '');
                                         @endphp
                                         <tr class="{{ $rowClass }}">
-                                            <td>
+                                            <td class="text-center align-top">
                                                 <input
                                                     type="checkbox"
                                                     name="selected[]"

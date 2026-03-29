@@ -16,6 +16,7 @@
                 $isProdiSidebarMode = request()->routeIs(
                     'ruang.prodi',
                     'mks.users.*',
+                    'kontrakmks.*',
                     'kurikulums.profils.*',
                     'kurikulums.cpls.*',
                     'kurikulums.bks.*',
@@ -27,7 +28,8 @@
                     'kurikulums.analisis-asesmen',
                     'kurikulums.spyderweb-cpl',
                     'kurikulums.laporan-mahasiswa',
-                    'settings.import.kurikulum-master'
+                    'settings.import.kurikulum-master',
+                    'settings.import.kontrakmks*'
                 );
 
                 $isMkSidebarMode = request()->routeIs(
@@ -56,19 +58,19 @@
                     if ($routeKurikulum instanceof \App\Models\Kurikulum) {
                         $selectedKurikulum = $routeKurikulum;
                     } elseif (!empty($routeKurikulum)) {
-                        $selectedKurikulum = \App\Models\Kurikulum::find((int) $routeKurikulum);
+                        $selectedKurikulum = \App\Models\Kurikulum::find((string) $routeKurikulum);
                     } elseif ($routeMk instanceof \App\Models\Mk) {
-                        $selectedKurikulum = \App\Models\Kurikulum::find((int) $routeMk->kurikulum_id);
+                        $selectedKurikulum = \App\Models\Kurikulum::find((string) $routeMk->kurikulum_id);
                     } elseif (!empty($routeMk)) {
-                        $mkModel = \App\Models\Mk::find((int) $routeMk);
-                        $selectedKurikulum = $mkModel ? \App\Models\Kurikulum::find((int) $mkModel->kurikulum_id) : null;
+                        $mkModel = \App\Models\Mk::find((string) $routeMk);
+                        $selectedKurikulum = $mkModel ? \App\Models\Kurikulum::find((string) $mkModel->kurikulum_id) : null;
                     } elseif ($routeMks instanceof \App\Models\Mk) {
-                        $selectedKurikulum = \App\Models\Kurikulum::find((int) $routeMks->kurikulum_id);
+                        $selectedKurikulum = \App\Models\Kurikulum::find((string) $routeMks->kurikulum_id);
                     } elseif (!empty($routeMks)) {
-                        $mkModel = \App\Models\Mk::find((int) $routeMks);
-                        $selectedKurikulum = $mkModel ? \App\Models\Kurikulum::find((int) $mkModel->kurikulum_id) : null;
+                        $mkModel = \App\Models\Mk::find((string) $routeMks);
+                        $selectedKurikulum = $mkModel ? \App\Models\Kurikulum::find((string) $mkModel->kurikulum_id) : null;
                     } else {
-                        $selectedKurikulum = \App\Models\Kurikulum::find((int) session('selected_kurikulum_id'));
+                        $selectedKurikulum = \App\Models\Kurikulum::find((string) session('selected_kurikulum_id'));
                     }
 
                     if ($selectedKurikulum) {
@@ -99,6 +101,7 @@
                 $joinProfilCplBKExists = false;
                 $mustImportJoinMaster = false;
                 $reportsReady = false;
+                $kontrakMkExists = false;
 
                 if ($selectedKurikulum) {
                     session(['selected_kurikulum_id' => $selectedKurikulum->id]);
@@ -116,6 +119,11 @@
                     $joinProfilCplBKExists = $joinProfilCplExists && $joinCplBkExists;
                     $mustImportJoinMaster = $dataComplete && !$joinProfilCplBKExists;
                     $reportsReady = $joinCplMkExists;
+                    $kontrakMkExists = \App\Models\KontrakMk::query()
+                        ->whereHas('mk', function ($query) use ($selectedKurikulum) {
+                            $query->where('kurikulum_id', $selectedKurikulum->id);
+                        })
+                        ->exists();
                 }
 
                 $selectedMk = null;
@@ -132,7 +140,7 @@
                     if ($routeMk instanceof \App\Models\Mk) {
                         $selectedMk = $routeMk;
                     } elseif (!empty($routeMk)) {
-                        $selectedMk = \App\Models\Mk::find((int) $routeMk);
+                        $selectedMk = \App\Models\Mk::find((string) $routeMk);
                     }
 
                     $dosenMkMenus = auth()->user()->joinMkUsers()
@@ -258,6 +266,15 @@
                             </a>
                         </li>
 
+                        <li class="nav-header">KONTRAK MK</li>
+                        <li class="nav-item">
+                            <a href="{{ route('kontrakmks.index') }}"
+                               class="nav-link {{ request()->routeIs('kontrakmks.*', 'settings.import.kontrakmks*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-file-signature"></i>
+                                <p>Kontrak Mata Kuliah</p>
+                            </a>
+                        </li>
+
                         <li class="nav-header">LAPORAN</li>
                         <li class="nav-item">
                             <a href="{{ $reportsReady ? route('kurikulums.rencana-asesmen', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
@@ -284,9 +301,9 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ $reportsReady ? route('kurikulums.laporan-mahasiswa', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
-                               class="nav-link {{ request()->routeIs('kurikulums.laporan-mahasiswa') ? 'active' : '' }} {{ $reportsReady ? '' : 'disabled' }}"
-                               @if(!$reportsReady) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ ($reportsReady && $kontrakMkExists) ? route('kurikulums.laporan-mahasiswa', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
+                               class="nav-link {{ request()->routeIs('kurikulums.laporan-mahasiswa') ? 'active' : '' }} {{ ($reportsReady && $kontrakMkExists) ? '' : 'disabled' }}"
+                               @if(!($reportsReady && $kontrakMkExists)) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-address-card"></i>
                                 <p>Resume Mahasiswa</p>
                             </a>

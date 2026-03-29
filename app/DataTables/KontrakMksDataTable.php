@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\KontrakMk;
+use App\Models\JoinProdiUser;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -77,6 +78,20 @@ class KontrakMksDataTable extends DataTable
      */
     public function query(KontrakMk $model): QueryBuilder
     {
+        $prodiIds = collect($this->prodi_ids ?? [])->filter()->values();
+
+        if ($prodiIds->isEmpty() && auth()->check()) {
+            $user = auth()->user();
+            if ($user->hasRole('prodi') || $user->hasRole('pimpinan prodi')) {
+                $prodiIds = JoinProdiUser::query()
+                    ->where('user_id', $user->id)
+                    ->pluck('prodi_id')
+                    ->filter()
+                    ->unique()
+                    ->values();
+            }
+        }
+
         $query = $model->newQuery()
             ->leftJoin('mahasiswas', 'kontrak_mks.mahasiswa_id', '=', 'mahasiswas.id')
             ->leftJoin('mks', 'kontrak_mks.mk_id', '=', 'mks.id')
@@ -90,8 +105,8 @@ class KontrakMksDataTable extends DataTable
             ->with(['mahasiswa', 'mk', 'mk.cpmks', 'user']);
 
         // Filter berdasarkan prodi jika ada
-        if (!empty($this->prodi_ids)) {
-            $query->whereIn('mahasiswas.prodi_id', $this->prodi_ids);
+        if ($prodiIds->isNotEmpty()) {
+            $query->whereIn('mahasiswas.prodi_id', $prodiIds->all());
         }
 
         return $query;
@@ -156,13 +171,9 @@ class KontrakMksDataTable extends DataTable
      */
     public function getColumns(): array
     {
-        return [
+        $columns = [
             Column::computed('mahasiswa')
                 ->title('mahasiswa')
-                ->searchable(true)
-                ->orderable(true),
-            Column::computed('prodi')
-                ->title('prodi')
                 ->searchable(true)
                 ->orderable(true),
             Column::computed('mata_kuliah')
@@ -186,6 +197,18 @@ class KontrakMksDataTable extends DataTable
                   ->width(50)
                   ->addClass('text-center'),
         ];
+
+        $isPimpinanProdi = auth()->check() && auth()->user()->hasRole('pimpinan prodi');
+        if (!$isPimpinanProdi) {
+            array_splice($columns, 1, 0, [
+                Column::computed('prodi')
+                    ->title('prodi')
+                    ->searchable(true)
+                    ->orderable(true),
+            ]);
+        }
+
+        return $columns;
     }
 
     /**

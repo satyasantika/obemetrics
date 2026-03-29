@@ -259,6 +259,18 @@ class AsesmenCplController extends Controller
 
     public function laporanMahasiswa(Kurikulum $kurikulum)
     {
+        $hasKontrakMk = KontrakMk::query()
+            ->whereHas('mk', function ($query) use ($kurikulum) {
+                $query->where('kurikulum_id', $kurikulum->id);
+            })
+            ->exists();
+
+        if (!$hasKontrakMk) {
+            return to_route('settings.import.kontrakmks', [
+                'return_url' => route('kurikulums.laporan-mahasiswa', [$kurikulum->id]),
+            ])->with('warning', 'Data kontrak MK untuk kurikulum ini belum tersedia. Silakan upload kontrak MK terlebih dahulu.');
+        }
+
         $target = (float) ($kurikulum->target_capaian_lulusan ?? 0);
         $gradePointMap = [
             'A' => 4.0,
@@ -350,6 +362,9 @@ class AsesmenCplController extends Controller
                 'mk.joinCplCpmks.joinCplBk',
             ])
             ->whereIn('mk_id', $mkIds)
+            ->whereHas('mk', function ($query) use ($kurikulum) {
+                $query->where('kurikulum_id', $kurikulum->id);
+            })
             ->whereNotNull('mahasiswa_id')
             ->get()
             ->filter(fn ($item) => $item->mahasiswa !== null)

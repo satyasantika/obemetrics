@@ -100,12 +100,13 @@ class ImportKontrakMkController extends Controller
                 // Check dosen (user dengan nidn)
                 $dosen = User::where('nidn', $nidn)->first();
 
-                // Check if kontrak already exists
+                // Check if kontrak already exists by unique combination:
+                // semester + mahasiswa (nim) + mata kuliah (kode mk)
                 $existing = null;
-                if ($mahasiswa && $mk && $dosen) {
+                if ($mahasiswa && $mk) {
                     $existing = KontrakMk::where('mahasiswa_id', $mahasiswa->id)
                                         ->where('mk_id', $mk->id)
-                                        ->where('user_id', $dosen->id)
+                                        ->where('semester_id', $semesterId)
                                         ->first();
                 }
 
@@ -195,10 +196,10 @@ class ImportKontrakMkController extends Controller
                 [
                     'mahasiswa_id' => $row['mahasiswa_id'],
                     'mk_id' => $row['mk_id'],
-                    'user_id' => $row['dosen_id'],
                     'semester_id' => $semesterId,
                 ],
                 [
+                    'user_id' => $row['dosen_id'],
                     'kelas' => $row['kelas'],
                 ]
             );
