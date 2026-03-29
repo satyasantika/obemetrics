@@ -54,7 +54,7 @@
                                                         >
                                                         <span class="badge text-success" style="display: {{ $cek ? 'inline' : 'none' }};">pengampu</span>
                                                         @if ($isLocked)
-                                                            <span class="badge bg-secondary">terkunci</span>
+                                                            <span class="badge bg-secondary" title="Dikunci" aria-label="Dikunci"><i class="bi bi-lock-fill"></i></span>
                                                         @endif
                                                     </div>
                                             </td>
@@ -75,7 +75,7 @@
                                                         >
                                                         <span class="badge text-success" style="display: {{ $cek ? 'inline' : 'none' }};">koordinator</span>
                                                         @if ($isLockedKoordinator)
-                                                            <span class="badge bg-secondary">terkunci</span>
+                                                            <span class="badge bg-secondary" title="Dikunci" aria-label="Dikunci"><i class="bi bi-lock-fill"></i></span>
                                                         @endif
                                                     </div>
                                                 </form>

@@ -81,12 +81,12 @@ class JoinCplCpmkController extends Controller
                         return response()->json([
                             'status' => 'error',
                             'linked' => true,
-                            'message' => 'Interaksi tidak dapat diubah karena sudah dipakai pada data SubCPMK.',
+                            'message' => 'Interaksi dikunci karena sudah digunakan pada data SubCPMK.',
                         ], 422);
                     }
 
                     return to_route('mks.joincplcpmks.index',$request->mk_id)
-                            ->with('error', 'Interaksi tidak dapat diubah karena sudah dipakai pada data SubCPMK.');
+                            ->with('error', 'Interaksi dikunci karena sudah digunakan pada data SubCPMK.');
                 }
                 $joincplcpmk->delete();
                 }

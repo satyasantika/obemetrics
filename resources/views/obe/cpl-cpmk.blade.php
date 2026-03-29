@@ -16,7 +16,7 @@
                 <div class="card-body">
                     <div class="row mb-2">
                         <div class="col">
-                            <a href="{{ route('settings.import.mk-master', ['mk' => $mk->id, 'target' => 'join_cpl_cpmks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-1 float-end"><i class="bi bi-upload"></i> Import Interaksi CPL-CPMK</a>
+                            <a href="{{ route('setting.import.mk-master', ['mk' => $mk->id, 'target' => 'join_cpl_cpmks', 'return_url' => request()->fullUrl()]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-1 float-end"><i class="bi bi-upload"></i> Import Interaksi CPL-CPMK</a>
                         </div>
                     </div>
                     <div class="row">
@@ -74,7 +74,7 @@
                                                     <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle link-status-badge {{ $cek ? '' : 'd-none' }}">{{ $joincplbk->cpl->kode }}</span>
                                                 </div>
                                                 @if ($isLocked)
-                                                    <span class="badge bg-secondary">terkunci</span>
+                                                    <span class="badge bg-secondary" title="Dikunci" aria-label="Dikunci"><i class="bi bi-lock-fill"></i></span>
                                                 @endif
                                             </td>
                                         @empty

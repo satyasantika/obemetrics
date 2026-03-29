@@ -21,6 +21,25 @@
                         </div>
                     </div>
 
+                    <div class="row mb-3">
+                        <div class="col">
+                            <div class="lock-hint-banner">
+                                <div class="lock-hint-icon" aria-hidden="true">
+                                    <i class="bi bi-lock-fill"></i>
+                                </div>
+                                <div class="lock-hint-copy">
+                                    <div class="lock-hint-title">Interaksi tertentu sedang dikunci</div>
+                                    <div class="lock-hint-text">
+                                        Jika ingin mengubah interaksi yang dikunci, hapus terlebih dahulu bobot CPL pada MK di halaman Interaksi CPL >< MK.
+                                    </div>
+                                </div>
+                                <a href="{{ route('kurikulums.joincplmks.index', [$kurikulum->id]) }}" class="btn btn-sm lock-hint-link rounded-pill px-3 fw-semibold">
+                                    <i class="bi bi-arrow-up-right-circle"></i> Buka Interaksi CPL >< MK
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col">
                             <div class="table-responsive nilai-matrix-wrapper rounded-3 border bg-white shadow-sm">
@@ -76,7 +95,7 @@
                                                     <div class="mt-1 d-flex align-items-center gap-1 flex-wrap">
                                                         {{-- <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle link-status-badge {{ $cek ? '' : 'd-none' }}">{{ $bk->kode }}</span> --}}
                                                         @if ($isLocked)
-                                                            <span class="badge bg-secondary">terkunci</span>
+                                                            <span class="badge bg-secondary" title="Dikunci" aria-label="Dikunci"><i class="bi bi-lock-fill"></i></span>
                                                         @endif
                                                     </div>
                                                 </td>
@@ -206,6 +225,70 @@ document.addEventListener('DOMContentLoaded', function () {
 
 @push('styles')
 <style>
+.lock-hint-banner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid rgba(38, 84, 124, 0.14);
+    border-radius: 1rem;
+    background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 32%),
+        linear-gradient(135deg, rgba(235, 244, 252, 0.96), rgba(248, 250, 252, 0.98));
+    box-shadow: 0 14px 32px rgba(25, 58, 94, 0.08);
+}
+
+.lock-hint-icon {
+    width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #17324d, #35648f);
+    color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.lock-hint-icon i {
+    font-size: 1rem;
+}
+
+.lock-hint-copy {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.lock-hint-title {
+    margin-bottom: 0.2rem;
+    color: #17324d;
+    font-size: 0.96rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.lock-hint-text {
+    color: #4a6178;
+    font-size: 0.9rem;
+    line-height: 1.55;
+}
+
+.lock-hint-link {
+    flex: 0 0 auto;
+    border: 1px solid rgba(23, 50, 77, 0.12);
+    background: rgba(255, 255, 255, 0.82);
+    color: #17324d;
+    box-shadow: 0 8px 20px rgba(23, 50, 77, 0.08);
+}
+
+.lock-hint-link:hover,
+.lock-hint-link:focus {
+    background: #17324d;
+    border-color: #17324d;
+    color: #fff;
+}
+
 .nilai-matrix-wrapper {
     max-height: 70vh;
     overflow: auto;
@@ -228,6 +311,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
 .nilai-matrix-table thead .sticky-col {
     z-index: 25;
+}
+
+@media (max-width: 767.98px) {
+    .lock-hint-banner {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .lock-hint-link {
+        width: 100%;
+        justify-content: center;
+    }
 }
 </style>
 @endpush

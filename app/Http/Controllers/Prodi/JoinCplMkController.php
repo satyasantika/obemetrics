@@ -213,7 +213,7 @@ class JoinCplMkController extends Controller
             if ($isLocked && !$hasBobotValue) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'bobot tidak boleh kosong saat status dipakai.',
+                    'message' => 'bobot tidak boleh kosong saat status dikunci.',
                 ], 422);
             }
 
@@ -316,7 +316,7 @@ class JoinCplMkController extends Controller
 
                 if ($isUsed) {
                     return to_route('kurikulums.joincplmks.index', $kurikulumId)
-                        ->with('error', 'Interaksi tidak dapat diubah karena sudah dipakai pada relasi CPL >< CPMK.');
+                        ->with('error', 'Interaksi dikunci karena sudah digunakan pada relasi CPL >< CPMK.');
                 }
 
                 JoinCplMk::query()

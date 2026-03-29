@@ -110,7 +110,7 @@
                                                 @endif
                                                 @if ($isLocked)
                                                     <div class="mt-1">
-                                                        <span class="badge bg-secondary">dipakai</span>
+                                                        <span class="badge bg-secondary" title="Dikunci" aria-label="Dikunci"><i class="bi bi-lock-fill"></i></span>
                                                     </div>
                                                 @endif
                                             </td>
@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (isLocked && rawValue === '') {
                 input.value = lastSavedValue;
-                setStatus('Gagal menyimpan: bobot tidak boleh kosong saat status dipakai.', 'danger');
+                setStatus('Gagal menyimpan: bobot tidak boleh kosong saat status dikunci.', 'danger');
                 updateMkTotal(form.closest('tr'));
                 return;
             }
@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (clearBtn) {
             clearBtn.addEventListener('click', function () {
                 if (isLocked) {
-                    setStatus('Gagal menyimpan: bobot tidak boleh kosong saat status dipakai.', 'danger');
+                    setStatus('Gagal menyimpan: bobot tidak boleh kosong saat status dikunci.', 'danger');
                     return;
                 }
 

@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Prodi;
 
 use App\Models\Bk;
 use App\Models\Cpl;
+use App\Models\JoinCplMk;
 use App\Models\Kurikulum;
 use Illuminate\Http\Request;
 use App\Models\JoinCplBk;
-use App\Models\JoinCplCpmk;
 use App\Http\Controllers\Controller;
 
 class JoinCplBkController extends Controller
@@ -24,7 +24,7 @@ class JoinCplBkController extends Controller
             ->where('kurikulum_id', $kurikulum->id)
             ->get(['id', 'cpl_id', 'bk_id']);
 
-        $lockedJoinCplBkIds = JoinCplCpmk::query()
+        $lockedJoinCplBkIds = JoinCplMk::query()
             ->whereIn('join_cpl_bk_id', $linkedCplBks->pluck('id'))
             ->pluck('join_cpl_bk_id')
             ->unique()
@@ -89,17 +89,17 @@ class JoinCplBkController extends Controller
                     ->with('success', $bk->kode . ' telah diinteraksi dengan ' . $cpl->kode);
         } else {
             if ($joincplbk) {
-                if ($joincplbk->joinCplCpmks()->exists()) {
+                if (JoinCplMk::query()->where('join_cpl_bk_id', $joincplbk->id)->exists()) {
                     if ($expectsJson) {
                         return response()->json([
                             'status' => 'error',
                             'linked' => true,
-                            'message' => 'Interaksi tidak dapat diubah karena sudah dipakai pada relasi CPL >< CPMK.',
+                            'message' => 'Interaksi dikunci karena sudah digunakan pada relasi CPL >< MK.',
                         ], 422);
                     }
 
                     return to_route('kurikulums.joincplbks.index', $kurikulum->id)
-                        ->with('error', 'Interaksi tidak dapat diubah karena sudah dipakai pada relasi CPL >< CPMK.');
+                        ->with('error', 'Interaksi dikunci karena sudah digunakan pada relasi CPL >< MK.');
                 }
                 $joincplbk->delete();
                 }
