@@ -17,38 +17,29 @@
 
         <div class="d-flex flex-column gap-3 mt-3">
             @if($admin)
-                {{-- <div class="card border-0 shadow-sm"> --}}
-                    <hr>
-                    <div class="h2">
-                        <i class="bi bi-shield-lock-fill"></i>
-                        <span>Dashboard Admin</span>
-                    </div>
-                    {{-- <div class="card-body"> --}}
-                        @includeWhen($admin, 'dashboard.admin')
-                    {{-- </div> --}}
-                </div>
+            <hr>
+            <div class="h2">
+                <i class="bi bi-shield-lock-fill"></i>
+                <span>Dashboard Admin</span>
+            </div>
+                @includeWhen($admin, 'dashboard.admin')
+            </div>
             @endif
             @if($prodi)
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-success-subtle text-success-emphasis border-0 border-bottom border-success-subtle fw-semibold d-flex align-items-center gap-2">
-                        <i class="bi bi-diagram-3-fill"></i>
-                        <span>Dashboard Prodi</span>
-                    </div>
-                    <div class="card-body">
-                        @includeWhen($prodi, 'dashboard.prodi')
-                    </div>
+                <hr>
+                <div class="h2">
+                    <i class="bi bi-diagram-3-fill"></i>
+                    <span>Dashboard Program Studi</span>
                 </div>
+                @includeWhen($prodi, 'dashboard.prodi')
             @endif
             @if($dosen)
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-info-subtle text-info-emphasis border-0 border-bottom border-info-subtle fw-semibold d-flex align-items-center gap-2">
-                        <i class="bi bi-mortarboard-fill"></i>
-                        <span>Dashboard Dosen</span>
-                    </div>
-                    <div class="card-body">
-                        @includeWhen($dosen, 'dashboard.dosen')
-                    </div>
+                <hr>
+                <div class="h2">
+                    <i class="bi bi-mortarboard-fill"></i>
+                    <span>Dashboard Dosen</span>
                 </div>
+                @includeWhen($dosen, 'dashboard.dosen')
             @endif
         </div>
     </div>

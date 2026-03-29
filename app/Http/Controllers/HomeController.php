@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cpl;
 use App\Models\Evaluasi;
 use App\Models\KontrakMk;
 use App\Models\Kurikulum;
 use App\Models\Mahasiswa;
-use App\Models\Mk;
 use App\Models\Permission;
 use App\Models\Prodi;
 use App\Models\Role;
@@ -35,11 +33,7 @@ class HomeController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $managedProdiIds = $user->joinProdiUsers()
-            ->where('status_pimpinan', true)
-            ->pluck('prodi_id')
-            ->filter()
-            ->unique();
+        $managedProdiIds = $this->getManagedPimpinanProdiIds($user);
         $managedKurikulumIds = Kurikulum::whereIn('prodi_id', $managedProdiIds)->pluck('id');
         $taughtKurikulumIds = $user->joinMkUsers()->pluck('kurikulum_id')->filter()->unique();
 
@@ -57,8 +51,10 @@ class HomeController extends Controller
         $prodiStats = [
             'prodis' => $managedProdiIds->count(),
             'kurikulums' => $managedKurikulumIds->count(),
-            'cpls' => Cpl::whereIn('kurikulum_id', $managedKurikulumIds)->count(),
-            'mks' => Mk::whereIn('kurikulum_id', $managedKurikulumIds)->count(),
+            'mahasiswas' => Mahasiswa::whereIn('prodi_id', $managedProdiIds)->count(),
+            'kontrakmks' => KontrakMk::whereHas('mahasiswa', function ($query) use ($managedProdiIds) {
+                $query->whereIn('prodi_id', $managedProdiIds);
+            })->count(),
         ];
 
         $dosenStats = [
@@ -74,14 +70,13 @@ class HomeController extends Controller
     public function ruangProdi(Request $request)
     {
         $user = auth()->user();
-        $prodiIds = $user->joinProdiUsers()
-            ->where('status_pimpinan', true)
-            ->pluck('prodi_id')
-            ->filter()
-            ->unique();
+        $prodiIds = $this->getManagedPimpinanProdiIds($user);
 
         $managedProdis = $user->joinProdiUsers()
             ->where('status_pimpinan', true)
+            ->whereHas('user', function ($query) {
+                $query->role('pimpinan prodi');
+            })
             ->with('prodi.kurikulums')
             ->get()
             ->pluck('prodi')
@@ -131,5 +126,18 @@ class HomeController extends Controller
             });
 
         return view('dashboard.dosen-space', compact('joinProdiUsers', 'mkByProdiKurikulum'));
+    }
+
+    private function getManagedPimpinanProdiIds(User $user)
+    {
+        return $user->joinProdiUsers()
+            ->where('status_pimpinan', true)
+            ->whereHas('user', function ($query) {
+                $query->role('pimpinan prodi');
+            })
+            ->pluck('prodi_id')
+            ->filter()
+            ->unique()
+            ->values();
     }
 }

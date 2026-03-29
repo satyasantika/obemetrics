@@ -10,8 +10,8 @@
     @php
         $stats = [
             ['key' => 'prodis', 'label' => 'Program Studi', 'icon' => 'fas fa-book-reader', 'route' => 'prodis.index'],
-            ['key' => 'kurikulums', 'label' => 'Kurikulum', 'icon' => 'fas fa-book', 'route' => 'kurikulums.index'],
-            ['key' => 'mks', 'label' => 'Mata Kuliah', 'icon' => 'fas fa-chalkboard-user', 'route' => 'mks.index'],
+            ['key' => 'kurikulums', 'label' => 'Kurikulum', 'icon' => 'fas fa-book', 'route' => 'ruang.dosen'],
+            ['key' => 'mks', 'label' => 'Mata Kuliah', 'icon' => 'fas fa-chalkboard-user', 'route' => 'ruang.dosen'],
             ['key' => 'kontrakmks', 'label' => 'Kontrak MK', 'icon' => 'fas fa-file-signature', 'route' => 'kontrakmks.index'],
         ];
     @endphp
