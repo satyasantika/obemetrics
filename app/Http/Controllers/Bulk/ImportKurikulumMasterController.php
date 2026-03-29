@@ -1730,7 +1730,7 @@ class ImportKurikulumMasterController extends Controller
 
     private function fillJoinProfilCplSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
     {
-        $profils = $kurikulum->profils()->orderBy('nama')->get();
+        $profils = $kurikulum->profils()->orderBy('kode')->get();
         $cpls = $kurikulum->cpls()->orderBy('kode')->get();
 
         $linkedMap = JoinProfilCpl::query()
