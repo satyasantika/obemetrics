@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Bulk;
 
 use App\Models\JoinProdiUser;
+use App\Models\Role;
 use App\Models\User;
 use App\Models\Prodi;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use Spatie\Permission\Models\Role;
+use Spatie\Permission\Guard;
 
 class ImportJoinProdiUserController extends Controller
 {
@@ -186,7 +187,7 @@ class ImportJoinProdiUserController extends Controller
             $savedCount++;
         }
 
-        foreach (array_values(array_unique($affectedUserIds)) as $affectedUserId) {
+        foreach (array_unique($affectedUserIds) as $affectedUserId) {
             $this->syncPimpinanProdiRole((int) $affectedUserId);
         }
 
@@ -273,7 +274,7 @@ class ImportJoinProdiUserController extends Controller
             return;
         }
 
-        $role = Role::findOrCreate($roleName, $user->getDefaultGuardName());
+        $role = Role::findOrCreate($roleName, Guard::getDefaultName($user));
 
         $isPimpinan = JoinProdiUser::query()
             ->where('user_id', $userId)

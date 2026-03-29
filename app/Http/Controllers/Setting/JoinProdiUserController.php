@@ -9,9 +9,10 @@ use App\Models\JoinProdiUser;
 use App\Models\KontrakMk;
 use App\Models\JoinMkUser;
 use App\Models\Prodi;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
+use Spatie\Permission\Guard;
 
 class JoinProdiUserController extends Controller
 {
@@ -77,7 +78,7 @@ class JoinProdiUserController extends Controller
 
         $roleName = 'pimpinan prodi';
         $user = $joinprodiuser->user;
-        $role = Role::findOrCreate($roleName, $user->getDefaultGuardName());
+        $role = Role::findOrCreate($roleName, Guard::getDefaultName($user));
 
         if ($statusPimpinan) {
             if (!$user->hasRole($role)) {

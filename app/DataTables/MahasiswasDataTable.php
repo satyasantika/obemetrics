@@ -50,7 +50,25 @@ class MahasiswasDataTable extends DataTable
      */
     public function query(Mahasiswa $model): QueryBuilder
     {
-        return $model->newQuery();
+        $query = $model->newQuery()->with('prodi');
+        $user = auth()->user();
+
+        if ($user && $user->hasRole('pimpinan prodi')) {
+            $managedProdiIds = $user->joinProdiUsers()
+                ->where('status_pimpinan', true)
+                ->pluck('prodi_id')
+                ->filter()
+                ->unique()
+                ->values();
+
+            if ($managedProdiIds->isEmpty()) {
+                return $query->whereRaw('1 = 0');
+            }
+
+            $query->whereIn('prodi_id', $managedProdiIds);
+        }
+
+        return $query;
     }
 
     /**

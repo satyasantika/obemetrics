@@ -68,6 +68,18 @@ class MahasiswaController extends Controller
 
     private function _dataSelection($mahasiswa)
     {
+        $user = auth()->user();
+        $managedProdiIds = collect();
+
+        if ($user && $user->hasRole('pimpinan prodi')) {
+            $managedProdiIds = $user->joinProdiUsers()
+                ->where('status_pimpinan', true)
+                ->pluck('prodi_id')
+                ->filter()
+                ->unique()
+                ->values();
+        }
+
         $usedMahasiswaIds = collect()
             ->merge(KontrakMk::query()->pluck('mahasiswa_id'))
             ->merge(Nilai::query()->pluck('mahasiswa_id'))
@@ -76,10 +88,23 @@ class MahasiswaController extends Controller
             ->unique()
             ->values();
 
+        $prodisQuery = Prodi::query();
+        $mahasiswasQuery = Mahasiswa::with('prodi')->orderBy('nama');
+
+        if ($user && $user->hasRole('pimpinan prodi')) {
+            if ($managedProdiIds->isEmpty()) {
+                $prodisQuery->whereRaw('1 = 0');
+                $mahasiswasQuery->whereRaw('1 = 0');
+            } else {
+                $prodisQuery->whereIn('id', $managedProdiIds);
+                $mahasiswasQuery->whereIn('prodi_id', $managedProdiIds);
+            }
+        }
+
         return [
-            'prodis' => Prodi::all(),
+            'prodis' => $prodisQuery->get(),
             'mahasiswa' => $mahasiswa,
-            'mahasiswas' => Mahasiswa::with('prodi')->orderBy('nama')->get(),
+            'mahasiswas' => $mahasiswasQuery->get(),
             'nonDeletableMahasiswaIds' => array_fill_keys($usedMahasiswaIds->all(), true),
             'header' => 'Data Mahasiswa',
             'title' => 'Mahasiswa',

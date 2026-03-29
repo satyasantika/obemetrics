@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Bulk;
 use App\Http\Controllers\Controller;
 use App\Models\JoinProdiUser;
 use App\Models\Prodi;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,7 +13,7 @@ use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use Spatie\Permission\Models\Role;
+use Spatie\Permission\Guard;
 
 class ImportAdminMasterController extends Controller
 {
@@ -335,7 +336,7 @@ class ImportAdminMasterController extends Controller
             return;
         }
 
-        $role = Role::findOrCreate($roleName, $user->getDefaultGuardName());
+        $role = Role::findOrCreate($roleName, Guard::getDefaultName($user));
 
         $isPimpinan = JoinProdiUser::query()
             ->where('user_id', $userId)
