@@ -172,6 +172,10 @@ class ImportKurikulumMasterController extends Controller
                     $redirect->with('danger', "{$removed} interaksi dibuang karena sel pada template dikosongkan.");
                 }
 
+                if (($result['join_cpl_bks']['locked_skipped'] ?? 0) > 0) {
+                    $redirect->with('warning', "{$result['join_cpl_bks']['locked_skipped']} interaksi CPL >< BK tidak dapat dihapus karena masih dipakai dalam pembobotan CPL >< MK.");
+                }
+
                 return $redirect;
             } catch (\Throwable $e) {
                 return back()->with('error', 'Gagal memproses import interaksi master: ' . $e->getMessage());
@@ -1241,9 +1245,22 @@ class ImportKurikulumMasterController extends Controller
 
         $desiredKeys = array_keys($desiredPairs);
         $removed = 0;
+        $lockedSkipped = 0;
+
+        $lockedJoinCplBkIds = JoinCplMk::query()
+            ->whereIn('join_cpl_bk_id', $existingRows->pluck('id'))
+            ->pluck('join_cpl_bk_id')
+            ->unique()
+            ->flip();
+
         foreach ($existingRows as $existingRow) {
             $key = $existingRow->cpl_id . '_' . $existingRow->bk_id;
             if (!in_array($key, $desiredKeys, true)) {
+                if ($lockedJoinCplBkIds->has($existingRow->id)) {
+                    $lockedSkipped++;
+                    continue;
+                }
+
                 $existingRow->delete();
                 $removed++;
             }
@@ -1263,6 +1280,7 @@ class ImportKurikulumMasterController extends Controller
         return [
             'linked' => count($desiredPairs),
             'removed' => $removed,
+            'locked_skipped' => $lockedSkipped,
         ];
     }
 
