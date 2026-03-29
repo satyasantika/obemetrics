@@ -37,6 +37,36 @@ Route::middleware('auth')->group(function () {
     Route::get('/ruang-dosen', [App\Http\Controllers\HomeController::class, 'ruangDosen'])
         ->middleware('can:access dosen dashboard')
         ->name('ruang.dosen');
+    Route::get('/dosen/kontrakmks', [App\Http\Controllers\Dosen\KontrakMKController::class, 'index'])
+        ->middleware('can:access dosen dashboard')
+        ->name('dosen.kontrakmks.index');
+    Route::post('/dosen/kontrakmks', [App\Http\Controllers\Dosen\KontrakMKController::class, 'store'])
+        ->middleware('can:access dosen dashboard')
+        ->name('dosen.kontrakmks.store');
+    Route::get('/dosen/kontrakmks/data', [App\Http\Controllers\Dosen\KontrakMKController::class, 'data'])
+        ->middleware('can:access dosen dashboard')
+        ->name('dosen.kontrakmks.data');
+    Route::get('/dosen/kontrakmks-import', [App\Http\Controllers\Dosen\KontrakMKController::class, 'import'])
+        ->middleware('can:access dosen dashboard')
+        ->name('dosen.kontrakmks.import');
+    Route::post('/dosen/kontrakmks-import/process', [App\Http\Controllers\Dosen\KontrakMKController::class, 'importProcess'])
+        ->middleware('can:access dosen dashboard')
+        ->name('dosen.kontrakmks.import.process');
+    Route::post('/dosen/kontrakmks-import/commit', [App\Http\Controllers\Dosen\KontrakMKController::class, 'importCommit'])
+        ->middleware('can:access dosen dashboard')
+        ->name('dosen.kontrakmks.import.commit');
+    Route::post('/dosen/kontrakmks-import/clear', [App\Http\Controllers\Dosen\KontrakMKController::class, 'importClear'])
+        ->middleware('can:access dosen dashboard')
+        ->name('dosen.kontrakmks.import.clear');
+    Route::get('/dosen/kontrakmks-import/template', [App\Http\Controllers\Dosen\KontrakMKController::class, 'importTemplate'])
+        ->middleware('can:access dosen dashboard')
+        ->name('dosen.kontrakmks.import.template');
+    Route::put('/dosen/kontrakmks/{kontrakMk}', [App\Http\Controllers\Dosen\KontrakMKController::class, 'update'])
+        ->middleware('can:access dosen dashboard')
+        ->name('dosen.kontrakmks.update');
+    Route::delete('/dosen/kontrakmks/{kontrakMk}', [App\Http\Controllers\Dosen\KontrakMKController::class, 'destroy'])
+        ->middleware('can:access dosen dashboard')
+        ->name('dosen.kontrakmks.destroy');
 
     Route::get('/password/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'showChangePasswordGet'])->name('password.change');
     Route::post('/password/change', [App\Http\Controllers\Auth\PasswordChangeController::class, 'changePasswordPost'])->name('password.change');

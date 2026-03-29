@@ -9,10 +9,8 @@
 <div class="row g-3 mt-1">
     @php
         $stats = [
-            ['key' => 'prodis', 'label' => 'Program Studi', 'icon' => 'fas fa-book-reader', 'route' => 'prodis.index'],
-            ['key' => 'kurikulums', 'label' => 'Kurikulum', 'icon' => 'fas fa-book', 'route' => 'ruang.dosen'],
             ['key' => 'mks', 'label' => 'Mata Kuliah', 'icon' => 'fas fa-chalkboard-user', 'route' => 'ruang.dosen'],
-            ['key' => 'kontrakmks', 'label' => 'Kontrak MK', 'icon' => 'fas fa-file-signature', 'route' => 'kontrakmks.index'],
+            ['key' => 'kontrakmks', 'label' => 'Mahasiswa Kontrak MK', 'icon' => 'fas fa-file-signature', 'route' => 'dosen.kontrakmks.index'],
         ];
     @endphp
 
