@@ -188,7 +188,7 @@
                         <li class="nav-header">DATA MASTER</li>
                         <li class="nav-item">
                             <a href="{{ route('settings.import.kurikulum-master', ['kurikulum' => $selectedKurikulum->id, 'target' => 'kurikulum_bundle', 'return_url' => url()->current()]) }}"
-                               class="nav-link {{ $isImportMaster ? 'active' : '' }}">
+                               class="nav-link nav-link-import nav-link-import-master {{ $isImportMaster ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-file-upload"></i>
                                 <p>Upload Data Master</p>
                             </a>
@@ -226,7 +226,7 @@
                         <li class="nav-header">INTERAKSI</li>
                         <li class="nav-item">
                             <a href="{{ $dataComplete ? route('settings.import.kurikulum-master', ['kurikulum' => $selectedKurikulum->id, 'target' => 'join_kurikulum_bundle', 'return_url' => url()->current()]) : 'javascript:void(0)' }}"
-                               class="nav-link {{ $isImportJoinMaster ? 'active' : '' }} {{ $dataComplete ? '' : 'disabled' }}"
+                               class="nav-link nav-link-import nav-link-import-interaksi {{ $isImportJoinMaster ? 'active' : '' }} {{ $dataComplete ? '' : 'disabled' }}"
                                @if(!$dataComplete) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-file-upload"></i>
                                 <p>Upload Data Interaksi</p>
@@ -325,7 +325,7 @@
 
                         <li class="nav-header">DATA</li>
                         <li class="nav-item">
-                            <a href="{{ route('settings.import.mk-master', ['mk' => $selectedMk->id, 'target' => 'mk_bundle', 'return_url' => url()->current()]) }}" class="nav-link {{ $isMkImportMaster ? 'active' : '' }}">
+                            <a href="{{ route('settings.import.mk-master', ['mk' => $selectedMk->id, 'target' => 'mk_bundle', 'return_url' => url()->current()]) }}" class="nav-link nav-link-import nav-link-import-master {{ $isMkImportMaster ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-file-upload"></i>
                                 <p>Import Data Master</p>
                             </a>
@@ -425,3 +425,87 @@
         </nav>
     </div>
 </aside>
+
+<style>
+.app-sidebar .nav-sidebar .nav-link.nav-link-import {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-left: 4px solid rgba(255, 255, 255, 0.45);
+    border-radius: 0.65rem;
+    background: linear-gradient(125deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 8px 18px rgba(8, 66, 49, 0.22);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.app-sidebar .nav-sidebar .nav-link.nav-link-import-master {
+    border-color: rgba(255, 193, 7, 0.35);
+    border-left-color: rgba(255, 193, 7, 0.95);
+    background: linear-gradient(125deg, rgba(16, 103, 74, 0.28), rgba(29, 160, 118, 0.14) 45%, rgba(255, 210, 77, 0.16));
+}
+
+.app-sidebar .nav-sidebar .nav-link.nav-link-import-interaksi {
+    border-color: rgba(103, 179, 252, 0.36);
+    border-left-color: rgba(103, 179, 252, 0.95);
+    background: linear-gradient(125deg, rgba(28, 88, 166, 0.32), rgba(41, 123, 221, 0.18) 45%, rgba(111, 193, 255, 0.16));
+}
+
+.app-sidebar .nav-sidebar .nav-link.nav-link-import::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -130%;
+    width: 55%;
+    height: 100%;
+    background: linear-gradient(100deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0));
+    transition: left 0.35s ease;
+}
+
+.app-sidebar .nav-sidebar .nav-link.nav-link-import:hover {
+    transform: translateX(2px);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        0 12px 24px rgba(7, 83, 61, 0.28);
+}
+
+.app-sidebar .nav-sidebar .nav-link.nav-link-import-master:hover {
+    border-color: rgba(255, 210, 92, 0.75);
+}
+
+.app-sidebar .nav-sidebar .nav-link.nav-link-import-interaksi:hover {
+    border-color: rgba(146, 209, 255, 0.8);
+}
+
+.app-sidebar .nav-sidebar .nav-link.nav-link-import:hover::after {
+    left: 120%;
+}
+
+.app-sidebar .nav-sidebar .nav-link.nav-link-import.active {
+    box-shadow:
+        0 0 0 1px rgba(255, 236, 174, 0.22) inset,
+        0 14px 28px rgba(8, 88, 63, 0.33);
+}
+
+.app-sidebar .nav-sidebar .nav-link.nav-link-import-master.active {
+    border-color: rgba(255, 218, 109, 0.92);
+    background: linear-gradient(130deg, rgba(13, 116, 82, 0.52), rgba(28, 170, 123, 0.3) 45%, rgba(255, 214, 97, 0.28));
+}
+
+.app-sidebar .nav-sidebar .nav-link.nav-link-import-interaksi.active {
+    border-color: rgba(170, 221, 255, 0.92);
+    background: linear-gradient(130deg, rgba(21, 103, 196, 0.52), rgba(36, 139, 232, 0.32) 45%, rgba(120, 205, 255, 0.26));
+    box-shadow:
+        0 0 0 1px rgba(202, 236, 255, 0.2) inset,
+        0 14px 28px rgba(18, 90, 172, 0.3);
+}
+
+.app-sidebar .nav-sidebar .nav-link.nav-link-import.disabled {
+    border-color: rgba(255, 255, 255, 0.16);
+    border-left-color: rgba(255, 255, 255, 0.24);
+    background: linear-gradient(125deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+    box-shadow: none;
+    transform: none;
+}
+</style>
