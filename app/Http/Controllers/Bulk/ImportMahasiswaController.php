@@ -20,15 +20,39 @@ class ImportMahasiswaController extends Controller
 
     public function importMahasiswaForm()
     {
-        $prodis = Prodi::all();
+        $user = auth()->user();
+        $isAdmin = $user->hasRole('admin');
+        $userProdiId = null;
+
+        if ($isAdmin) {
+            $prodis = Prodi::all();
+        } else {
+            // Get managed prodi for pimpinan prodi
+            $managedProdiIds = $user->joinProdiUsers()
+                ->where('status_pimpinan', true)
+                ->whereHas('user', function ($query) {
+                    $query->role('pimpinan prodi');
+                })
+                ->pluck('prodi_id')
+                ->filter()
+                ->unique();
+
+            $prodis = Prodi::whereIn('id', $managedProdiIds)->get();
+            $userProdiId = $managedProdiIds->first();
+        }
+
         $preview = session('import_mahasiswa_preview', []);
         $returnUrl = $this->resolveReturnUrl(request(), $preview);
-        return view('setting.bulk-import.mahasiswa', compact('prodis', 'preview', 'returnUrl'));
+        return view('setting.bulk-import.mahasiswa', compact('prodis', 'preview', 'returnUrl', 'isAdmin', 'userProdiId'));
     }
 
     public function importMahasiswa(Request $request)
     {
         try {
+            $user = auth()->user();
+            $isAdmin = $user->hasRole('admin');
+            $userProdiId = null;
+
             // Validate and process the uploaded file
             $request->validate([
                 'prodi_id' => 'required|exists:prodis,id',
@@ -105,10 +129,25 @@ class ImportMahasiswaController extends Controller
             ]);
 
             // Return view directly with all required data
-            $prodis = Prodi::all();
+            if ($isAdmin) {
+                $prodis = Prodi::all();
+            } else {
+                $managedProdiIds = $user->joinProdiUsers()
+                    ->where('status_pimpinan', true)
+                    ->whereHas('user', function ($query) {
+                        $query->role('pimpinan prodi');
+                    })
+                    ->pluck('prodi_id')
+                    ->filter()
+                    ->unique();
+
+                $prodis = Prodi::whereIn('id', $managedProdiIds)->get();
+                $userProdiId = $managedProdiIds->first();
+            }
+
             $preview = session('import_mahasiswa_preview', []);
             $returnUrl = $this->resolveReturnUrl($request, $preview);
-            return view('setting.bulk-import.mahasiswa', compact('prodis', 'preview', 'returnUrl'))
+            return view('setting.bulk-import.mahasiswa', compact('prodis', 'preview', 'returnUrl', 'isAdmin', 'userProdiId'))
                             ->with('success', 'Data berhasil dibaca. Silakan pilih data yang akan disimpan.');
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat membaca file: ' . $e->getMessage());

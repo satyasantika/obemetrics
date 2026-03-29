@@ -36,16 +36,30 @@
                         <div class="row">
                             <div class="col-md-3 text-end">Program Studi <span class="text-danger">*</span></div>
                             <div class="col">
-                                <select name="prodi_id" id="prodi_id" class="form-control">
-                                    <option value="">-Pilih Program Studi-</option>
-                                    @foreach ($prodis as $prodi)
-                                        <option value="{{ $prodi->id }}"
-                                            data-kode="{{ $prodi->kode ?? '' }}"
-                                            @selected($selectedProdi == $prodi->id)>
-                                            {{ $prodi->jenjang }} - {{ $prodi->nama }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                @if ($isAdmin)
+                                    <select name="prodi_id" id="prodi_id" class="form-control">
+                                        <option value="">-Pilih Program Studi-</option>
+                                        @foreach ($prodis as $prodi)
+                                            <option value="{{ $prodi->id }}"
+                                                data-kode="{{ $prodi->kode ?? '' }}"
+                                                @selected($selectedProdi == $prodi->id)>
+                                                {{ $prodi->jenjang }} - {{ $prodi->nama }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                @else
+                                    <select name="prodi_id" id="prodi_id" class="form-control" disabled>
+                                        @if ($userProdiId)
+                                            @php
+                                                $userProdi = $prodis->firstWhere('id', $userProdiId);
+                                            @endphp
+                                            <option value="{{ $userProdiId }}" selected>
+                                                {{ $userProdi?->jenjang }} - {{ $userProdi?->nama }}
+                                            </option>
+                                        @endif
+                                    </select>
+                                    <input type="hidden" name="prodi_id" value="{{ $userProdiId }}">
+                                @endif
                             </div>
                         </div>
                         <div class="row mt-3">
