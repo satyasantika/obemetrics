@@ -195,33 +195,29 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="{{ $dataComplete ? route('kurikulums.profils.index', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
-                               class="nav-link {{ request()->routeIs('kurikulums.profils.*') ? 'active' : '' }} {{ $dataComplete ? '' : 'disabled' }}"
-                               @if(!$dataComplete) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ route('kurikulums.profils.index', [$selectedKurikulum->id]) }}"
+                               class="nav-link {{ request()->routeIs('kurikulums.profils.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-user-graduate"></i>
                                 <p>Profil Lulusan</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ $dataComplete ? route('kurikulums.cpls.index', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
-                               class="nav-link {{ request()->routeIs('kurikulums.cpls.*') ? 'active' : '' }} {{ $dataComplete ? '' : 'disabled' }}"
-                               @if(!$dataComplete) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ route('kurikulums.cpls.index', [$selectedKurikulum->id]) }}"
+                               class="nav-link {{ request()->routeIs('kurikulums.cpls.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-bullseye"></i>
                                 <p>CPL</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ $dataComplete ? route('kurikulums.bks.index', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
-                               class="nav-link {{ request()->routeIs('kurikulums.bks.*') ? 'active' : '' }} {{ $dataComplete ? '' : 'disabled' }}"
-                               @if(!$dataComplete) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ route('kurikulums.bks.index', [$selectedKurikulum->id]) }}"
+                               class="nav-link {{ request()->routeIs('kurikulums.bks.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-book"></i>
                                 <p>BK</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ $dataComplete ? route('kurikulums.mks.index', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
-                               class="nav-link {{ request()->routeIs('kurikulums.mks.*') ? 'active' : '' }} {{ $dataComplete ? '' : 'disabled' }}"
-                               @if(!$dataComplete) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ route('kurikulums.mks.index', [$selectedKurikulum->id]) }}"
+                               class="nav-link {{ request()->routeIs('kurikulums.mks.*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-bookmark"></i>
                                 <p>MK</p>
                             </a>
@@ -297,7 +293,7 @@
                         </li>
 
                         @if(!$dataComplete)
-                            <li class="nav-header text-warning">Lengkapi data master terlebih dahulu (Profil, CPL, BK, MK).</li>
+                            <li class="nav-header text-warning">Lengkapi data master (Profil, CPL, BK, MK) untuk mengaktifkan menu Interaksi &amp; Laporan.</li>
                         @elseif($mustImportJoinMaster)
                             <li class="nav-header text-warning">Upload data interaksi terlebih dahulu.</li>
                         @elseif(!$joinCplMkExists)

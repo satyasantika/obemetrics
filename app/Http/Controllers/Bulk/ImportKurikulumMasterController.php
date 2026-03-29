@@ -141,8 +141,13 @@ class ImportKurikulumMasterController extends Controller
                     return $this->commitKurikulumBundle($spreadsheet, $kurikulum);
                 });
 
+                $successMessage = "Import master kurikulum berhasil: {$result['profils']} profil, {$result['cpls']} CPL, {$result['bks']} BK, {$result['mks']} MK diproses.";
+                if (($result['mks_skipped_duplicate'] ?? 0) > 0) {
+                    $successMessage .= " {$result['mks_skipped_duplicate']} data MK tidak di-commit karena kode sudah pernah dipakai.";
+                }
+
                 return redirect()->to($this->resolveReturnUrl($request))
-                    ->with('success', "Import master kurikulum berhasil: {$result['profils']} profil, {$result['cpls']} CPL, {$result['bks']} BK, {$result['mks']} MK diproses.");
+                    ->with('success', $successMessage);
             } catch (\Throwable $e) {
                 return back()->with('error', 'Gagal memproses import master kurikulum: ' . $e->getMessage());
             }
@@ -886,6 +891,19 @@ class ImportKurikulumMasterController extends Controller
                     'exists' => false,
                     'can_save' => false,
                     'status_message' => 'Kode MK wajib diisi',
+                ]);
+            }
+
+            $usedInOtherKurikulum = Mk::query()
+                ->where('kurikulum_id', '!=', $kurikulum->id)
+                ->whereRaw('LOWER(TRIM(kode)) = ?', [Str::lower($kodeMk)])
+                ->exists();
+
+            if ($usedInOtherKurikulum) {
+                return array_merge($row, [
+                    'exists' => false,
+                    'can_save' => false,
+                    'status_message' => 'Sudah digunakan kurikulum lain',
                 ]);
             }
 
@@ -2018,6 +2036,7 @@ class ImportKurikulumMasterController extends Controller
             'cpls' => 0,
             'bks' => 0,
             'mks' => 0,
+            'mks_skipped_duplicate' => 0,
         ];
 
         $this->importBundleSheet($spreadsheet, 'Profil', ['kode', 'nama', 'deskripsi'], ['nama'], function (array $row) use ($kurikulum, &$summary) {
@@ -2075,16 +2094,24 @@ class ImportKurikulumMasterController extends Controller
             ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan', 'deskripsi'],
             ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan'],
             function (array $row) use ($kurikulum, &$summary) {
+                $kode = $this->required($row['kode'] ?? null, 'kode');
+                $hasDuplicateKode = Mk::query()
+                    ->whereRaw('LOWER(TRIM(kode)) = ?', [Str::lower($kode)])
+                    ->exists();
+
+                if ($hasDuplicateKode) {
+                    $summary['mks_skipped_duplicate']++;
+                    return;
+                }
+
                 $sksTeori = (int) $this->required($row['sks_teori'] ?? null, 'sks_teori');
                 $sksPraktik = (int) $this->required($row['sks_praktik'] ?? null, 'sks_praktik');
                 $sksLapangan = (int) $this->required($row['sks_lapangan'] ?? null, 'sks_lapangan');
 
-                Mk::updateOrCreate(
+                Mk::create(
                     [
                         'kurikulum_id' => $kurikulum->id,
-                        'kode' => $this->required($row['kode'] ?? null, 'kode'),
-                    ],
-                    [
+                        'kode' => $kode,
                         'nama' => $this->required($row['nama'] ?? null, 'nama'),
                         'semester' => (int) $this->required($row['semester'] ?? null, 'semester'),
                         'sks_teori' => $sksTeori,

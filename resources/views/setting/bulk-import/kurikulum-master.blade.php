@@ -115,10 +115,11 @@
                                                 $rowClass = $hasError ? 'table-danger' : ($isExists ? 'table-warning' : '');
                                             @endphp
                                             <tr class="{{ $rowClass }}">
-                                                <td>
+                                                <td class="text-center align-top">
                                                     <input
                                                         type="checkbox"
                                                         class="form-check-input row-check"
+                                                        style="margin: 0; display: block;"
                                                         name="selected[]"
                                                         value="{{ $index }}"
                                                         @if ($showStatus)
@@ -130,7 +131,7 @@
                                                     >
                                                 </td>
                                                 @if ($showStatus)
-                                                    <td>
+                                                    <td class="text-center align-top">
                                                         @if (($row['can_save'] ?? true) === false)
                                                             <span class="badge bg-danger">{{ $row['status_message'] ?? 'Data tidak valid' }}</span>
                                                         @elseif (($row['exists'] ?? false) === true)

@@ -45,8 +45,8 @@
                                     $canBulkImportMaster =
                                         !$kurikulum->profils()->exists() &&
                                         !$kurikulum->cpls()->exists() &&
-                                        !$kurikulum->bks()->exists() &&
-                                        !$kurikulum->mks()->exists();
+                                        !$kurikulum->bks()->exists();
+                                        // !$kurikulum->mks()->exists();
                                 @endphp
                                 @if ($canBulkImportMaster)
                                     <a href="{{ route('settings.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'kurikulum_bundle', 'return_url' => url()->full()]) }}" class="btn btn-outline-success btn-sm rounded-pill">

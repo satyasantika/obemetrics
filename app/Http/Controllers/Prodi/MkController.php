@@ -74,7 +74,18 @@ class MkController extends Controller
 
     public function store(Request $request, Kurikulum $kurikulum, Mk $mk)
     {
-        $name = $request->name;
+        $kode = trim((string) $request->kode);
+        $conflictMk = $this->findKodeConflict($kode);
+        if ($conflictMk) {
+            $conflictKurikulum = $conflictMk->kurikulum;
+            $conflictProdi = $conflictKurikulum?->prodi;
+
+            return to_route('kurikulums.mks.index', $kurikulum)
+                ->withInput()
+                ->with('warning', 'Kode mata kuliah "' . $kode . '" sudah dipakai pada kurikulum "' . ($conflictKurikulum->nama ?? '-') . '" (' . ($conflictProdi->jenjang ?? '-') . ' ' . ($conflictProdi->nama ?? '-') . '). Gunakan kode lain.');
+        }
+
+        $name = $request->nama;
         $data = $request->all();
         $data['sks'] = $request->sks_teori + $request->sks_praktik + $request->sks_lapangan;
         Mk::create($data);
@@ -90,6 +101,17 @@ class MkController extends Controller
 
     public function update(Request $request, Kurikulum $kurikulum, Mk $mk)
     {
+        $kode = trim((string) $request->kode);
+        $conflictMk = $this->findKodeConflict($kode, $mk->id);
+        if ($conflictMk) {
+            $conflictKurikulum = $conflictMk->kurikulum;
+            $conflictProdi = $conflictKurikulum?->prodi;
+
+            return to_route('kurikulums.mks.index', $kurikulum)
+                ->withInput()
+                ->with('warning', 'Kode mata kuliah "' . $kode . '" sudah dipakai pada kurikulum "' . ($conflictKurikulum->nama ?? '-') . '" (' . ($conflictProdi->jenjang ?? '-') . ' ' . ($conflictProdi->nama ?? '-') . '). Gunakan kode lain.');
+        }
+
         $name = $mk->nama;
         $data = $request->all();
         $data['sks'] = $request->sks_teori + $request->sks_praktik + $request->sks_lapangan;
@@ -113,6 +135,21 @@ class MkController extends Controller
         }
         $mk->delete();
         return to_route('kurikulums.mks.index', $kurikulum)->with('warning','Mata Kuliah: '.$name.' telah dihapus');
+    }
+
+    private function findKodeConflict(string $kode, ?string $excludeMkId = null): ?Mk
+    {
+        if ($kode === '') {
+            return null;
+        }
+
+        return Mk::query()
+            ->with('kurikulum.prodi')
+            ->when($excludeMkId, function ($query) use ($excludeMkId) {
+                $query->where('id', '!=', $excludeMkId);
+            })
+            ->whereRaw('LOWER(TRIM(kode)) = ?', [mb_strtolower($kode)])
+            ->first();
     }
 
 }
