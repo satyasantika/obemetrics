@@ -48,14 +48,18 @@ class HomeController extends Controller
             'kontrakmks' => KontrakMk::count(),
         ];
 
-        $prodiStats = [
-            'prodis' => $managedProdiIds->count(),
-            'kurikulums' => $managedKurikulumIds->count(),
-            'mahasiswas' => Mahasiswa::whereIn('prodi_id', $managedProdiIds)->count(),
-            'kontrakmks' => KontrakMk::whereHas('mahasiswa', function ($query) use ($managedProdiIds) {
-                $query->whereIn('prodi_id', $managedProdiIds);
-            })->count(),
-        ];
+        // Get managed prodis with per-prodi statistics
+        $managedProdis = Prodi::whereIn('id', $managedProdiIds)->get();
+        $prodiDetails = $managedProdis->map(function ($prodi) {
+            return [
+                'id' => $prodi->id,
+                'nama' => $prodi->nama,
+                'prodi' => $prodi,
+                'kurikulums' => $prodi->kurikulums()->count(),
+                'mahasiswas' => $prodi->mahasiswas()->count(),
+                'dosen' => $prodi->joinProdiUsers()->distinct('user_id')->count('user_id'),
+            ];
+        });
 
         $dosenStats = [
             'prodis' => Kurikulum::whereIn('id', $taughtKurikulumIds)->distinct('prodi_id')->count('prodi_id'),
@@ -64,13 +68,19 @@ class HomeController extends Controller
             'kontrakmks' => KontrakMk::where('user_id', $user->id)->count(),
         ];
 
-        return view('home', compact('adminStats', 'prodiStats', 'dosenStats'));
+        return view('home', compact('adminStats', 'prodiDetails', 'dosenStats'));
     }
 
     public function ruangProdi(Request $request)
     {
         $user = auth()->user();
         $prodiIds = $this->getManagedPimpinanProdiIds($user);
+
+        // Filter by specific prodi_id if provided from dashboard
+        $requestProdiId = $request->query('prodi_id');
+        if ($requestProdiId && in_array($requestProdiId, $prodiIds->toArray())) {
+            $prodiIds = collect([$requestProdiId]);
+        }
 
         $managedProdis = $user->joinProdiUsers()
             ->where('status_pimpinan', true)
