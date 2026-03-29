@@ -47,9 +47,22 @@ class JoinCplBkController extends Controller
                 ->with('lockedPairMap', $lockedPairMap);
     }
 
-    public function update(Request $request, Cpl $cpl, Bk $bk)
+    public function update(Request $request, Kurikulum $kurikulum, Cpl $cpl, Bk $bk)
     {
-        $joincplbk = JoinCplBk::where('cpl_id', $cpl->id)
+        $validated = $request->validate([
+            'kurikulum_id' => 'required|exists:kurikulums,id',
+        ]);
+
+        if ((string) $validated['kurikulum_id'] !== (string) $kurikulum->id) {
+            return response()->json([
+                'status' => 'error',
+                'linked' => false,
+                'message' => 'Kurikulum tidak valid.',
+            ], 422);
+        }
+
+        $joincplbk = JoinCplBk::where('kurikulum_id', $kurikulum->id)
+                                        ->where('cpl_id', $cpl->id)
                                         ->where('bk_id', $bk->id)
                                         ->first();
 
@@ -60,7 +73,7 @@ class JoinCplBkController extends Controller
                 JoinCplBk::create([
                     'cpl_id' => $cpl->id,
                     'bk_id' => $bk->id,
-                    'kurikulum_id' => $request->kurikulum_id,
+                    'kurikulum_id' => $kurikulum->id,
                 ]);
             }
 
@@ -72,7 +85,7 @@ class JoinCplBkController extends Controller
                 ]);
             }
 
-            return to_route('kurikulums.joincplbks.index',$request->kurikulum_id)
+                return to_route('kurikulums.joincplbks.index', $kurikulum->id)
                     ->with('success', $bk->kode . ' telah diinteraksi dengan ' . $cpl->kode);
         } else {
             if ($joincplbk) {
@@ -85,7 +98,7 @@ class JoinCplBkController extends Controller
                         ], 422);
                     }
 
-                    return to_route('kurikulums.joincplbks.index',$request->kurikulum_id)
+                    return to_route('kurikulums.joincplbks.index', $kurikulum->id)
                         ->with('error', 'Interaksi tidak dapat diubah karena sudah dipakai pada relasi CPL >< CPMK.');
                 }
                 $joincplbk->delete();
@@ -99,7 +112,7 @@ class JoinCplBkController extends Controller
                 ]);
             }
 
-            return to_route('kurikulums.joincplbks.index',$request->kurikulum_id)
+                return to_route('kurikulums.joincplbks.index', $kurikulum->id)
                     ->with('warning', $bk->kode . ' sudah tidak berinteraksi dengan ' . $cpl->kode);
         }
 

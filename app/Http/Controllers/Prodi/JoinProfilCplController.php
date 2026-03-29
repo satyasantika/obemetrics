@@ -25,9 +25,22 @@ class JoinProfilCplController extends Controller
                 ->with('cpls', $kurikulum->cpls);
     }
 
-    public function update(Request $request, Profil $profil, Cpl $cpl)
+    public function update(Request $request, Kurikulum $kurikulum, Profil $profil, Cpl $cpl)
     {
-        $joinprofilcpl = JoinProfilCpl::where('profil_id', $profil->id)
+        $validated = $request->validate([
+            'kurikulum_id' => 'required|exists:kurikulums,id',
+        ]);
+
+        if ((string) $validated['kurikulum_id'] !== (string) $kurikulum->id) {
+            return response()->json([
+                'status' => 'error',
+                'linked' => false,
+                'message' => 'Kurikulum tidak valid.',
+            ], 422);
+        }
+
+        $joinprofilcpl = JoinProfilCpl::where('kurikulum_id', $kurikulum->id)
+                                        ->where('profil_id', $profil->id)
                                         ->where('cpl_id', $cpl->id)
                                         ->first();
         $expectsJson = $request->expectsJson() || $request->ajax();
@@ -37,7 +50,7 @@ class JoinProfilCplController extends Controller
                 JoinProfilCpl::create([
                     'profil_id' => $profil->id,
                     'cpl_id' => $cpl->id,
-                    'kurikulum_id' => $request->kurikulum_id,
+                    'kurikulum_id' => $kurikulum->id,
                 ]);
             }
 
@@ -64,7 +77,7 @@ class JoinProfilCplController extends Controller
                 ]);
             }
 
-            return to_route('kurikulums.joinprofilcpls.index',$request->kurikulum_id)
+                return to_route('kurikulums.joinprofilcpls.index', $kurikulum->id)
                     ->with('warning', $cpl->kode . ' telah dihapus dari profil ' . $profil->nama);
         }
 

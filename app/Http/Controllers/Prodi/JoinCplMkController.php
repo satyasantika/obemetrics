@@ -152,7 +152,7 @@ class JoinCplMkController extends Controller
                 ->with('lockedPairMap', $lockedPairMap);
     }
 
-    public function update(Request $request, Cpl $cpl, Mk $mk)
+    public function update(Request $request, Kurikulum $kurikulum, Cpl $cpl, Mk $mk)
     {
         $validated = $request->validate([
             'kurikulum_id' => 'required|exists:kurikulums,id',
@@ -160,7 +160,15 @@ class JoinCplMkController extends Controller
             'bobot' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        $kurikulumId = $validated['kurikulum_id'];
+        $kurikulumId = (string) $kurikulum->id;
+
+        if ((string) $validated['kurikulum_id'] !== $kurikulumId) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Kurikulum tidak valid.',
+            ], 422);
+        }
+
         $selectedCplBkId = $validated['join_cpl_bk_id'] ?? null;
 
         if ($selectedCplBkId) {

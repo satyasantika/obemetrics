@@ -75,11 +75,6 @@
                                                             onchange="this.form.requestSubmit()"
                                                             @checked($cek)
                                                         >
-                                                        <label class="form-check-label mb-0" for="is_linked_{{ $profil->id }}_{{ $cpl->id }}">
-                                                            <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle link-status-badge {{ $cek ? '' : 'd-none' }}">
-                                                                <i class="bi bi-check-circle-fill"></i>
-                                                            </span>
-                                                        </label>
                                                         <span class="save-status small text-muted"></span>
                                                     </div>
                                                 </form>
