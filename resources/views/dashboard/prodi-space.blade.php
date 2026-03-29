@@ -41,9 +41,22 @@
                             </div>
 
                             <div class="d-flex align-items-center gap-2 flex-wrap mt-3">
-                                <a href="{{ route('kurikulums.profils.index',[$kurikulum->id]) }}" class="btn btn-outline-success btn-sm rounded-pill">
-                                    <i class="bi bi-eye"></i> Detail Selengkapnya
-                                </a>
+                                @php
+                                    $canBulkImportMaster =
+                                        !$kurikulum->profils()->exists() &&
+                                        !$kurikulum->cpls()->exists() &&
+                                        !$kurikulum->bks()->exists() &&
+                                        !$kurikulum->mks()->exists();
+                                @endphp
+                                @if ($canBulkImportMaster)
+                                    <a href="{{ route('settings.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'kurikulum_bundle', 'return_url' => url()->full()]) }}" class="btn btn-outline-success btn-sm rounded-pill">
+                                        <i class="bi bi-upload"></i> Detail Selengkapnya
+                                    </a>
+                                @else
+                                    <a href="{{ route('kurikulums.profils.index',[$kurikulum->id]) }}" class="btn btn-outline-success btn-sm rounded-pill">
+                                        <i class="bi bi-eye"></i> Detail Selengkapnya
+                                    </a>
+                                @endif
                                 <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#modalEditKurikulum-{{ $kurikulum->id }}">
                                     <i class="bi bi-pencil-square"></i> Edit
                                 </button>
