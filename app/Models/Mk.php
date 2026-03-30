@@ -62,4 +62,27 @@ class Mk extends Model
     {
         return $this->hasMany(Nilai::class);
     }
+
+    public function getDosenPengampuAttribute(): ?User
+    {
+        if ($this->relationLoaded('joinMkUsers')) {
+            $fromLoadedRelation = $this->joinMkUsers
+                ->sortByDesc(fn ($row) => (int) ($row->koordinator ?? 0))
+                ->map(fn ($row) => $row->user)
+                ->filter()
+                ->first();
+
+            if ($fromLoadedRelation instanceof User) {
+                return $fromLoadedRelation;
+            }
+        }
+
+        return $this->joinMkUsers()
+            ->with('user')
+            ->orderByDesc('koordinator')
+            ->get()
+            ->map(fn ($row) => $row->user)
+            ->filter()
+            ->first();
+    }
 }

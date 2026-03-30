@@ -43,7 +43,7 @@
             <tr><th>Kelas</th><td>{{ $kelas }}</td></tr>
             <tr><th>SKS</th><td>{{ $mk->sks }}</td></tr>
             <tr><th>Semester</th><td>{{ $semester?->kode ? $semester->kode . ' - ' . $semester->nama : '-' }}</td></tr>
-            <tr><th>Dosen Pengampu</th><td>{{ $mk->dosenPengampu->nama ?? '-' }}</td></tr>
+            <tr><th>Dosen Pengampu</th><td>{{ $mk->dosenPengampu->nama ?? auth()->user()->name ?? '-' }}</td></tr>
             <tr><th>Target Kelulusan CPL</th><td>{{ number_format((float) $targetKelulusan, 2) }}%</td></tr>
         </tbody>
     </table>

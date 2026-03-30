@@ -17,31 +17,38 @@
                     subtitle="Portofolio penilaian dan evaluasi per kelas"
                     icon="bi bi-journal-check" />
                 <div class="card-body bg-light-subtle">
-                    <div class="card mb-3">
-                        <div class="card-header bg-light fw-semibold">A. Identitas Mata Kuliah</div>
-                        <div class="card-body bg-white">
+                    <div class="card mb-3 identity-card border-0 shadow-sm">
+                        <div class="card-header fw-semibold identity-header">A. Identitas Mata Kuliah</div>
+                        <div class="card-body bg-white identity-body">
                             <div class="table-responsive">
-                                <table class="table table-bordered table-sm align-middle mb-0">
+                                <table class="table table-bordered table-sm align-middle mb-0 identity-table">
                                     <tbody>
                                         <tr>
                                             <th style="width: 220px;">Mata Kuliah</th>
-                                            <td>{{ $mk->nama }}</td>
+                                            <td>
+                                                <div class="identity-main">{{ $mk->nama }}</div>
+                                                {{-- <div class="identity-sub text-muted">Dokumen portofolio kelas aktif</div> --}}
+                                            </td>
                                         </tr>
                                         <tr>
                                             <th>Kode MK / SKS</th>
-                                            <td>{{ $mk->kode }} / {{ $mk->sks }} SKS</td>
+                                            <td>
+                                                <span class="identity-chip">{{ $mk->kode }}</span>
+                                                <span class="identity-separator">/</span>
+                                                <span class="identity-chip identity-chip-muted">{{ $mk->sks }} SKS</span>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <th>Semester</th>
-                                            <td>{{ $semester?->kode ? $semester->kode . ' - ' . $semester->nama : '-' }}</td>
+                                            <td><span class="identity-chip">{{ $semester?->kode ? $semester->kode . ' - ' . $semester->nama : '-' }}</span></td>
                                         </tr>
                                         <tr>
                                             <th>Dosen Pengampu</th>
-                                            <td>{{ $mk->dosenPengampu->nama ?? '-' }}</td>
+                                            <td><span class="identity-chip identity-chip-soft">{{ $mk->dosenPengampu->nama ?? auth()->user()->name ?? '-' }}</span></td>
                                         </tr>
                                         <tr>
                                             <th>Target Kelulusan CPL</th>
-                                            <td>{{ number_format((float) $targetKelulusan, 2) }}%</td>
+                                            <td><span class="identity-chip identity-chip-success">{{ number_format((float) $targetKelulusan, 2) }}%</span></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -466,28 +473,28 @@
                                         </div>
                                     </div>
 
-                                    <div class="card mt-3">
+                                    <div class="card mt-3 spyder-card">
                                         <div class="card-header bg-dark-subtle text-dark-emphasis fw-semibold">E1. Jaring Laba-laba Ketercapaian CPL</div>
                                         <div class="card-body bg-white">
                                             {!! $buildSpyderSvg($cplChartLabels, $cplChartValues, 'Jaring Laba-laba Ketercapaian CPL', (float) $targetKelulusan) !!}
                                         </div>
                                     </div>
 
-                                    <div class="card mt-3">
+                                    <div class="card mt-3 spyder-card">
                                         <div class="card-header bg-dark-subtle text-dark-emphasis fw-semibold">E2. Jaring Laba-laba Ketercapaian CPMK</div>
                                         <div class="card-body bg-white">
                                             {!! $buildSpyderSvg($cpmkChart->pluck('label')->all(), $cpmkChart->pluck('value')->all(), 'Jaring Laba-laba Ketercapaian CPMK', (float) $targetKelulusan) !!}
                                         </div>
                                     </div>
 
-                                    <div class="card mt-3">
+                                    <div class="card mt-3 spyder-card">
                                         <div class="card-header bg-dark-subtle text-dark-emphasis fw-semibold">E3. Jaring Laba-laba Ketercapaian SubCPMK</div>
                                         <div class="card-body bg-white">
                                             {!! $buildSpyderSvg($subcpmkChart->pluck('label')->all(), $subcpmkChart->pluck('value')->all(), 'Jaring Laba-laba Ketercapaian SubCPMK', (float) $targetKelulusan) !!}
                                         </div>
                                     </div>
 
-                                    <div class="card mt-3 mb-0">
+                                    <div class="card mt-3 mb-0 spyder-card">
                                         <div class="card-header bg-dark-subtle text-dark-emphasis fw-semibold">E4. Jaring Laba-laba Rata-rata Penugasan</div>
                                         <div class="card-body bg-white">
                                             {!! $buildSpyderSvg($penugasanChart->pluck('label')->all(), $penugasanChart->pluck('value')->all(), 'Jaring Laba-laba Rata-rata Penugasan') !!}
@@ -509,6 +516,118 @@
 
 @push('styles')
 <style>
+    .identity-card {
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .identity-header {
+        border: 0;
+        color: #0f172a;
+        text-shadow: none;
+        letter-spacing: .03em;
+        background: linear-gradient(135deg, #dbeafe 0%, #e2e8f0 52%, #f1f5f9 100%);
+        border-bottom: 1px solid #cbd5e1;
+    }
+
+    .identity-body {
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    }
+
+    .identity-table {
+        border-color: #dbe7f3;
+    }
+
+    .identity-table th {
+        color: #0f172a;
+        font-weight: 700;
+        background: #f1f5f9;
+    }
+
+    .identity-table td {
+        color: #0f172a;
+    }
+
+    .identity-main {
+        font-size: 1.03rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .identity-sub {
+        font-size: .82rem;
+        margin-top: .15rem;
+        color: #334155 !important;
+    }
+
+    .identity-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: .22rem .62rem;
+        border-radius: 999px;
+        border: 1px solid #9ec5fe;
+        background: #dbeafe;
+        color: #102a56;
+        font-weight: 600;
+        font-size: .8rem;
+    }
+
+    .identity-chip-soft {
+        border-color: #a5b4fc;
+        background: #e0e7ff;
+        color: #312e81;
+    }
+
+    .identity-chip-success {
+        border-color: #86efac;
+        background: #dcfce7;
+        color: #14532d;
+    }
+
+    .identity-chip-muted {
+        border-color: #94a3b8;
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+    .identity-separator {
+        margin: 0 .35rem;
+        color: #334155;
+        font-weight: 600;
+    }
+
+    .spyder-card {
+        height: 480px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .spyder-card .card-header {
+        flex: 0 0 auto;
+    }
+
+    .spyder-card .card-body {
+        flex: 1 1 auto;
+        overflow: hidden;
+        display: flex;
+        align-items: stretch;
+    }
+
+    .spyder-card .card-body > div {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .spyder-card .card-body svg {
+        width: 100%;
+        height: 100%;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
     @media print {
         body * {
             visibility: hidden !important;
