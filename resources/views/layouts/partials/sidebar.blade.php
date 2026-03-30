@@ -191,7 +191,7 @@
                     </li>
 
                     @if($selectedKurikulum)
-                        <li class="nav-header">{{ $selectedKurikulum->kode }} - {{ $selectedKurikulum->nama }}</li>
+                        <li class="nav-header nav-header-context nav-header-context-info">{{ $selectedKurikulum->kode }} - {{ $selectedKurikulum->nama }}</li>
 
                         <li class="nav-header">DATA MASTER</li>
                         <li class="nav-item">
@@ -310,14 +310,34 @@
                         </li>
 
                         @if(!$dataComplete)
-                            <li class="nav-header text-warning">Lengkapi data master (Profil, CPL, BK, MK) untuk mengaktifkan menu Interaksi &amp; Laporan.</li>
+                            <li class="nav-item sidebar-notice-item">
+                                <div class="sidebar-notice sidebar-notice-warning">
+                                    <span class="sidebar-notice-icon"><i class="bi bi-exclamation-diamond-fill"></i></span>
+                                    <span class="sidebar-notice-text">Lengkapi data master (Profil, CPL, BK, MK) untuk mengaktifkan menu Interaksi &amp; Laporan.</span>
+                                </div>
+                            </li>
                         @elseif($mustImportJoinMaster)
-                            <li class="nav-header text-warning">Upload data interaksi terlebih dahulu.</li>
+                            <li class="nav-item sidebar-notice-item">
+                                <div class="sidebar-notice sidebar-notice-warning">
+                                    <span class="sidebar-notice-icon"><i class="bi bi-exclamation-diamond-fill"></i></span>
+                                    <span class="sidebar-notice-text">Upload data interaksi terlebih dahulu.</span>
+                                </div>
+                            </li>
                         @elseif(!$joinCplMkExists)
-                            <li class="nav-header text-warning">Lengkapi pembobotan CPL tiap MK terlebih dahulu.</li>
+                            <li class="nav-item sidebar-notice-item">
+                                <div class="sidebar-notice sidebar-notice-warning">
+                                    <span class="sidebar-notice-icon"><i class="bi bi-exclamation-diamond-fill"></i></span>
+                                    <span class="sidebar-notice-text">Lengkapi pembobotan CPL tiap MK terlebih dahulu.</span>
+                                </div>
+                            </li>
                         @endif
                     @else
-                        <li class="nav-header text-warning">Pilih kurikulum dulu di halaman Ruang Prodi.</li>
+                        <li class="nav-item sidebar-notice-item">
+                            <div class="sidebar-notice sidebar-notice-warning">
+                                <span class="sidebar-notice-icon"><i class="bi bi-compass-fill"></i></span>
+                                <span class="sidebar-notice-text">Pilih kurikulum dulu di halaman Ruang Prodi.</span>
+                            </div>
+                        </li>
                     @endif
                 </ul>
             @elseif ($isMkSidebarMode && auth()->check())
@@ -344,7 +364,7 @@
                     <li class="nav-header">MENU MK</li>
 
                     @if($selectedMk)
-                        <li class="nav-header">{{ $selectedMk->kode }} - {{ \Illuminate\Support\Str::limit($selectedMk->nama, 26) }}</li>
+                        <li class="nav-header nav-header-context nav-header-context-info">{{ $selectedMk->kode }} - {{ \Illuminate\Support\Str::limit($selectedMk->nama, 26) }}</li>
 
                         <li class="nav-header">DATA</li>
                         <li class="nav-item">
@@ -425,10 +445,20 @@
                         </li>
 
                         @if(!$mkHasKontrakAccess)
-                            <li class="nav-header text-warning">Anda belum tercatat pada kontrak mata kuliah ini, menu penilaian dinonaktifkan.</li>
+                            <li class="nav-item sidebar-notice-item">
+                                <div class="sidebar-notice sidebar-notice-warning">
+                                    <span class="sidebar-notice-icon"><i class="bi bi-lock-fill"></i></span>
+                                    <span class="sidebar-notice-text">Anda belum tercatat pada kontrak mata kuliah ini, menu penilaian dinonaktifkan.</span>
+                                </div>
+                            </li>
                         @endif
                     @else
-                        <li class="nav-header text-warning">Pilih mata kuliah dari halaman Ruang Dosen.</li>
+                        <li class="nav-item sidebar-notice-item">
+                            <div class="sidebar-notice sidebar-notice-warning">
+                                <span class="sidebar-notice-icon"><i class="bi bi-compass-fill"></i></span>
+                                <span class="sidebar-notice-text">Pilih mata kuliah dari halaman Ruang Dosen.</span>
+                            </div>
+                        </li>
                     @endif
                 </ul>
             @else
@@ -450,6 +480,78 @@
 </aside>
 
 <style>
+.app-sidebar .nav-sidebar .nav-header {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.35;
+}
+
+.app-sidebar .nav-sidebar .nav-header.nav-header-context {
+    margin: 0.45rem 0.5rem 0.7rem;
+    padding: 0.9rem 0.95rem;
+    border-radius: 0.9rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #f4fbff;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.app-sidebar .nav-sidebar .nav-header.nav-header-context-info {
+    border: 1px solid rgba(163, 225, 255, 0.34);
+    border-left: 4px solid rgba(145, 220, 255, 0.98);
+    background: linear-gradient(130deg, rgba(12, 82, 153, 0.92), rgba(28, 123, 214, 0.72) 48%, rgba(119, 208, 255, 0.26));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        0 12px 24px rgba(10, 46, 88, 0.3);
+}
+
+.app-sidebar .nav-sidebar .sidebar-notice-item {
+    margin: 0.45rem 0.5rem 0.2rem;
+    list-style: none;
+}
+
+.app-sidebar .nav-sidebar .sidebar-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 0.8rem 0.9rem;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(255, 220, 120, 0.34);
+    background: linear-gradient(145deg, rgba(76, 49, 4, 0.92), rgba(127, 83, 6, 0.84));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 10px 22px rgba(16, 12, 4, 0.3);
+}
+
+.app-sidebar .nav-sidebar .sidebar-notice-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 1.7rem;
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 999px;
+    background: rgba(255, 226, 138, 0.22);
+    color: #fff3bf;
+    font-size: 0.85rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.app-sidebar .nav-sidebar .sidebar-notice-text {
+    display: block;
+    color: #fff8e7;
+    font-size: 0.81rem;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22);
+}
+
 .app-sidebar .nav-sidebar .nav-link.nav-link-import {
     position: relative;
     overflow: hidden;
