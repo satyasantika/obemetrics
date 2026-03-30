@@ -304,7 +304,7 @@ class KontrakMKController extends Controller
         return redirect()->route('dosen.kontrakmks.import');
     }
 
-    public function importTemplate()
+    public function importTemplate(Request $request)
     {
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
@@ -335,7 +335,14 @@ class KontrakMKController extends Controller
         ];
         $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
 
-        $filename = 'template-import-kontrak-mk-' . date('Y-m-d') . '.xlsx';
+        $semesterId = (string) $request->query('semester_id', data_get(session('dosen_kontrak_import_preview'), 'semester_id', ''));
+        $semesterCode = (string) (Semester::query()->where('id', $semesterId)->value('kode') ?? 'SEMESTER');
+        $semesterCode = trim((string) preg_replace('/[^A-Za-z0-9_-]+/', '-', $semesterCode), '-');
+        if ($semesterCode === '') {
+            $semesterCode = 'SEMESTER';
+        }
+
+        $filename = 'template-import-kontrak-mk-' . $semesterCode . '-' . date('Y-m-d') . '.xlsx';
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header("Content-Disposition: attachment;filename=\"$filename\"");

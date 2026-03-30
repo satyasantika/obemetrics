@@ -21,7 +21,7 @@
                         @csrf
                         <div class="mb-3">
                             <label class="form-label">Semester <span class="text-danger">*</span></label>
-                            <select name="semester_id" class="form-select @error('semester_id') is-invalid @enderror" required>
+                            <select id="semesterIdForTemplate" name="semester_id" class="form-select @error('semester_id') is-invalid @enderror" required>
                                 <option value="">-Pilih Semester-</option>
                                 @foreach (($semesters ?? collect()) as $semester)
                                     <option value="{{ $semester->id }}" @selected(old('semester_id', $preview['semester_id'] ?? '') == $semester->id)>
@@ -44,14 +44,27 @@
                             <div class="import-note mt-3">
                                 <div class="small text-muted">Format template: NIM, Nama Mahasiswa, Kode MK, Nama MK, Kelas.</div>
                                 <div class="small text-muted">Semester ditentukan dari dropdown di atas dan dipakai untuk seluruh baris preview.</div>
-                                <a href="{{ route('dosen.kontrakmks.import.template') }}" class="btn btn-link p-0 mt-2 text-decoration-none">
+                                @php
+                                    $initialSemesterId = old('semester_id', $preview['semester_id'] ?? '');
+                                    $templateBaseUrl = route('dosen.kontrakmks.import.template');
+                                    $templateUrl = $initialSemesterId
+                                        ? $templateBaseUrl . '?semester_id=' . urlencode((string) $initialSemesterId)
+                                        : $templateBaseUrl;
+                                @endphp
+                                <a id="downloadTemplateKontrakMk"
+                                   data-base-url="{{ $templateBaseUrl }}"
+                                   href="{{ $templateUrl }}"
+                                   class="btn btn-link p-0 mt-2 text-decoration-none">
                                     <i class="bi bi-download me-1"></i>Download Template
                                 </a>
                             </div>
                         </div>
 
                         <div class="d-flex flex-wrap gap-2">
-                            <button type="submit" class="btn btn-primary">
+                            <button id="submitImportKontrakMk"
+                                    type="submit"
+                                    class="btn btn-primary"
+                                    @disabled(empty(old('semester_id', $preview['semester_id'] ?? '')))>
                                 <i class="bi bi-upload"></i> Upload & Preview
                             </button>
                             <a href="{{ route('dosen.kontrakmks.index') }}" class="btn btn-outline-secondary">
@@ -303,4 +316,32 @@
         }
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const semesterSelect = document.getElementById('semesterIdForTemplate');
+        const downloadLink = document.getElementById('downloadTemplateKontrakMk');
+        const uploadButton = document.getElementById('submitImportKontrakMk');
+
+        if (!semesterSelect || !downloadLink) {
+            return;
+        }
+
+        const baseUrl = downloadLink.dataset.baseUrl || downloadLink.getAttribute('href') || '';
+
+        const updateTemplateHref = () => {
+            const semesterId = (semesterSelect.value || '').trim();
+            downloadLink.setAttribute('href', semesterId ? `${baseUrl}?semester_id=${encodeURIComponent(semesterId)}` : baseUrl);
+
+            if (uploadButton) {
+                uploadButton.disabled = semesterId === '';
+            }
+        };
+
+        updateTemplateHref();
+        semesterSelect.addEventListener('change', updateTemplateHref);
+    });
+</script>
 @endpush
