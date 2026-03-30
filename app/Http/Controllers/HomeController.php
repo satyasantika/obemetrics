@@ -122,7 +122,7 @@ class HomeController extends Controller
             ->get();
 
         $joinMkUsers = $user->joinMkUsers()
-            ->with(['mk', 'kurikulum.prodi'])
+            ->with(['mk' => fn ($q) => $q->withCount('cpmks'), 'kurikulum.prodi'])
             ->get()
             ->filter(fn ($item) => $item->mk && $item->kurikulum)
             ->values();

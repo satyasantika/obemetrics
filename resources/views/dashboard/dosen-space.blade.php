@@ -52,9 +52,15 @@
                                             <small class="text-muted">{{ $mk->sks }} SKS</small>
                                         </div>
                                         <div class="mt-3">
-                                            <a href="{{ route('mks.cpmks.index',[$mk->id]) }}" class="btn btn-outline-primary btn-sm w-100">
-                                                <i class="bi bi-eye"></i> Lihat Detail MK
-                                            </a>
+                                            @if ($mk->cpmks_count > 0)
+                                                <a href="{{ route('mks.cpmks.index', [$mk->id]) }}" class="btn btn-outline-primary btn-sm w-100">
+                                                    <i class="bi bi-eye"></i> Lihat Detail MK
+                                                </a>
+                                            @else
+                                                <a href="{{ route('settings.import.mk-master', [$mk->id]) }}" class="btn btn-outline-primary btn-sm w-100">
+                                                    <i class="bi bi-upload"></i> Lihat Detail MK
+                                                </a>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
