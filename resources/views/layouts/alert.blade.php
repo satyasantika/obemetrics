@@ -25,6 +25,14 @@
                 'delay' => 5000,
             ];
         }
+
+        if (session('error')) {
+            $toastItems[] = [
+                'type' => 'danger',
+                'message' => session('error'),
+                'delay' => 6000,
+            ];
+        }
     @endphp
 
     @if (!empty($toastItems))
