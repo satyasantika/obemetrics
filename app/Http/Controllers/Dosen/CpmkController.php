@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dosen;
 use App\Models\Mk;
 use App\Models\Cpmk;
 use Illuminate\Http\Request;
+use App\Actions\SyncMkState;
 use App\Http\Controllers\Controller;
 
 class CpmkController extends Controller
@@ -34,6 +35,7 @@ class CpmkController extends Controller
         $name = $request->nama;
         $data = $request->all();
         Cpmk::create($data);
+        SyncMkState::sync($mk->fresh());
 
         return to_route('mks.cpmks.index', $mk)->with('success','CPMK: '.$name.' telah ditambahkan');
     }
@@ -49,6 +51,7 @@ class CpmkController extends Controller
         $name = $cpmk->nama;
         $data = $request->all();
         $cpmk->fill($data)->save();
+        SyncMkState::sync($mk->fresh());
 
         return to_route('mks.cpmks.index', $mk)->with('success','CPMK: '.$name.' telah diperbarui');
     }
@@ -61,6 +64,7 @@ class CpmkController extends Controller
                 ->with('error','CPMK: '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
         }
         $cpmk->delete();
+        SyncMkState::sync($mk->fresh());
         return to_route('mks.cpmks.index', $mk)->with('warning','CPMK: '.$name.' telah dihapus');
     }
 }

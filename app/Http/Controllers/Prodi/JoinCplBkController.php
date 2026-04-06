@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Prodi;
 
+use App\Actions\SyncKurikulumState;
 use App\Models\Bk;
 use App\Models\Cpl;
 use App\Models\JoinCplMk;
@@ -77,6 +78,8 @@ class JoinCplBkController extends Controller
                 ]);
             }
 
+            SyncKurikulumState::sync($kurikulum);
+
             if ($expectsJson) {
                 return response()->json([
                     'status' => 'ok',
@@ -103,6 +106,7 @@ class JoinCplBkController extends Controller
                 }
                 $joincplbk->delete();
                 }
+            SyncKurikulumState::sync($kurikulum);
 
             if ($expectsJson) {
                 return response()->json([

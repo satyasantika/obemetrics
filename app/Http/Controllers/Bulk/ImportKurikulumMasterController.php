@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Bulk;
 
+use App\Actions\SyncKurikulumState;
 use App\Http\Controllers\Controller;
 use App\Models\Bk;
 use App\Models\Cpl;
@@ -141,6 +142,8 @@ class ImportKurikulumMasterController extends Controller
                     return $this->commitKurikulumBundle($spreadsheet, $kurikulum);
                 });
 
+                SyncKurikulumState::sync($kurikulum->fresh());
+
                 $successMessage = "Import master kurikulum berhasil: {$result['profils']} profil, {$result['cpls']} CPL, {$result['bks']} BK, {$result['mks']} MK diproses.";
                 if (($result['mks_skipped_duplicate'] ?? 0) > 0) {
                     $successMessage .= " {$result['mks_skipped_duplicate']} data MK tidak di-commit karena kode sudah pernah dipakai.";
@@ -175,6 +178,8 @@ class ImportKurikulumMasterController extends Controller
                 if (($result['join_cpl_bks']['locked_skipped'] ?? 0) > 0) {
                     $redirect->with('warning', "{$result['join_cpl_bks']['locked_skipped']} interaksi CPL >< BK tidak dapat dihapus karena masih dipakai dalam pembobotan CPL >< MK.");
                 }
+
+                SyncKurikulumState::sync($kurikulum->fresh());
 
                 return $redirect;
             } catch (\Throwable $e) {
@@ -218,6 +223,8 @@ class ImportKurikulumMasterController extends Controller
                 if (($result['skipped_unavailable_inputs'] ?? 0) > 0) {
                     $redirect->with('warning', "{$result['skipped_unavailable_inputs']} input pada sel non-interaksi dilewati otomatis.");
                 }
+
+                SyncKurikulumState::sync($kurikulum->fresh());
 
                 return $redirect;
             }
@@ -333,9 +340,49 @@ class ImportKurikulumMasterController extends Controller
             $message .= ' Beberapa baris dilewati: ' . implode(' | ', array_slice($skipped, 0, 5));
         }
 
+        SyncKurikulumState::sync($kurikulum->fresh());
+
         if ($target === 'kurikulum_bundle') {
-            return to_route('kurikulums.profils.index', [$kurikulum->id])
+            $fresh = $kurikulum->fresh();
+
+            $masterComplete = $fresh->profils()->exists()
+                && $fresh->cpls()->exists()
+                && $fresh->bks()->exists()
+                && $fresh->mks()->exists();
+
+            $allMksHaveDosen = $masterComplete
+                && !$fresh->mks()->whereDoesntHave('joinMkUsers')->exists();
+
+            if ($masterComplete && $allMksHaveDosen) {
+                return to_route('settings.import.kurikulum-master', [
+                        'kurikulum' => $fresh->id,
+                        'target'    => 'join_kurikulum_bundle',
+                    ])
+                    ->with('success', $message);
+            }
+
+            if ($masterComplete) {
+                return to_route('kurikulums.mks.index', $fresh->id)
+                    ->with('success', $message . ' Lengkapi dosen pengampu untuk setiap MK.');
+            }
+
+            return to_route('kurikulums.profils.index', $fresh->id)
                 ->with('success', $message);
+        }
+
+        if ($target === 'join_kurikulum_bundle') {
+            $fresh = $kurikulum->fresh();
+
+            $interaksiLengkap = $fresh->joinProfilCpls()->exists()
+                && $fresh->joinCplBks()->exists();
+
+            $semuaMkSudahBobot = $interaksiLengkap
+                && !$fresh->mks()->whereDoesntHave('joinCplMks')->exists();
+
+            if ($interaksiLengkap && !$semuaMkSudahBobot) {
+                return to_route('kurikulums.joincplmks.index', $fresh->id)
+                    ->with('success', $message . ' Lengkapi bobot CPL untuk setiap MK.');
+            }
         }
 
         return redirect()->to($this->resolveReturnUrl($request))

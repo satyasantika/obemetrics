@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Prodi;
 
+use App\Actions\SyncKurikulumState;
 use App\Models\Cpl;
 use App\Models\JoinCplCpmk;
 use App\Models\JoinCplMk;
@@ -223,11 +224,13 @@ class JoinCplMkController extends Controller
                         ->whereIn('id', $existingRows->pluck('id'))
                         ->delete();
                 }
+                SyncKurikulumState::sync($kurikulum);
 
                 return response()->json([
                     'status' => 'ok',
                     'linked' => false,
                     'bobot' => null,
+                    'state' => class_basename($kurikulum->fresh()->status),
                 ]);
             }
 
@@ -249,10 +252,13 @@ class JoinCplMkController extends Controller
                 ]);
             }
 
+            SyncKurikulumState::sync($kurikulum);
+
             return response()->json([
                 'status' => 'ok',
                 'linked' => true,
                 'bobot' => (float) $row->bobot,
+                'state' => class_basename($kurikulum->fresh()->status),
             ]);
         }
 
@@ -305,6 +311,8 @@ class JoinCplMkController extends Controller
                 ->whereNotIn('join_cpl_bk_id', $eligibleJoinCplBkIds)
                 ->delete();
 
+            SyncKurikulumState::sync($kurikulum);
+
             return to_route('kurikulums.joincplmks.index', $kurikulumId)
                 ->with('success', $mk->kode . ' telah diinteraksi dengan ' . $cpl->kode);
         } else {
@@ -323,6 +331,7 @@ class JoinCplMkController extends Controller
                     ->whereIn('id', $existingRows->pluck('id'))
                     ->delete();
             }
+            SyncKurikulumState::sync($kurikulum);
 
             return to_route('kurikulums.joincplmks.index', $kurikulumId)
                 ->with('warning', $mk->kode . ' sudah tidak berinteraksi dengan ' . $cpl->kode);

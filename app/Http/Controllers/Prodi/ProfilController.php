@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Prodi;
 use App\Models\Profil;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Actions\SyncKurikulumState;
 use App\Models\Kurikulum;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -80,6 +81,7 @@ class ProfilController extends Controller
     {
         $name = strtoupper($request->name);
         Profil::create($request->all());
+        SyncKurikulumState::sync($kurikulum);
 
         return to_route('kurikulums.profils.index', $kurikulum)->with('success','profil '.$name.' telah ditambahkan');
     }
@@ -107,6 +109,7 @@ class ProfilController extends Controller
                 ->with('error','Profil '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
         }
         $profil->delete();
+        SyncKurikulumState::sync($kurikulum);
         return to_route('kurikulums.profils.index', $kurikulum)->with('warning','Profil '.$name.' telah dihapus');
     }
 

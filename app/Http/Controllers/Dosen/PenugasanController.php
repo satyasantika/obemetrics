@@ -6,6 +6,7 @@ use App\Models\Mk;
 use App\Models\Evaluasi;
 use App\Models\Penugasan;
 use Illuminate\Http\Request;
+use App\Actions\SyncMkState;
 use App\Http\Controllers\Controller;
 
 class PenugasanController extends Controller
@@ -37,6 +38,7 @@ class PenugasanController extends Controller
     {
         $nama = $request->input('nama');
         $newPenugasan = $mk->penugasans()->create($request->all());
+        SyncMkState::sync($mk->fresh());
 
         return to_route('mks.penugasans.index', $mk->id)->with('success', 'Tugas: ' . $nama . ' telah dibuat.');
     }
@@ -51,6 +53,7 @@ class PenugasanController extends Controller
     {
         $penugasan->update($request->all());
         $nama = $request->input('nama');
+        SyncMkState::sync($mk->fresh());
 
         return to_route('mks.penugasans.index', $mk->id)->with('success', 'Tugas: ' . $nama . ' telah diperbarui.');
     }
@@ -63,6 +66,7 @@ class PenugasanController extends Controller
                 ->with('error', 'Tugas: ' . $nama . ' tidak dapat dihapus karena sudah digunakan pada tabel relasi/nilai.');
         }
         $penugasan->delete();
+        SyncMkState::sync($mk->fresh());
 
         return to_route('mks.penugasans.index', $mk->id)->with('warning', 'Tugas: ' . $nama . ' telah dihapus.');
     }

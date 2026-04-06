@@ -7,6 +7,7 @@ use App\Models\Cpmk;
 use App\Models\JoinCplBk;
 use App\Models\JoinCplCpmk;
 use Illuminate\Http\Request;
+use App\Actions\SyncMkState;
 use App\Http\Controllers\Controller;
 
 class JoinCplCpmkController extends Controller
@@ -64,6 +65,7 @@ class JoinCplCpmkController extends Controller
                 ]);
             }
 
+            SyncMkState::sync(Mk::find($request->mk_id));
             if ($expectsJson) {
                 return response()->json([
                     'status' => 'ok',
@@ -89,6 +91,7 @@ class JoinCplCpmkController extends Controller
                             ->with('error', 'Interaksi dikunci karena sudah digunakan pada data SubCPMK.');
                 }
                 $joincplcpmk->delete();
+                SyncMkState::sync(Mk::find($request->mk_id));
                 }
 
             if ($expectsJson) {

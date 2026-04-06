@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Bulk;
 
+use App\Actions\SyncKurikulumState;
 use App\Models\KontrakMk;
+use App\Models\Kurikulum;
 use App\Models\Mahasiswa;
 use App\Models\Mk;
 use App\Models\User;
@@ -26,7 +28,9 @@ class ImportKontrakMkController extends Controller
         $semesters = Semester::all();
         $preview = session('import_kontrakmk_preview', []);
         $returnUrl = $this->resolveReturnUrl(request(), $preview);
-        return view('setting.bulk-import.kontrakmk', compact('preview', 'semesters', 'returnUrl'));
+        $kurikulumId = request()->query('kurikulum') ?? ($preview['kurikulum_id'] ?? null);
+        $kurikulum = $kurikulumId ? Kurikulum::find($kurikulumId) : null;
+        return view('setting.bulk-import.kontrakmk', compact('preview', 'semesters', 'returnUrl', 'kurikulum'));
     }
 
     public function importKontrakMk(Request $request)
@@ -141,6 +145,7 @@ class ImportKontrakMkController extends Controller
                     'semester_id' => $semesterId,
                     'semester_kode' => $semester->kode,
                     'return_url' => $this->resolveReturnUrl($request),
+                    'kurikulum_id' => $request->query('kurikulum') ?? $request->input('kurikulum_id'),
                 ],
             ]);
 
@@ -148,7 +153,9 @@ class ImportKontrakMkController extends Controller
             $preview = session('import_kontrakmk_preview', []);
             $semesters = Semester::all();
             $returnUrl = $this->resolveReturnUrl($request, $preview);
-            return view('setting.bulk-import.kontrakmk', compact('preview', 'semesters', 'returnUrl'))
+            $kurikulumId = $preview['kurikulum_id'] ?? null;
+            $kurikulum = $kurikulumId ? Kurikulum::find($kurikulumId) : null;
+            return view('setting.bulk-import.kontrakmk', compact('preview', 'semesters', 'returnUrl', 'kurikulum'))
                             ->with('success', 'Data berhasil dibaca. Silakan pilih data yang akan disimpan.');
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat membaca file: ' . $e->getMessage());
@@ -208,13 +215,25 @@ class ImportKontrakMkController extends Controller
 
         session()->forget('import_kontrakmk_preview');
 
+        // Sync kurikulum state if import was done from kurikulum context
+        $kurikulumId = $preview['kurikulum_id'] ?? null;
+        if ($kurikulumId) {
+            $kurikulum = Kurikulum::find($kurikulumId);
+            if ($kurikulum) {
+                SyncKurikulumState::sync($kurikulum->fresh());
+            }
+        }
+
         $message = "{$savedCount} data kontrak MK berhasil disimpan.";
         if ($errorCount > 0) {
             $message .= " {$errorCount} data gagal disimpan karena data mahasiswa/mk/dosen tidak ditemukan.";
         }
 
-        return redirect()->to($this->resolveReturnUrl($request, $preview))
-                        ->with('success', $message);
+        $redirectUrl = $kurikulumId
+            ? route('kontrakmks.index', ['kurikulum' => $kurikulumId])
+            : $this->resolveReturnUrl($request, $preview);
+
+        return redirect()->to($redirectUrl)->with('success', $message);
     }
 
     public function downloadTemplate(Request $request)
@@ -259,10 +278,16 @@ class ImportKontrakMkController extends Controller
         ]);
     }
 
-    public function clearPreview()
+    public function clearPreview(Request $request)
     {
         session()->forget('import_kontrakmk_preview');
-        return redirect()->route('settings.import.kontrakmks')
+
+        $kurikulumId = $request->input('kurikulum_id');
+        $redirectUrl = $kurikulumId
+            ? route('settings.import.kontrakmks', ['kurikulum' => $kurikulumId])
+            : route('settings.import.kontrakmks');
+
+        return redirect()->to($redirectUrl)
                         ->with('success', 'Data preview berhasil dihapus.');
     }
 

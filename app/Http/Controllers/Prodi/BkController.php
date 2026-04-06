@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Prodi;
 
+use App\Actions\SyncKurikulumState;
 use App\Models\Bk;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -33,6 +34,7 @@ class BkController extends Controller
     {
         $name = $request->name;
         Bk::create($request->all());
+        SyncKurikulumState::sync($kurikulum);
 
         return to_route('kurikulums.bks.index', $kurikulum)->with('success','BK: '.$name.' telah ditambahkan');
     }
@@ -60,6 +62,7 @@ class BkController extends Controller
                 ->with('error','BK: '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
         }
         $bk->delete();
+        SyncKurikulumState::sync($kurikulum);
         return to_route('kurikulums.bks.index', $kurikulum)->with('warning','BK: '.$name.' telah dihapus');
     }
 

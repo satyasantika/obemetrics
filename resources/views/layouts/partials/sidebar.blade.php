@@ -70,7 +70,9 @@
                         $mkModel = \App\Models\Mk::find((string) $routeMks);
                         $selectedKurikulum = $mkModel ? \App\Models\Kurikulum::find((string) $mkModel->kurikulum_id) : null;
                     } else {
-                        $selectedKurikulum = \App\Models\Kurikulum::find((string) session('selected_kurikulum_id'));
+                        $selectedKurikulum = request()->routeIs('ruang.prodi')
+                            ? null
+                            : \App\Models\Kurikulum::find((string) session('selected_kurikulum_id'));
                     }
 
                     if ($selectedKurikulum) {
@@ -268,7 +270,7 @@
 
                         <li class="nav-header">KONTRAK MK</li>
                         <li class="nav-item">
-                            <a href="{{ route('kontrakmks.index') }}"
+                            <a href="{{ route('kontrakmks.index', ['kurikulum' => $selectedKurikulum->id]) }}"
                                class="nav-link {{ request()->routeIs('kontrakmks.*', 'settings.import.kontrakmks*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-file-signature"></i>
                                 <p>Kontrak Mata Kuliah</p>
@@ -309,21 +311,28 @@
                             </a>
                         </li>
 
-                        @if(!$dataComplete)
+                        @if($selectedKurikulum->status instanceof \App\States\Kurikulum\NonAktif)
+                            <li class="nav-item sidebar-notice-item">
+                                <div class="sidebar-notice sidebar-notice-warning">
+                                    <span class="sidebar-notice-icon"><i class="bi bi-slash-circle-fill"></i></span>
+                                    <span class="sidebar-notice-text">Kurikulum ini berstatus <strong>Non Aktif</strong>. Aktifkan kembali untuk melanjutkan pengisian.</span>
+                                </div>
+                            </li>
+                        @elseif($selectedKurikulum->status instanceof \App\States\Kurikulum\Draft)
                             <li class="nav-item sidebar-notice-item">
                                 <div class="sidebar-notice sidebar-notice-warning">
                                     <span class="sidebar-notice-icon"><i class="bi bi-exclamation-diamond-fill"></i></span>
                                     <span class="sidebar-notice-text">Lengkapi data master (Profil, CPL, BK, MK) untuk mengaktifkan menu Interaksi &amp; Laporan.</span>
                                 </div>
                             </li>
-                        @elseif($mustImportJoinMaster)
+                        @elseif($selectedKurikulum->status instanceof \App\States\Kurikulum\BelumInteraksi)
                             <li class="nav-item sidebar-notice-item">
                                 <div class="sidebar-notice sidebar-notice-warning">
                                     <span class="sidebar-notice-icon"><i class="bi bi-exclamation-diamond-fill"></i></span>
                                     <span class="sidebar-notice-text">Upload data interaksi terlebih dahulu.</span>
                                 </div>
                             </li>
-                        @elseif(!$joinCplMkExists)
+                        @elseif($selectedKurikulum->status instanceof \App\States\Kurikulum\BelumBobot)
                             <li class="nav-item sidebar-notice-item">
                                 <div class="sidebar-notice sidebar-notice-warning">
                                     <span class="sidebar-notice-icon"><i class="bi bi-exclamation-diamond-fill"></i></span>
@@ -411,14 +420,14 @@
                                 <p>Pengisian Nilai</p>
                             </a>
                         </li>
+
+                        <li class="nav-header">LAPORAN</li>
                         <li class="nav-item">
                             <a href="{{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? route('mks.workclouds.index', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.workclouds.*') ? 'active' : '' }} {{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? '' : 'disabled' }}" @if(!($mkPenilaianComplete && $mkHasKontrakAccess)) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-cloud-upload-alt"></i>
                                 <p>Portofolio Penilaian</p>
                             </a>
                         </li>
-
-                        <li class="nav-header">LAPORAN</li>
                         <li class="nav-item">
                             <a href="{{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? route('mks.achievements.index', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.achievements.*') ? 'active' : '' }} {{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? '' : 'disabled' }}" @if(!($mkPenilaianComplete && $mkHasKontrakAccess)) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-chart-line"></i>

@@ -2,7 +2,10 @@
 
 @section('content')
 <div class="container">
-    <div class="row justify-content-left">
+    @if (isset($kurikulum) && $kurikulum)
+        @include('components.identitas-kurikulum', ['kurikulum' => $kurikulum])
+    @endif
+    <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
@@ -14,6 +17,13 @@
                      <form action="{{ route('settings.import.kontrakmks') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('kontrakmks.index') }}">
+                        <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id ?? '' }}">
+
+                        <div id="semester-alert" class="alert alert-warning py-2 px-3 d-flex align-items-center gap-2 @if(!empty($preview['semester_id'])) d-none @endif" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+                            <span>Pilih <strong>semester</strong> terlebih dahulu sebelum mengunduh template atau mengunggah file.</span>
+                        </div>
+
                         <div class="row mt-3">
                             <div class="col-md-3 text-end">
                                 Semester <span class="text-danger">*</span>
@@ -34,16 +44,22 @@
                                 File Upload <span class="text-danger">*</span>
                             </div>
                             <div class="col">
-                                <input type="file" name="file" class="form-control" accept=".csv,.xlsx,.ods" required>
+                                <input type="file" name="file" id="file-input" class="form-control" accept=".csv,.xlsx,.ods" required
+                                       @if(empty($preview['semester_id'])) disabled @endif>
                                 <small class="text-muted d-block mt-1">
-                                    Unduh template: <a href="{{ route('settings.import.kontrakmks.template') }}">template-import-kontrakmk.xlsx</a>
+                                    Unduh template:
+                                    <a id="template-link" href="{{ route('settings.import.kontrakmks.template') }}"
+                                       @if(empty($preview['semester_id'])) class="pe-none text-muted" aria-disabled="true" tabindex="-1" @endif>
+                                        template-import-kontrakmk.xlsx
+                                    </a>
                                 </small>
                             </div>
                         </div>
                         <div class="row mt-3">
                             <div class="col-md-3"></div>
                             <div class="col">
-                                <button type="submit" class="btn btn-primary btn-sm">
+                                <button type="submit" id="submit-btn" class="btn btn-primary btn-sm"
+                                        @if(empty($preview['semester_id'])) disabled @endif>
                                     <i class="bi bi-upload"></i> Upload &amp; Preview
                                 </button>
                             </div>
@@ -66,6 +82,7 @@
                     <form action="{{ route('settings.import.kontrakmks.clear') }}" method="POST" class="float-end" style="display: inline;">
                         @csrf
                         <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('kontrakmks.index') }}">
+                        <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id ?? '' }}">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus preview data?');">
                             <i class="bi bi-x-circle"></i> Kosongkan Preview
                         </button>
@@ -154,6 +171,32 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const semesterSelect = document.querySelector('select[name="semester_id"]');
+    const fileInput = document.getElementById('file-input');
+    const submitBtn = document.getElementById('submit-btn');
+    const fileHint = document.getElementById('file-hint');
+    const semesterAlert = document.getElementById('semester-alert');
+    const templateLink = document.getElementById('template-link');
+
+    function toggleFileInput() {
+        const selected = semesterSelect && semesterSelect.value !== '';
+        if (fileInput) fileInput.disabled = !selected;
+        if (submitBtn) submitBtn.disabled = !selected;
+        if (fileHint) fileHint.classList.toggle('d-none', selected);
+        if (semesterAlert) semesterAlert.classList.toggle('d-none', selected);
+        if (templateLink) {
+            templateLink.classList.toggle('pe-none', !selected);
+            templateLink.classList.toggle('text-muted', !selected);
+            templateLink.setAttribute('aria-disabled', selected ? 'false' : 'true');
+            templateLink.setAttribute('tabindex', selected ? '0' : '-1');
+        }
+    }
+
+    if (semesterSelect) {
+        semesterSelect.addEventListener('change', toggleFileInput);
+        toggleFileInput();
+    }
+
     const selectAll = document.getElementById('select-all');
     const rowChecks = document.querySelectorAll('.row-check:not([disabled])');
 

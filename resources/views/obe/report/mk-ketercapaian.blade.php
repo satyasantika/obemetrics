@@ -4,7 +4,6 @@
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-12">
-            @include('components.mk-flow-info', ['mk' => $mk])
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
         </div>

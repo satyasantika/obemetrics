@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Prodi;
 
+use App\Actions\SyncKurikulumState;
 use App\Models\Mk;
 use App\Models\Kurikulum;
 use App\Models\JoinMkUser;
@@ -89,6 +90,7 @@ class MkController extends Controller
         $data = $request->all();
         $data['sks'] = $request->sks_teori + $request->sks_praktik + $request->sks_lapangan;
         Mk::create($data);
+        SyncKurikulumState::sync($kurikulum);
 
         return to_route('kurikulums.mks.index', $kurikulum)->with('success','Mata Kuliah: '.$name.' telah ditambahkan');
     }
@@ -134,6 +136,7 @@ class MkController extends Controller
                 ->with('error','Mata Kuliah: '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
         }
         $mk->delete();
+        SyncKurikulumState::sync($kurikulum);
         return to_route('kurikulums.mks.index', $kurikulum)->with('warning','Mata Kuliah: '.$name.' telah dihapus');
     }
 

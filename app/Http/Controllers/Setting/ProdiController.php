@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Setting;
 
 use App\Models\Prodi;
 use App\Models\JoinProdiUser;
+use App\Actions\SyncProdiState;
+use App\States\Prodi\Aktif as ProdiAktif;
+use App\States\Prodi\Draft as ProdiDraft;
 use Illuminate\Http\Request;
 use App\DataTables\ProdisDataTable;
 use App\Http\Controllers\Controller;
@@ -32,7 +35,9 @@ class ProdiController extends Controller
     public function store(Request $request)
     {
         $name = strtoupper($request->name);
-        Prodi::create($request->all());
+        $data = $request->all();
+        $data['status'] = ProdiDraft::$name;
+        Prodi::create($data);
 
         return to_route('prodis.index')->with('success','prodi '.$name.' telah ditambahkan');
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Prodi;
 
+use App\Actions\SyncKurikulumState;
 use App\Models\Cpl;
 use App\Models\Profil;
 use App\Models\Kurikulum;
@@ -54,6 +55,8 @@ class JoinProfilCplController extends Controller
                 ]);
             }
 
+            SyncKurikulumState::sync($kurikulum);
+
             if ($expectsJson) {
                 return response()->json([
                     'status' => 'ok',
@@ -68,6 +71,7 @@ class JoinProfilCplController extends Controller
             if ($joinprofilcpl) {
                 $joinprofilcpl->delete();
                 }
+            SyncKurikulumState::sync($kurikulum);
 
             if ($expectsJson) {
                 return response()->json([

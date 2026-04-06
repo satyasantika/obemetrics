@@ -9,5 +9,7 @@
             <div class="fw-semibold">{{ $kurikulum->prodi->jenjang }} {{ $kurikulum->prodi->nama }}</div>
         </div>
     </div>
+    <hr>
+    @include('components.kurikulum-flow-info',['kurikulum' => $kurikulum])
 </div>
 

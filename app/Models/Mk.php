@@ -2,16 +2,22 @@
 
 namespace App\Models;
 
+use App\States\Mk\MkState;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\ModelStates\HasStates;
 
 class Mk extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, HasStates;
     protected $guarded = ['id'];
+
+    protected $casts = [
+        'status' => MkState::class,
+    ];
 
     public function kurikulum(): BelongsTo
     {

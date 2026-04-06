@@ -44,9 +44,32 @@
                                         <div>
                                             <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                                                 <span class="badge bg-secondary-subtle text-secondary">{{ $mk->kode }}</span>
-                                                @if($joinMkUser->koordinator)
-                                                    <span class="badge bg-primary">Koordinator</span>
-                                                @endif
+                                                <div class="d-flex gap-1 flex-wrap justify-content-end">
+                                                    @if($joinMkUser->koordinator)
+                                                        <span class="badge bg-primary">Koordinator</span>
+                                                    @endif
+                                                    @if($mk->status instanceof \App\States\Mk\NonAktif)
+                                                        <span class="badge rounded-pill bg-danger-subtle text-danger" style="font-size:.7rem;border:1px solid rgba(220,53,69,.2)">
+                                                            <i class="bi bi-slash-circle"></i> Non-Aktif
+                                                        </span>
+                                                    @elseif($mk->status instanceof \App\States\Mk\Aktif)
+                                                        <span class="badge rounded-pill bg-success-subtle text-success" style="font-size:.7rem;border:1px solid rgba(25,135,84,.2)">
+                                                            <i class="bi bi-check2-circle"></i> Selesai
+                                                        </span>
+                                                    @elseif($mk->status instanceof \App\States\Mk\BelumNilai)
+                                                        <span class="badge rounded-pill bg-info-subtle text-info" style="font-size:.7rem;border:1px solid rgba(13,202,240,.2)">
+                                                            <i class="bi bi-clipboard2-data"></i> Menilai
+                                                        </span>
+                                                    @elseif($mk->status instanceof \App\States\Mk\MappingSubCPMK)
+                                                        <span class="badge rounded-pill bg-primary-subtle text-primary" style="font-size:.7rem;border:1px solid rgba(13,110,253,.2)">
+                                                            <i class="bi bi-diagram-3"></i> Set SubCPMK ke Penugasan
+                                                        </span>
+                                                    @else
+                                                        <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis" style="font-size:.7rem;border:1px solid rgba(255,193,7,.2)">
+                                                            <i class="bi bi-pencil-square"></i> Draft
+                                                        </span>
+                                                    @endif
+                                                </div>
                                             </div>
                                             <div class="fw-semibold">{{ $mk->nama }}</div>
                                             <small class="text-muted">{{ $mk->sks }} SKS</small>

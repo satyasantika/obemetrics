@@ -34,6 +34,7 @@ return new class extends Migration
             $table->string('sk_akreditasi')->nullable();
             $table->string('tahun_internasional')->nullable();
             $table->string('sk_internasional')->nullable();
+            $table->string('status')->default('draft');
             $table->timestamps();
         });
         // user pada prodi
@@ -64,6 +65,7 @@ return new class extends Migration
             $table->integer('target_capaian_lulusan')->nullable();
             $table->boolean('status_aktif')->default(0);
             $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->string('status')->default('draft');
             $table->timestamps();
         });
 
@@ -132,6 +134,7 @@ return new class extends Migration
             $table->integer('sks_lapangan')->default(0);
             $table->text('deskripsi')->nullable();
             $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->string('status')->default('draft');
             $table->timestamps();
         });
         // interaksi cpl-mk
@@ -202,9 +205,9 @@ return new class extends Migration
             $table->string('kode')->nullable();
             $table->string('nama')->nullable();
             $table->double('bobot')->nullable();
-            $table->foreignUuId('mk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->foreignUuId('evaluasi_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->foreignUuId('semester_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('evaluasi_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->text('deskripsi')->nullable();
             $table->timestamps();
         });

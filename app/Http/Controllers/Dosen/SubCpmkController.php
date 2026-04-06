@@ -7,6 +7,7 @@ use App\Models\Cpmk;
 use App\Models\Subcpmk;
 use App\Models\JoinCplCpmk;
 use Illuminate\Http\Request;
+use App\Actions\SyncMkState;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 
@@ -48,6 +49,7 @@ class SubCpmkController extends Controller
         $subcpmk_data = $kode.' - '.$name;
         $data = $request->all();
         Subcpmk::create($data);
+        SyncMkState::sync($mk->fresh());
         return to_route('mks.subcpmks.index', $mk)->with('success',$subcpmk_data.' telah ditambahkan');
     }
 
@@ -62,6 +64,7 @@ class SubCpmkController extends Controller
         $subcpmk_data = $request->kode.' - '.$request->nama;
         $data = $request->all();
         $subcpmk->fill($data)->save();
+        SyncMkState::sync($mk->fresh());
         return to_route('mks.subcpmks.index', $mk)->with('success',$subcpmk_data.' telah diperbarui');
     }
 
@@ -73,6 +76,7 @@ class SubCpmkController extends Controller
                 ->with('error', $subcpmk_data.' tidak dapat dihapus karena sudah digunakan pada relasi SubCPMK >< Penugasan.');
         }
         $subcpmk->delete();
+        SyncMkState::sync($mk->fresh());
         return to_route('mks.subcpmks.index', $mk)->with('warning',$subcpmk_data.' telah dihapus');
     }
 }

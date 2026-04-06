@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\Prodi;
+use App\States\Prodi\Draft as ProdiDraft;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -30,16 +31,35 @@ class ProdisDataTable extends DataTable
                 $pt = e((string) ($row->pt ?? ''));
                 $fakultas = e((string) ($row->fakultas ?? ''));
                 $visiMisi = e((string) ($row->visi_misi ?? ''));
+
+                $isDraft = $row->status instanceof ProdiDraft;
+                $userBtnClass = $isDraft ? 'btn-secondary' : 'btn-success';
+                $userBtnTitle = $isDraft ? 'Belum ada pengelola — klik untuk set user' : 'SET User';
+
                 $action = '<div class="row">';
                 $action .= ' <div class="col-auto"><button type="button" class="btn btn-primary btn-sm action js-prodi-modal-trigger" data-bs-toggle="modal" data-bs-target="#modalEditProdi" data-prodi-id="'.$row->id.'" data-prodi-kode-prodi="'.$kodeProdi.'" data-prodi-nama="'.$nama.'" data-prodi-jenjang="'.$jenjang.'" data-prodi-kode-pddikti="'.$kodePddikti.'" data-prodi-singkat="'.$singkat.'" data-prodi-pt="'.$pt.'" data-prodi-fakultas="'.$fakultas.'" data-prodi-visi-misi="'.$visiMisi.'" title="Edit data prodi"><i class="bi bi-pencil-square"></i></button></div>';
-                $action .= ' <div class="col-auto"><a href="'.route('prodis.joinprodiusers.index',$row->id).'" class="btn btn-success btn-sm action" data-bs-toggle="tooltip" title="SET User"><i class="bi bi-person-gear"></i> User</a></div>';
+                $action .= ' <div class="col-auto"><a href="'.route('prodis.joinprodiusers.index',$row->id).'" class="btn '.$userBtnClass.' btn-sm action" data-bs-toggle="tooltip" title="'.$userBtnTitle.'"><i class="bi bi-person-gear"></i> User</a></div>';
                 $action .= '</div>';
                 return $action;
             })
-            ->editColumn('updated_at', function($row) {
-                return $row->updated_at->format('Y-m-d H:i:s');
+            ->editColumn('status', function($row) {
+                $st = $row->status;
+                if ($st === null) {
+                    return '<span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle px-2 py-1">—</span>';
+                }
+
+                [$bgClass, $textClass, $borderClass, $icon] = match (true) {
+                    $st instanceof \App\States\Prodi\Draft    => ['bg-warning-subtle',  'text-warning-emphasis',  'border-warning-subtle',  'bi-hourglass-split'],
+                    $st instanceof \App\States\Prodi\Aktif    => ['bg-success-subtle',  'text-success-emphasis',  'border-success-subtle',  'bi-check-circle-fill'],
+                    $st instanceof \App\States\Prodi\NonAktif => ['bg-danger-subtle',   'text-danger-emphasis',   'border-danger-subtle',   'bi-slash-circle-fill'],
+                    default                                    => ['bg-secondary-subtle','text-secondary-emphasis','border-secondary-subtle', 'bi-circle'],
+                };
+
+                $label = e($st->label());
+                return '<span class="badge rounded-pill '.$bgClass.' '.$textClass.' border '.$borderClass.' px-2 py-1" style="font-size:0.78rem;font-weight:600;letter-spacing:0.02em;">'
+                    . '<i class="bi '.$icon.' me-1"></i>'.$label.'</span>';
             })
-            ->rawColumns(['action','username'])
+            ->rawColumns(['action', 'status'])
             ->setRowId('id');
     }
 
@@ -114,7 +134,7 @@ class ProdisDataTable extends DataTable
             Column::make('kode_prodi'),
             Column::make('kode_pddikti'),
             Column::make('nama'),
-            Column::make('updated_at'),
+            Column::make('status'),
             Column::computed('action')
                   ->exportable(false)
                   ->printable(false)

@@ -7,6 +7,7 @@ use App\Models\Nilai;
 use App\Models\KontrakMk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Actions\SyncMkState;
 use App\Http\Controllers\Controller;
 
 class NilaiController extends Controller
@@ -53,6 +54,7 @@ class NilaiController extends Controller
             ]
         );
 
+        SyncMkState::sync($mk->fresh());
         return to_route('mks.nilais.index', $mk->id)->with('success', 'Nilai berhasil ditambahkan.');
     }
 
@@ -71,6 +73,7 @@ class NilaiController extends Controller
 
         $nilai->update($payload);
 
+        SyncMkState::sync($mk->fresh());
         return to_route('mks.nilais.index', $mk->id)->with('success', 'Nilai berhasil diperbarui.');
     }
 
@@ -106,6 +109,7 @@ class NilaiController extends Controller
                 ->delete();
 
             $this->syncKontrakMkScore($mk, $payload['mahasiswa_id'], $payload['semester_id']);
+            SyncMkState::sync($mk->fresh());
 
             $kontrakMk = KontrakMk::query()
                 ->where('mk_id', $mk->id)
@@ -143,6 +147,7 @@ class NilaiController extends Controller
         );
 
         $this->syncKontrakMkScore($mk, $payload['mahasiswa_id'], $payload['semester_id']);
+        SyncMkState::sync($mk->fresh());
         $nama_mahasiswa = $nilai->mahasiswa->nama ?? 'N/A';
         $tugas = $nilai->penugasan->kode. '-' . $nilai->penugasan->nama ?? 'N/A';
 

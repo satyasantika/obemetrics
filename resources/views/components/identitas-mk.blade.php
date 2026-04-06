@@ -13,4 +13,6 @@
             <div class="fw-semibold">{{ $mk->kurikulum->prodi->jenjang }} {{ $mk->kurikulum->prodi->nama }}</div>
         </div>
     </div>
+    <hr>
+    @include('components.mk-flow-info', ['mk' => $mk])
 </div>

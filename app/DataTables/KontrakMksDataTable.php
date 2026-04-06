@@ -117,6 +117,10 @@ class KontrakMksDataTable extends DataTable
      */
     public function html(): HtmlBuilder
     {
+        $importUrl = $this->kurikulum_id
+                        ? route('settings.import.kontrakmks', ['kurikulum' => $this->kurikulum_id])
+                        : route('settings.import.kontrakmks');
+
         return $this->builder()
                     ->setTableId('kontrakmks-table')
                     ->columns($this->getColumns())
@@ -161,7 +165,7 @@ class KontrakMksDataTable extends DataTable
                         Button::make([
                                         'text'   => '<i class="bi bi-upload"></i> Import',
                                         'className' => 'btn btn-success',
-                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('settings.import.kontrakmks').'"; }',
+                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.$importUrl.'"; }',
                                     ]),
                                 ]);
     }

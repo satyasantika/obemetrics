@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Bulk;
 
+use App\Actions\SyncMkState;
 use App\Http\Controllers\Controller;
 use App\Models\Cpl;
 use App\Models\Cpmk;
@@ -109,8 +110,23 @@ class ImportMkMasterController extends Controller
                     return $this->commitMkBundle($spreadsheet, $mk, $semesterId);
                 });
 
+                $mkFresh = $mk->fresh();
+                SyncMkState::sync($mkFresh);
+
+                $successMsg = "Import master MK berhasil: {$result['cpmks']} CPMK, {$result['subcpmks']} SubCPMK, {$result['penugasans']} Penugasan diproses.";
+
+                $hasCpmk       = $mkFresh->cpmks()->exists();
+                $hasSubcpmk    = $mkFresh->joinCplCpmks()->whereHas('subcpmks')->exists();
+                $hasPenugasan  = $mkFresh->penugasans()->exists();
+                $noJoinMapping = !$mkFresh->joinSubcpmkPenugasans()->exists();
+
+                if ($hasCpmk && $hasSubcpmk && $hasPenugasan && $noJoinMapping) {
+                    return to_route('mks.joinsubcpmkpenugasans.index', ['mk' => $mk->id, 'semester_id' => $semesterId])
+                        ->with('success', $successMsg . ' Lanjutkan dengan mapping SubCPMK ke Penugasan.');
+                }
+
                 return redirect()->to($this->resolveReturnUrl($request))
-                    ->with('success', "Import master MK berhasil: {$result['cpmks']} CPMK, {$result['subcpmks']} SubCPMK, {$result['penugasans']} Penugasan diproses.");
+                    ->with('success', $successMsg);
             } catch (\Throwable $e) {
                 return back()->with('error', 'Gagal memproses import master MK: ' . $e->getMessage());
             }
@@ -141,6 +157,7 @@ class ImportMkMasterController extends Controller
 
                 session()->forget($this->previewSessionKey($mk, $target));
 
+                SyncMkState::sync($mk->fresh());
                 return to_route('mks.joinsubcpmkpenugasans.index', ['mk' => $mk->id, 'semester_id' => $request->semester_id])
                     ->with('success', "data SubCPMK telah diimport ke Penugasan.");
             }
@@ -155,6 +172,7 @@ class ImportMkMasterController extends Controller
                     $redirect->with('danger', "{$result['removed']} interaksi dibuang karena sel pada template dikosongkan.");
                 }
 
+                SyncMkState::sync($mk->fresh());
                 return $redirect;
             }
 
@@ -346,6 +364,7 @@ class ImportMkMasterController extends Controller
             $message .= ' Beberapa baris dilewati: ' . implode(' | ', array_slice($skipped, 0, 5));
         }
 
+        SyncMkState::sync($mk->fresh());
         return redirect()->to($this->resolveReturnUrl($request))
             ->with('success', $message);
     }

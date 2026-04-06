@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Setting;
 
+use App\Actions\SyncProdiState;
 use App\DataTables\AddJoinProdiUsersDataTable;
 use App\DataTables\JoinProdiUsersDataTable;
 use App\Http\Controllers\Controller;
@@ -11,6 +12,8 @@ use App\Models\JoinMkUser;
 use App\Models\Prodi;
 use App\Models\Role;
 use App\Models\User;
+use App\States\Prodi\Aktif as ProdiAktif;
+use App\States\Prodi\Draft as ProdiDraft;
 use Illuminate\Http\Request;
 use Spatie\Permission\Guard;
 
@@ -49,6 +52,9 @@ class JoinProdiUserController extends Controller
             'prodi_id' => $validated['prodi_id'],
             'status_pimpinan' => false,
         ]);
+
+        // Prodi sudah memiliki anggota — sync state
+        SyncProdiState::sync($prodi);
 
         $namaUser = User::find($request->user_id)->name;
         $namaProdi = strtoupper($prodi->nama);
@@ -120,6 +126,10 @@ class JoinProdiUserController extends Controller
         $namaProdi = strtoupper($joinprodiuser->prodi->nama);
         $namaUser = strtoupper($joinprodiuser->user->name);
         $joinprodiuser->delete();
+
+        // Jika tidak ada anggota tersisa — sync state kembali ke Draft
+        SyncProdiState::sync($prodi);
+
         return to_route('prodis.joinprodiusers.index',$prodi)->with('warning','User '.$namaUser.' pada Prodi '.$namaProdi.' telah dihapus');
     }
 

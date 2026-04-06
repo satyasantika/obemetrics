@@ -3,12 +3,22 @@
     {{ isset($title) ? $title : '' }}
 @endpush
 @section('content')
+@if (isset($kurikulum) && $kurikulum)
+    @include('components.identitas-kurikulum', ['kurikulum' => $kurikulum])
+@endif
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
-                @isset($header)
-                    Manajemen {{ $header }}
+            <div class="card-header d-flex align-items-center justify-content-between gap-2">
+                <span>
+                    @isset($header)
+                        Manajemen {{ $header }}
+                    @endisset
+                </span>
+                @isset($back_route)
+                    <a href="{{ route($back_route) }}" class="btn btn-sm btn-outline-secondary ms-auto">
+                        <i class="bi bi-arrow-left me-1"></i>Kembali
+                    </a>
                 @endisset
             </div>
             <div class="card-body">

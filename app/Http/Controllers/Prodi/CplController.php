@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Prodi;
 
+use App\Actions\SyncKurikulumState;
 use App\Models\Cpl;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -33,6 +34,7 @@ class CplController extends Controller
     {
         $name = $request->name;
         Cpl::create($request->all());
+        SyncKurikulumState::sync($kurikulum);
 
         return to_route('kurikulums.cpls.index', $kurikulum)->with('success','CPL: '.$name.' telah ditambahkan');
     }
@@ -60,6 +62,7 @@ class CplController extends Controller
                 ->with('error','CPL: '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
         }
         $cpl->delete();
+        SyncKurikulumState::sync($kurikulum);
         return to_route('kurikulums.cpls.index', $kurikulum)->with('warning','CPL: '.$name.' telah dihapus');
     }
 

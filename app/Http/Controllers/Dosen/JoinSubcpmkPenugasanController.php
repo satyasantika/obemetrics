@@ -8,6 +8,7 @@ use App\Models\Subcpmk;
 use App\Models\JoinSubcpmkPenugasan;
 use App\Models\Semester;
 use Illuminate\Http\Request;
+use App\Actions\SyncMkState;
 use App\Http\Controllers\Controller;
 
 class JoinSubcpmkPenugasanController extends Controller
@@ -122,6 +123,7 @@ class JoinSubcpmkPenugasanController extends Controller
                     ->delete();
             }
 
+            SyncMkState::sync(Mk::find($mkId));
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
                     'status' => 'ok',
@@ -140,6 +142,7 @@ class JoinSubcpmkPenugasanController extends Controller
                     ->whereIn('id', $existingRows->pluck('id'))
                     ->delete();
 
+                SyncMkState::sync(Mk::find($mkId));
                 if ($request->expectsJson() || $request->ajax()) {
                     return response()->json([
                         'status' => 'ok',
@@ -209,6 +212,7 @@ class JoinSubcpmkPenugasanController extends Controller
             }
         }
 
+        SyncMkState::sync(Mk::find($mkId));
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
                 'status' => 'ok',

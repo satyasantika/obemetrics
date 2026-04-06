@@ -59,14 +59,27 @@ class JoinProdiUsersDataTable extends DataTable
                 return $row->updated_at->format('Y-m-d H:i:s');
             })
             ->AddColumn('role', function($row) {
-                $role = User::find($row->user_id)->getRoleNames();
-                return $role->join(', ');
+                $roles = User::find($row->user_id)->getRoleNames();
+                if ($roles->isEmpty()) {
+                    return '<span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle px-2 py-1" style="font-size:0.75rem;">—</span>';
+                }
+                return $roles->map(function ($role) {
+                    $label = e(ucwords(str_replace(['-','_'], ' ', $role)));
+                    return '<span class="badge rounded-pill bg-info-subtle text-info-emphasis border border-info-subtle px-2 py-1 me-1" style="font-size:0.75rem;font-weight:600;letter-spacing:0.02em;">'
+                        . '<i class="bi bi-person-badge me-1"></i>' . $label . '</span>';
+                })->implode('');
             })
             ->addColumn('nama_user', function($row) {
                 return $row->user->name ?? '';
             })
             ->editColumn('status_pimpinan', function ($row) {
-                return (bool) ($row->status_pimpinan ?? false) ? 'Ya' : '-';
+                $isPimpinan = (bool) ($row->status_pimpinan ?? false);
+                if ($isPimpinan) {
+                    return '<span class="badge rounded-pill bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1" style="font-size:0.75rem;font-weight:600;letter-spacing:0.02em;">'
+                        . '<i class="bi bi-star-fill me-1"></i>Pimpinan</span>';
+                }
+                return '<span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle px-2 py-1" style="font-size:0.75rem;font-weight:500;">'
+                    . '<i class="bi bi-person me-1"></i>Anggota</span>';
             })
             ->filterColumn('nama_user', function($query, $keyword) {
                 $query->where('users.name', 'like', "%{$keyword}%");
@@ -83,7 +96,7 @@ class JoinProdiUsersDataTable extends DataTable
                     $query->where('join_prodi_users.status_pimpinan', false);
                 }
             })
-            ->rawColumns(['action','nama_user'])
+            ->rawColumns(['action', 'nama_user', 'role', 'status_pimpinan'])
             ->setRowId('id');
     }
 
@@ -169,7 +182,7 @@ class JoinProdiUsersDataTable extends DataTable
                 ->searchable(true)
                 ->orderable(true),
             Column::make('role'),
-            Column::make('status_pimpinan')->title('status pimpinan'),
+            Column::make('status_pimpinan')->title('status'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

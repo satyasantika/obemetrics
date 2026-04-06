@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Prodi;
 use App\Models\Semester;
 use App\Models\KontrakMk;
+use App\Models\Kurikulum;
 use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -32,8 +33,12 @@ class KontrakMkController extends Controller
             $prodiIds = $user->joinProdiUsers->pluck('prodi_id')->toArray();
         }
 
+        $kurikulumId = request()->query('kurikulum');
+        $kurikulum = $kurikulumId ? Kurikulum::find($kurikulumId) : null;
+
         return $dataTable->with('prodi_ids', $prodiIds)
-                        ->render('layouts.setting', $this->_dataSelection(''));
+                        ->with('kurikulum_id', $kurikulumId)
+                        ->render('layouts.setting', array_merge($this->_dataSelection(''), ['kurikulum' => $kurikulum]));
     }
 
     public function create()

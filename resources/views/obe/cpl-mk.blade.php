@@ -4,7 +4,6 @@
 <div class="container-fluid">
     <div class="row justify-content-center">
         <div class="col-12">
-            @include('components.kurikulum-flow-info',['kurikulum' => $kurikulum])
             {{-- identitas kurikulum --}}
             @include('components.identitas-kurikulum', ['kurikulum' => $kurikulum])
 
@@ -98,8 +97,8 @@
                                                             <button
                                                                 type="button"
                                                                 class="btn btn-outline-danger rounded-pill btn-sm py-0 px-2 clear-bobot-btn {{ $isLinked ? '' : 'd-none' }}"
-                                                                title="Hapus relasi CPL-BK-MK"
-                                                                aria-label="Hapus relasi"
+                                                                title="Hapus relasi: {{ $mk->nama }} — {{ $column['cpl_kode'] }} — {{ $column['bk_kode'] }}"
+                                                                aria-label="Hapus relasi {{ $mk->nama }} — {{ $column['cpl_kode'] }} — {{ $column['bk_kode'] }}"
                                                             >
                                                                 <i class="bi bi-x-lg"></i>
                                                             </button>
@@ -258,6 +257,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (!result.linked) {
                     input.value = '';
                     lastSavedValue = '';
+                    if (result.state && result.state !== 'Aktif') {
+                        window.location.reload();
+                        return;
+                    }
                 } else if (typeof result.bobot !== 'undefined' && result.bobot !== null) {
                     input.value = result.bobot;
                     lastSavedValue = String(result.bobot);

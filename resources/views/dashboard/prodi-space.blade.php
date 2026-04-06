@@ -32,8 +32,46 @@
                             <div>
                                 <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
                                     <span class="badge bg-secondary-subtle text-secondary">{{ $kurikulum->kode }}</span>
-                                    @if(($selectedKurikulum->id ?? null) === $kurikulum->id)
-                                        <span class="badge bg-success">Aktif</span>
+                                    @php
+                                        $kst = $kurikulum->status;
+                                    @endphp
+                                    @if($kst instanceof \App\States\Kurikulum\Aktif)
+                                        @if(($selectedKurikulum->id ?? null) === $kurikulum->id)
+                                            <span class="badge rounded-pill d-inline-flex align-items-center gap-1"
+                                                  style="background:linear-gradient(135deg,#198754,#20c997);color:#fff;font-size:.7rem;letter-spacing:.03em;box-shadow:0 2px 6px rgba(25,135,84,.35)">
+                                                <i class="bi bi-check2-circle"></i> Aktif &amp; Terpilih
+                                            </span>
+                                        @else
+                                            <span class="badge rounded-pill d-inline-flex align-items-center gap-1 bg-success-subtle text-success"
+                                                  style="font-size:.7rem;border:1px solid rgba(25,135,84,.2)">
+                                                <i class="bi bi-check2-circle"></i> Selesai
+                                            </span>
+                                        @endif
+                                    @elseif($kst instanceof \App\States\Kurikulum\NonAktif)
+                                        <span class="badge rounded-pill d-inline-flex align-items-center gap-1 bg-danger-subtle text-danger"
+                                              style="font-size:.7rem;border:1px solid rgba(220,53,69,.2)">
+                                            <i class="bi bi-slash-circle"></i> Non-Aktif
+                                        </span>
+                                    @elseif($kst instanceof \App\States\Kurikulum\BelumKontrak)
+                                        <span class="badge rounded-pill d-inline-flex align-items-center gap-1 bg-info-subtle text-info"
+                                              style="font-size:.7rem;border:1px solid rgba(13,202,240,.2)">
+                                            <i class="bi bi-file-earmark-text"></i> Mengisi Kontrak MK
+                                        </span>
+                                    @elseif($kst instanceof \App\States\Kurikulum\BelumBobot)
+                                        <span class="badge rounded-pill d-inline-flex align-items-center gap-1 bg-info-subtle text-info"
+                                              style="font-size:.7rem;border:1px solid rgba(13,202,240,.2)">
+                                            <i class="bi bi-sliders2"></i> Pembobotan CPL per MK
+                                        </span>
+                                    @elseif($kst instanceof \App\States\Kurikulum\BelumInteraksi)
+                                        <span class="badge rounded-pill d-inline-flex align-items-center gap-1 bg-primary-subtle text-primary"
+                                              style="font-size:.7rem;border:1px solid rgba(13,110,253,.2)">
+                                            <i class="bi bi-diagram-3"></i> Interaksi Profil CPL &amp; MK
+                                        </span>
+                                    @else
+                                        <span class="badge rounded-pill d-inline-flex align-items-center gap-1 bg-warning-subtle text-warning-emphasis"
+                                              style="font-size:.7rem;border:1px solid rgba(255,193,7,.2)">
+                                            <i class="bi bi-pencil-square"></i> Draft
+                                        </span>
                                     @endif
                                 </div>
                                 <div class="fw-semibold">{{ $kurikulum->nama }}</div>

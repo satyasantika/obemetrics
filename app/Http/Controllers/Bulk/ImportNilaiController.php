@@ -7,6 +7,7 @@ use App\Models\Nilai;
 use App\Models\KontrakMk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Actions\SyncMkState;
 use App\Http\Controllers\Controller;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -210,6 +211,7 @@ class ImportNilaiController extends Controller
                 $message .= " {$skippedRows} baris dilewati karena tidak valid.";
             }
 
+            SyncMkState::sync($mk->fresh());
             return redirect()->to($this->resolveReturnUrl($request))
                 ->with('success', $message);
         } catch (\Throwable $exception) {
@@ -276,6 +278,7 @@ class ImportNilaiController extends Controller
 
         session()->forget($this->previewSessionKey($mk, $kelasFilter));
 
+        SyncMkState::sync($mk->fresh());
         return redirect()->to($this->resolveReturnUrl($request, $preview))
             ->with('success', "{$savedRows} baris diproses, {$savedScores} nilai berhasil disimpan.");
     }
