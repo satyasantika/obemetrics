@@ -43,11 +43,11 @@
             <div class="d-flex justify-content-between position-relative" style="z-index: 1;">
                 @php
                     $flowSteps = [
-                        ['label' => 'Data Master',      'done' => $step1Done, 'active' => !$step1Done],
-                        ['label' => 'Interaksi',        'done' => $step2Done, 'active' => $step1Done && !$step2Done],
-                        ['label' => 'Bobot CPL per MK', 'done' => $step3Done, 'active' => $step2Done && !$step3Done],
-                        ['label' => 'Kontrak MK',       'done' => $step4Done, 'active' => $step3Done && !$step4Done],
-                        ['label' => 'Laporan',          'done' => false,      'active' => $step4Done],
+                        ['label' => 'Data Master',      'url' => route('kurikulums.profils.index', $kurikulum->id),       'done' => $step1Done, 'active' => !$step1Done],
+                        ['label' => 'Interaksi',        'url' => route('kurikulums.joinprofilcpls.index', $kurikulum->id), 'done' => $step2Done, 'active' => $step1Done && !$step2Done],
+                        ['label' => 'Bobot CPL per MK', 'url' => route('kurikulums.joincplmks.index', $kurikulum->id),    'done' => $step3Done, 'active' => $step2Done && !$step3Done],
+                        ['label' => 'Kontrak MK',       'url' => route('kontrakmks.index', ['kurikulum' => $kurikulum->id]), 'done' => $step4Done, 'active' => $step3Done && !$step4Done],
+                        ['label' => 'Laporan',          'url' => route('kurikulums.analisis-asesmen', $kurikulum->id),    'done' => false,      'active' => $step4Done],
                     ];
                 @endphp
                 @foreach($flowSteps as $i => $flowStep)
@@ -60,7 +60,7 @@
                             $bg = '#f8f9fa'; $border = '#dee2e6'; $fg = '#adb5bd'; $lc = '#adb5bd';
                         }
                     @endphp
-                    <div class="d-flex flex-column align-items-center" style="width: 20%;">
+                    <a href="{{ $flowStep['url'] }}" class="d-flex flex-column align-items-center text-decoration-none" style="width: 20%;">
                         <div class="rounded-circle d-flex align-items-center justify-content-center fw-semibold"
                              style="width: 2rem; height: 2rem; font-size: 0.8rem;
                                     background-color: {{ $bg }}; border: 2px solid {{ $border }}; color: {{ $fg }};">
@@ -70,7 +70,7 @@
                              style="font-size: 0.7rem; line-height: 1.3; max-width: 120px; color: {{ $lc }};">
                             {{ $flowStep['label'] }}
                         </div>
-                    </div>
+                    </a>
                 @endforeach
             </div>
         </div>

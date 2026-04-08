@@ -32,10 +32,10 @@
             <div class="d-flex justify-content-between position-relative" style="z-index: 1;">
                 @php
                     $flowSteps = [
-                        ['label' => 'Data MK',       'done' => $step1Done, 'active' => !$step1Done],
-                        ['label' => 'Tugas & Mapping','done' => $step2Done, 'active' => $step1Done && !$step2Done],
-                        ['label' => 'Penilaian',      'done' => $step3Done, 'active' => $step2Done && !$step3Done],
-                        ['label' => 'Laporan',        'done' => $step4Done, 'active' => $step3Done],
+                        ['label' => 'Data MK',        'url' => route('mks.cpmks.index', $mk->id),                    'done' => $step1Done, 'active' => !$step1Done],
+                        ['label' => 'Tugas & Mapping', 'url' => route('mks.joinsubcpmkpenugasans.index', $mk->id),    'done' => $step2Done, 'active' => $step1Done && !$step2Done],
+                        ['label' => 'Penilaian',       'url' => route('mks.nilais.index', $mk->id),                   'done' => $step3Done, 'active' => $step2Done && !$step3Done],
+                        ['label' => 'Laporan',         'url' => route('mks.workclouds.index', $mk->id),               'done' => $step4Done, 'active' => $step3Done],
                     ];
                 @endphp
                 @foreach($flowSteps as $i => $flowStep)
@@ -48,17 +48,17 @@
                             $bg = '#f8f9fa'; $border = '#dee2e6'; $fg = '#adb5bd'; $lc = '#adb5bd';
                         }
                     @endphp
-                    <div class="d-flex flex-column align-items-center" style="width: 25%;">
+                    <a href="{{ $flowStep['url'] }}" class="d-flex flex-column align-items-center text-decoration-none" style="width: 25%;">
                         <div class="rounded-circle d-flex align-items-center justify-content-center fw-semibold"
                              style="width: 2rem; height: 2rem; font-size: 0.8rem;
                                     background-color: {{ $bg }}; border: 2px solid {{ $border }}; color: {{ $fg }};">
                             @if($flowStep['done']) &#10003; @else {{ $i + 1 }} @endif
                         </div>
                         <div class="text-center mt-1 fw-medium"
-                             style="font-size: 0.7rem; line-height: 1.3; max-width: 70px; color: {{ $lc }};">
+                             style="font-size: 0.7rem; line-height: 1.3; max-width: 100px; color: {{ $lc }};">
                             {{ $flowStep['label'] }}
                         </div>
-                    </div>
+                    </a>
                 @endforeach
             </div>
         </div>
