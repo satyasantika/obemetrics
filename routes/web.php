@@ -19,7 +19,7 @@ Route::get('/', function () {
         return to_route('home');
     }
 
-    return view('welcome');
+    return view('silogy');
 });
 
 Auth::routes(['register' => false]);
