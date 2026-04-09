@@ -32,16 +32,23 @@
                                     ->all();
                             @endphp
                             <div class="table-responsive profil-cpl-matrix-wrapper rounded-3 border bg-white shadow-sm">
-                            <table class="table table-hover align-middle profil-cpl-matrix mb-0">
+                            <table class="table table-hover align-middle profil-cpl-matrix mb-0 text-center">
                                 <thead class="table-light">
                                     <tr>
-                                        <th rowspan="2" class="sticky-col text-uppercase small text-muted fw-semibold">CPL</th>
-                                        <th colspan="{{ max(1, $profils->count()) }}" class="text-center text-uppercase small text-muted fw-semibold">PROFIL LULUSAN</th>
+                                        <th class="sticky-col" rowspan="2">CAPAIAN PEMBELAJARAN LULUSAN</th>
+                                        <th colspan="{{ max(1, $profils->count()) }}" class="text-center">PROFIL LULUSAN</th>
                                     </tr>
                                     <tr>
                                         @forelse ($profils as $profil)
-                                            <th class="small fw-normal" style="min-width: 240px;">
-                                                <a tabindex="0" class="btn btn-sm btn-outline-secondary text-start" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="Profil {{ $profil->nama }}" data-content="{{ $profil->deskripsi }}" data-bs-content="{{ $profil->deskripsi }}">{{ $profil->nama }}</a>
+                                            <th class="text-center">
+                                                <div class="d-flex flex-column align-items-center gap-1"
+                                                     data-bs-toggle="popover"
+                                                     data-bs-trigger="hover focus"
+                                                     data-bs-placement="top"
+                                                     data-bs-title="{{ $profil->nama }}"
+                                                     data-bs-content="{{ $profil->deskripsi ?: $profil->nama }}">
+                                                    <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-bold" style="font-size: 0.8rem;">{{ $profil->nama }}</span>
+                                                </div>
                                             </th>
                                         @empty
                                             <th></th>
@@ -52,7 +59,14 @@
                                 @forelse ($cpls as $cpl)
                                     <tr style="vertical-align: text-top;">
                                         <td class="sticky-col">
-                                            <a tabindex="0" class="btn btn-sm btn-outline-secondary" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $cpl->kode }}" data-content="{{ $cpl->nama }}" data-bs-content="{{ $cpl->nama }}">{{ $cpl->kode }}</a>
+                                            <div class="d-flex flex-column align-items-center gap-1"
+                                                 data-bs-toggle="popover"
+                                                 data-bs-trigger="hover focus"
+                                                 data-bs-placement="right"
+                                                 data-bs-title="{{ $cpl->kode }}"
+                                                 data-bs-content="{{ $cpl->nama }}">
+                                                <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis fw-bold" style="font-size: 0.8rem;">{{ $cpl->kode }}</span>
+                                            </div>
                                         </td>
                                         @forelse ($profils as $profil)
                                             <td>
@@ -65,7 +79,7 @@
                                                     @php
                                                         $cek = isset($linkedPairMap[$profil->id . '|' . $cpl->id]);
                                                     @endphp
-                                                    <div class="form-check form-switch d-flex align-items-center gap-2 mb-0">
+                                                    <div class="form-check form-switch d-flex align-items-center justify-content-center gap-2 mb-0">
                                                         <input
                                                             class="form-check-input"
                                                             type="checkbox"
@@ -103,17 +117,9 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    if (window.bootstrap && typeof window.bootstrap.Popover === 'function') {
-        document.querySelectorAll('[data-toggle="popover"]').forEach(function (el) {
-            if (!el.getAttribute('data-bs-content') && el.getAttribute('data-content')) {
-                el.setAttribute('data-bs-content', el.getAttribute('data-content'));
-            }
-            if (!el.getAttribute('data-bs-trigger') && el.getAttribute('data-trigger')) {
-                el.setAttribute('data-bs-trigger', el.getAttribute('data-trigger'));
-            }
-            window.bootstrap.Popover.getOrCreateInstance(el);
-        });
-    }
+    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+        new bootstrap.Popover(el);
+    });
 
     const forms = document.querySelectorAll('.live-profilcpl-form');
 
@@ -219,12 +225,16 @@ document.addEventListener('DOMContentLoaded', function () {
     left: 0;
     background: var(--bs-white);
     z-index: 23;
-    min-width: 240px;
+    width: 1%;
 }
 
 .profil-cpl-matrix thead .sticky-col {
     background: var(--bs-light);
     z-index: 26;
+}
+
+.profil-cpl-matrix tbody td:not(.sticky-col) {
+    background: var(--bs-white);
 }
 </style>
 @endpush

@@ -28,7 +28,14 @@
                                         <th class="sticky-col bg-white" rowspan="2" width="500">MATA KULIAH</th>
                                         @forelse ($cplHeaderGroups as $group)
                                             <th colspan="{{ $group['colspan'] }}" class="text-center">
-                                                <a tabindex="0" class="btn btn-sm btn-outline-primary btn-block" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $group['cpl_kode'] }}" data-content="{{ $group['cpl_nama'] }}" data-bs-content="{{ $group['cpl_nama'] }}">{{ $group['cpl_kode'] }}</a>
+                                                <div class="d-flex flex-column align-items-center gap-1"
+                                                     data-bs-toggle="popover"
+                                                     data-bs-trigger="hover focus"
+                                                     data-bs-placement="top"
+                                                     data-bs-title="{{ $group['cpl_kode'] }}"
+                                                     data-bs-content="{{ $group['cpl_nama'] }}">
+                                                    <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis fw-bold" style="font-size: 0.8rem;">{{ $group['cpl_kode'] }}</span>
+                                                </div>
                                             </th>
                                         @empty
                                             <th></th>
@@ -37,7 +44,14 @@
                                     <tr>
                                         @forelse ($cplBkColumns as $column)
                                             <th class="small fw-normal text-center">
-                                                <a tabindex="0" class="btn btn-sm btn-outline-secondary btn-block" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $column['bk_kode'] }}" data-content="{{ $column['bk_nama'] }}" data-bs-content="{{ $column['bk_nama'] }}">{{ $column['bk_kode'] }}</a>
+                                                <div class="d-flex flex-column align-items-center gap-1"
+                                                     data-bs-toggle="popover"
+                                                     data-bs-trigger="hover focus"
+                                                     data-bs-placement="top"
+                                                     data-bs-title="{{ $column['bk_kode'] }}"
+                                                     data-bs-content="{{ $column['bk_nama'] }}">
+                                                    <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-bold" style="font-size: 0.8rem;">{{ $column['bk_kode'] }}</span>
+                                                </div>
                                             </th>
                                         @empty
                                             <th></th>
@@ -48,8 +62,14 @@
                                 @forelse ($mks as $mk)
                                     <tr style="vertical-align: text-top;">
                                         <th class="sticky-col">
-                                            <a tabindex="0" class="btn btn-sm btn-outline-secondary text-start" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $mk->kode }} ({{ $mk->sks }} SKS)" data-content="{{ $mk->nama }}" data-bs-content="{{ $mk->nama }}">{{ $mk->nama }}</a>
-                                            <br>
+                                            <div class="d-flex flex-column align-items-start gap-1"
+                                                 data-bs-toggle="popover"
+                                                 data-bs-trigger="hover focus"
+                                                 data-bs-placement="right"
+                                                 data-bs-title="{{ $mk->kode }} ({{ $mk->sks }} SKS)"
+                                                 data-bs-content="{{ $mk->nama }}">
+                                                <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis fw-bold" style="font-size: 0.8rem; white-space: normal;">{{ $mk->nama }}</span>
+                                            </div>
                                             @php
                                                 $totalBobot = (float) ($mkTotalBobotMap[$mk->id] ?? 0);
                                             @endphp
@@ -138,17 +158,9 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    if (window.bootstrap && typeof window.bootstrap.Popover === 'function') {
-        document.querySelectorAll('[data-toggle="popover"]').forEach(function (el) {
-            if (!el.getAttribute('data-bs-content') && el.getAttribute('data-content')) {
-                el.setAttribute('data-bs-content', el.getAttribute('data-content'));
-            }
-            if (!el.getAttribute('data-bs-trigger') && el.getAttribute('data-trigger')) {
-                el.setAttribute('data-bs-trigger', el.getAttribute('data-trigger'));
-            }
-            window.bootstrap.Popover.getOrCreateInstance(el);
-        });
-    }
+    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+        new bootstrap.Popover(el);
+    });
 
     const forms = document.querySelectorAll('form[action*="joincplmks"]');
 
@@ -355,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 .nilai-matrix-table thead tr:nth-child(2) th {
     position: sticky;
-    top: 56px;
+    top: 41px;
     background: var(--bs-light);
     z-index: 29;
 }
@@ -371,6 +383,10 @@ document.addEventListener('DOMContentLoaded', function () {
 .nilai-matrix-table thead .sticky-col {
     z-index: 35;
     background: var(--bs-light);
+}
+
+.nilai-matrix-table tbody td {
+    background: var(--bs-white);
 }
 </style>
 @endpush

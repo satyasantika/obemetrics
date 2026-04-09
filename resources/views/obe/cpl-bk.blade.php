@@ -50,8 +50,15 @@
                                         </tr>
                                         <tr>
                                             @forelse ($bks as $bk)
-                                                <th>
-                                                    <a tabindex="0" class="btn btn-sm btn-outline-secondary" role="button" data-toggle="popover"  data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $bk->kode }}" data-content="{{ $bk->nama }}" data-bs-content="{{ $bk->nama }}">{{ $bk->kode }}</a><br>
+                                                <th class="text-center">
+                                                    <div class="d-flex flex-column align-items-center gap-1"
+                                                         data-bs-toggle="popover"
+                                                         data-bs-trigger="hover focus"
+                                                         data-bs-placement="top"
+                                                         data-bs-title="{{ $bk->kode }}"
+                                                         data-bs-content="{{ $bk->nama }}">
+                                                        <span class="badge rounded-pill bg-warning-subtle text-warning-emphasis fw-bold" style="font-size: 0.8rem;">{{ $bk->kode }}</span>
+                                                    </div>
                                                 </th>
                                             @empty
                                                 <th></th>
@@ -62,7 +69,14 @@
                                     @forelse ($cpls as $cpl)
                                         <tr class="matriks-row" style="vertical-align: text-top;">
                                             <td class="sticky-col">
-                                                <a tabindex="0" class="btn btn-sm btn-outline-secondary" role="button" data-toggle="popover" data-bs-toggle="popover" data-trigger="focus" data-bs-trigger="focus" title="{{ $cpl->kode }}" data-content="{{ $cpl->nama }}" data-bs-content="{{ $cpl->nama }}">{{ $cpl->kode }}</a><br>
+                                                <div class="d-flex flex-column align-items-center gap-1"
+                                                     data-bs-toggle="popover"
+                                                     data-bs-trigger="hover focus"
+                                                     data-bs-placement="right"
+                                                     data-bs-title="{{ $cpl->kode }}"
+                                                     data-bs-content="{{ $cpl->nama }}">
+                                                    <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis fw-bold" style="font-size: 0.8rem;">{{ $cpl->kode }}</span>
+                                                </div>
                                             </td>
                                             @forelse ($bks as $bk)
                                                 @php
@@ -77,26 +91,23 @@
                                                         <input type="hidden" name="cpl_id" value="{{ $cpl->id }}">
                                                         <input type="hidden" name="bk_id" value="{{ $bk->id }}">
                                                         <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <div class="form-check form-switch mb-0">
-                                                                <input
-                                                                    class="form-check-input"
-                                                                    type="checkbox"
-                                                                    name="is_linked"
-                                                                    onchange="this.form.requestSubmit()"
-                                                                    @checked($cek)
-                                                                    @disabled($isLocked)
-                                                                >
-                                                            </div>
+                                                        <div class="form-check form-switch d-flex align-items-center justify-content-center gap-2 mb-0">
+                                                            <input
+                                                                class="form-check-input"
+                                                                type="checkbox"
+                                                                name="is_linked"
+                                                                onchange="this.form.requestSubmit()"
+                                                                @checked($cek)
+                                                                @disabled($isLocked)
+                                                            >
+                                                            <span class="save-status small text-muted"></span>
                                                         </div>
-                                                        <span class="save-status small text-muted"></span>
                                                     </form>
-                                                    <div class="mt-1 d-flex align-items-center gap-1 flex-wrap">
-                                                        {{-- <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle link-status-badge {{ $cek ? '' : 'd-none' }}">{{ $bk->kode }}</span> --}}
-                                                        @if ($isLocked)
+                                                    @if ($isLocked)
+                                                        <div class="d-flex justify-content-center mt-1">
                                                             <span class="badge bg-secondary" title="Dikunci" aria-label="Dikunci"><i class="bi bi-lock-fill"></i></span>
-                                                        @endif
-                                                    </div>
+                                                        </div>
+                                                    @endif
                                                 </td>
                                             @empty
                                                 <td></td>
@@ -125,17 +136,9 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    if (window.bootstrap && typeof window.bootstrap.Popover === 'function') {
-        document.querySelectorAll('[data-toggle="popover"]').forEach(function (el) {
-            if (!el.getAttribute('data-bs-content') && el.getAttribute('data-content')) {
-                el.setAttribute('data-bs-content', el.getAttribute('data-content'));
-            }
-            if (!el.getAttribute('data-bs-trigger') && el.getAttribute('data-trigger')) {
-                el.setAttribute('data-bs-trigger', el.getAttribute('data-trigger'));
-            }
-            window.bootstrap.Popover.getOrCreateInstance(el);
-        });
-    }
+    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+        new bootstrap.Popover(el);
+    });
 
     const forms = document.querySelectorAll('.live-cplbk-form');
 
@@ -293,11 +296,18 @@ document.addEventListener('DOMContentLoaded', function () {
     overflow: auto;
 }
 
-.nilai-matrix-table thead th {
+.nilai-matrix-table thead tr:first-child th {
     position: sticky;
     top: 0;
     background: var(--bs-light);
     z-index: 20;
+}
+
+.nilai-matrix-table thead tr:nth-child(2) th {
+    position: sticky;
+    top: 41px;
+    background: var(--bs-light);
+    z-index: 19;
 }
 
 .nilai-matrix-table .sticky-col {
@@ -305,11 +315,15 @@ document.addEventListener('DOMContentLoaded', function () {
     left: 0;
     background: var(--bs-white);
     z-index: 15;
-    min-width: 260px;
+    width: 1%;
 }
 
 .nilai-matrix-table thead .sticky-col {
     z-index: 25;
+}
+
+.nilai-matrix-table tbody td:not(.sticky-col) {
+    background: var(--bs-white);
 }
 
 @media (max-width: 767.98px) {

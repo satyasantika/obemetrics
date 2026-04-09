@@ -25,10 +25,18 @@
                                     <tr>
                                         <th></th>
                                         @forelse ($joincplbks as $joincplbk)
-                                            <th>
-                                                <span data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $joincplbk->cpl->nama }}">
-                                                    {{ $joincplbk->cpl->kode }}
-                                                </span>
+                                            <th class="text-center" style="min-width: 90px;">
+                                                <div class="d-flex flex-column align-items-center gap-1"
+                                                     data-bs-toggle="popover"
+                                                     data-bs-trigger="hover focus"
+                                                     data-bs-placement="top"
+                                                     data-bs-title="{{ $joincplbk->cpl->kode }}"
+                                                     data-bs-content="{{ $joincplbk->cpl->nama }}">
+                                                    <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis fw-bold" style="font-size: 0.8rem;">{{ $joincplbk->cpl->kode }}</span>
+                                                    {{-- @if($joincplbk->bk?->kode)
+                                                    <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill" style="font-size: 0.65rem;">{{ $joincplbk->bk->kode }}</span>
+                                                    @endif --}}
+                                                </div>
                                             </th>
                                         @empty
                                             <th></th>
@@ -100,6 +108,10 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+        new bootstrap.Popover(el);
+    });
+
     const forms = document.querySelectorAll('.live-cplcpmk-form');
 
     forms.forEach(function (form) {

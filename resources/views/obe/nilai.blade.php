@@ -77,12 +77,20 @@
                                                 <tr>
                                                     <th class="sticky-col">Mahasiswa</th>
                                                     @forelse ($penugasans as $penugasan)
-                                                        <th>
-                                                            <span class="fs-3">{{ $penugasan->bobot }}%</span>
-                                                            <span title="{{ $penugasan->nama }}">{{ $penugasan->kode }}</span>
-                                                            <br>
-                                                            <small class="text-muted">{{ $penugasan->nama }}</small>
-                                                            <span class="fs-6">({{ $cplLabelByPenugasanId[$penugasan->id] ?? '-' }})</span>
+                                                        <th class="text-center" style="min-width: 110px;">
+                                                            <div class="d-flex flex-column align-items-center gap-1"
+                                                                 data-bs-toggle="popover"
+                                                                 data-bs-trigger="hover focus"
+                                                                 data-bs-placement="top"
+                                                                 data-bs-title="{{ $penugasan->kode }}"
+                                                                 data-bs-content="{{ $penugasan->nama }}">
+                                                                <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis fw-bold" style="font-size: 0.85rem;">{{ $penugasan->bobot }}%</span>
+                                                                <span class="fw-semibold text-body" style="font-size: 0.85rem;">{{ $penugasan->kode }}</span>
+                                                                <div class="d-flex flex-wrap justify-content-center gap-1">
+                                                                    <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill" style="font-size: 0.65rem;">{{ $penugasan->evaluasi->kode }}</span>
+                                                                    <span class="badge bg-info-subtle text-info-emphasis rounded-pill" style="font-size: 0.65rem;">{{ $cplLabelByPenugasanId[$penugasan->id] ?? '-' }}</span>
+                                                                </div>
+                                                            </div>
                                                         </th>
                                                     @empty
                                                         <th>Belum ada penugasan</th>
@@ -178,6 +186,10 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+        new bootstrap.Popover(el);
+    });
+
     const forms = document.querySelectorAll('.live-nilai-form');
     const semesterFilter = document.getElementById('semester-filter');
     const kelasTab = document.getElementById('kelasTab');

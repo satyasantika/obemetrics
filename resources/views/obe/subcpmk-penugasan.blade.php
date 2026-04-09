@@ -60,10 +60,18 @@
                                     <tr>
                                         <th class="text-uppercase small text-muted fw-semibold sticky-col">Penugasan</th>
                                         @forelse ($subcpmks as $subcpmk)
-                                            <th class="text-center text-uppercase small text-muted fw-semibold fs-4">
-                                                <span class="badge rounded-pill bg-info-subtle text-info-emphasis border border-info-subtle" title="{{ $subcpmk->nama }}">
-                                                    {{ $subcpmk->kode }}
-                                                </span>
+                                            <th class="text-center" style="min-width: 90px;">
+                                                <div class="d-flex flex-column align-items-center gap-1"
+                                                     data-bs-toggle="popover"
+                                                     data-bs-trigger="hover focus"
+                                                     data-bs-placement="top"
+                                                     data-bs-title="{{ $subcpmk->kode }}"
+                                                     data-bs-content="{{ $subcpmk->nama }}">
+                                                    <span class="badge rounded-pill bg-info-subtle text-info-emphasis fw-bold" style="font-size: 0.8rem;">{{ $subcpmk->kode }}</span>
+                                                    {{-- @if($subcpmk->joinCplCpmk?->joinCplBk?->cpl?->kode)
+                                                    <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill" style="font-size: 0.65rem;">{{ $subcpmk->joinCplCpmk->joinCplBk->cpl->kode }}</span>
+                                                    @endif --}}
+                                                </div>
                                             </th>
                                         @empty
                                             <th></th>
@@ -73,7 +81,7 @@
                                 <tbody>
                                 @forelse ($penugasans as $penugasan)
                                     <tr class="align-top">
-                                        <td class="bg-light-subtle sticky-col" style="min-width: 240px;">
+                                        <td class="bg-light-subtle sticky-col" >
                                             <span class="fw-semibold d-block">{{ $penugasan->kode }}</span>
                                             <span class="text-muted small d-block">{{ $penugasan->nama }}</span>
                                             @php
@@ -151,6 +159,10 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+        new bootstrap.Popover(el);
+    });
+
     const semesterFilter = document.getElementById('semester-filter');
     const forms = document.querySelectorAll('form[action*="joinsubcpmkpenugasans"]');
 
