@@ -103,6 +103,7 @@ return new class extends Migration
             $table->uuid('id')->primary('id');
             $table->foreignUuid('kurikulum_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->foreignUuid('cpl_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->string('kode_cpl')->nullable();
             $table->unique(['kurikulum_id', 'cpl_id'], 'uniq_kurikulum_cpl');
             $table->index('kurikulum_id', 'idx_kurikulum_cpls_kurikulum_id');
             $table->index('cpl_id', 'idx_kurikulum_cpls_cpl_id');
@@ -125,7 +126,17 @@ return new class extends Migration
             $table->string('kode')->nullable();
             $table->text('nama')->nullable();
             $table->text('deskripsi')->nullable();
+            $table->timestamps();
+        });
+        // interaksi kurikulum-bk
+        Schema::create('kurikulum_bks', function (Blueprint $table) {
+            $table->uuid('id')->primary('id');
             $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('bk_id')->nullable()->constrained('bks')->onUpdate('cascade')->onDelete('cascade');
+            $table->string('kode_bk')->nullable();
+            $table->unique(['kurikulum_id', 'bk_id'], 'uniq_kurikulum_bk');
+            $table->index('kurikulum_id', 'idx_kurikulum_bks_kurikulum_id');
+            $table->index('bk_id', 'idx_kurikulum_bks_bk_id');
             $table->timestamps();
         });
         // interaksi cpl-bk
@@ -358,10 +369,13 @@ return new class extends Migration
             $table->dropForeign('join_cpl_bks_kurikulum_id_foreign');
         });
         Schema::dropIfExists('join_cpl_bks');
-        // bahan kajian
-        Schema::table('bks', function (Blueprint $table) {
-            $table->dropForeign('bks_kurikulum_id_foreign');
+        // interaksi kurikulum-bk
+        Schema::table('kurikulum_bks', function (Blueprint $table) {
+            $table->dropForeign('kurikulum_bks_kurikulum_id_foreign');
+            $table->dropForeign('kurikulum_bks_bk_id_foreign');
         });
+        Schema::dropIfExists('kurikulum_bks');
+        // bahan kajian
         Schema::dropIfExists('bks');
         // interaksi profil-cpl
         Schema::table('profil_cpls', function (Blueprint $table) {

@@ -10,6 +10,7 @@ use App\Models\JoinCplBk;
 use App\Models\JoinCplCpmk;
 use App\Models\JoinCplMk;
 use App\Models\JoinMkUser;
+use App\Models\KurikulumBk;
 use App\Models\KurikulumCpl;
 use App\Models\ProfilCpl;
 use App\Models\KontrakMk;
@@ -423,7 +424,7 @@ class ImportKurikulumMasterController extends Controller
 
         if ($target === 'profil_cpls') {
             $profils = $kurikulum->profils()->orderBy('nama')->get();
-            $cpls = $kurikulum->cpls()->orderBy('kode')->get();
+            $cpls = $kurikulum->cpls()->orderBy('kurikulum_cpls.kode_cpl')->get();
 
             $linkedMap = ProfilCpl::query()
                 ->where('kurikulum_id', $kurikulum->id)
@@ -487,8 +488,8 @@ class ImportKurikulumMasterController extends Controller
         }
 
         if ($target === 'join_cpl_bks') {
-            $bks = $kurikulum->bks()->orderBy('kode')->get();
-            $cpls = $kurikulum->cpls()->orderBy('kode')->get();
+            $bks = $kurikulum->bks()->orderBy('kurikulum_bks.kode_bk')->get();
+            $cpls = $kurikulum->cpls()->orderBy('kurikulum_cpls.kode_cpl')->get();
 
             $linkedMap = JoinCplBk::query()
                 ->where('kurikulum_id', $kurikulum->id)
@@ -644,14 +645,20 @@ class ImportKurikulumMasterController extends Controller
                 $kode = $this->required($row['kode'] ?? null, 'kode');
                 $nama = $this->required($row['nama'] ?? null, 'nama');
                 $cakupan = $this->required($row['cakupan'] ?? null, 'cakupan');
-                $cpl = Cpl::updateOrCreate(
-                    ['kode' => $kode],
-                    ['nama' => $nama, 'cakupan' => $cakupan]
-                );
-                KurikulumCpl::firstOrCreate([
-                    'kurikulum_id' => $kurikulum->id,
-                    'cpl_id' => $cpl->id,
-                ]);
+                $existingPivotCpl = KurikulumCpl::where('kurikulum_id', $kurikulum->id)
+                    ->where('kode_cpl', $kode)
+                    ->with('cpl')
+                    ->first();
+                if ($existingPivotCpl) {
+                    $existingPivotCpl->cpl->fill(['nama' => $nama, 'cakupan' => $cakupan])->save();
+                } else {
+                    $cpl = Cpl::create(['nama' => $nama, 'cakupan' => $cakupan]);
+                    KurikulumCpl::create([
+                        'kurikulum_id' => $kurikulum->id,
+                        'cpl_id' => $cpl->id,
+                        'kode_cpl' => $kode,
+                    ]);
+                }
                 return;
 
             case 'profil_cpls':
@@ -661,7 +668,7 @@ class ImportKurikulumMasterController extends Controller
                 }
 
                 $kodeCpl = $this->required($row['kode_cpl'] ?? null, 'kode_cpl');
-                $cpl = $kurikulum->cpls()->where('kode', $kodeCpl)->first();
+                $cpl = $kurikulum->cpls()->wherePivot('kode_cpl', $kodeCpl)->first();
                 if (!$cpl) {
                     throw new \RuntimeException('CPL tidak ditemukan untuk kode_cpl: ' . $kodeCpl);
                 }
@@ -675,18 +682,27 @@ class ImportKurikulumMasterController extends Controller
             case 'bks':
                 $kode = $this->required($row['kode'] ?? null, 'kode');
                 $nama = $this->required($row['nama'] ?? null, 'nama');
-                Bk::updateOrCreate(
-                    ['kurikulum_id' => $kurikulum->id, 'kode' => $kode],
-                    ['nama' => $nama, 'deskripsi' => $row['deskripsi'] ?? null]
-                );
+                $existingPivotBk = KurikulumBk::where('kurikulum_id', $kurikulum->id)
+                    ->where('kode_bk', $kode)
+                    ->with('bk')
+                    ->first();
+                if ($existingPivotBk) {
+                    $existingPivotBk->bk->fill(['nama' => $nama, 'deskripsi' => $row['deskripsi'] ?? null])->save();
+                } else {
+                    $bk = Bk::create(['nama' => $nama, 'deskripsi' => $row['deskripsi'] ?? null]);
+                    KurikulumBk::create([
+                        'kurikulum_id' => $kurikulum->id,
+                        'bk_id' => $bk->id,
+                        'kode_bk' => $kode,
+                    ]);
+                }
                 return;
 
             case 'join_cpl_bks':
                 $kodeCpl = $this->required($row['kode_cpl'] ?? null, 'kode_cpl');
                 $kodeBk = $this->required($row['kode_bk'] ?? null, 'kode_bk');
 
-                $cpl = $kurikulum->cpls()->where('kode', $kodeCpl)->first();
-                $bk = Bk::query()->where('kurikulum_id', $kurikulum->id)->where('kode', $kodeBk)->first();
+                $cpl = $kurikulum->cpls()->wherePivot('kode_cpl', $kodeCpl)->first();
                 if (!$cpl || !$bk) {
                     throw new \RuntimeException('CPL/BK tidak ditemukan untuk relasi.');
                 }
@@ -929,9 +945,9 @@ class ImportKurikulumMasterController extends Controller
                 ]);
             }
 
-            $status['exists'] = Cpl::query()
+            $status['exists'] = KurikulumCpl::query()
                 ->where('kurikulum_id', $kurikulum->id)
-                ->where('kode', $kode)
+                ->where('kode_cpl', $kode)
                 ->exists();
 
             return array_merge($row, $status);
@@ -1230,7 +1246,7 @@ class ImportKurikulumMasterController extends Controller
             }
 
             $kodeBk = trim((string) Str::before($header, "\n"));
-            $bk = Bk::query()->where('kurikulum_id', $kurikulum->id)->where('kode', $kodeBk)->first();
+            $bk = $kurikulum->bks()->where('kode', $kodeBk)->first();
             if (!$bk) {
                 throw new \RuntimeException('BK tidak ditemukan pada header: ' . $kodeBk);
             }
@@ -1349,7 +1365,7 @@ class ImportKurikulumMasterController extends Controller
             }
 
             $kodeBk = trim((string) Str::before($header, "\n"));
-            $bk = Bk::query()->where('kurikulum_id', $kurikulum->id)->where('kode', $kodeBk)->first();
+            $bk = $kurikulum->bks()->where('kode', $kodeBk)->first();
             if (!$bk) {
                 throw new \RuntimeException('BK tidak ditemukan pada header: ' . $kodeBk);
             }
@@ -1673,7 +1689,7 @@ class ImportKurikulumMasterController extends Controller
                 'name' => 'CPL',
                 'columns' => ['kode', 'nama', 'cakupan'],
                 'required' => ['kode', 'nama', 'cakupan'],
-                'rows' => $kurikulum->cpls()->orderBy('kode')->get(['kode', 'nama', 'cakupan'])
+                'rows' => $kurikulum->cpls()->orderBy('kurikulum_cpls.kode_cpl')->get()
                     ->map(fn ($item) => [
                         'kode' => (string) ($item->kode ?? ''),
                         'nama' => (string) ($item->nama ?? ''),
@@ -2126,35 +2142,43 @@ class ImportKurikulumMasterController extends Controller
         });
 
         $this->importBundleSheet($spreadsheet, 'CPL', ['kode', 'nama', 'cakupan'], ['kode', 'nama', 'cakupan'], function (array $row) use ($kurikulum, &$summary) {
-            $cpl = Cpl::updateOrCreate(
-                [
-                    'kode' => $this->required($row['kode'] ?? null, 'kode'),
-                ],
-                [
-                    'nama' => $this->required($row['nama'] ?? null, 'nama'),
-                    'cakupan' => $this->required($row['cakupan'] ?? null, 'cakupan'),
-                ]
-            );
-
-            KurikulumCpl::firstOrCreate([
-                'kurikulum_id' => $kurikulum->id,
-                'cpl_id' => $cpl->id,
-            ]);
-
+            $kode = $this->required($row['kode'] ?? null, 'kode');
+            $nama = $this->required($row['nama'] ?? null, 'nama');
+            $cakupan = $this->required($row['cakupan'] ?? null, 'cakupan');
+            $existingPivotCpl = KurikulumCpl::where('kurikulum_id', $kurikulum->id)
+                ->where('kode_cpl', $kode)
+                ->with('cpl')
+                ->first();
+            if ($existingPivotCpl) {
+                $existingPivotCpl->cpl->fill(['nama' => $nama, 'cakupan' => $cakupan])->save();
+            } else {
+                $cpl = Cpl::create(['nama' => $nama, 'cakupan' => $cakupan]);
+                KurikulumCpl::create([
+                    'kurikulum_id' => $kurikulum->id,
+                    'cpl_id' => $cpl->id,
+                    'kode_cpl' => $kode,
+                ]);
+            }
             $summary['cpls']++;
         });
 
-        $this->importBundleSheet($spreadsheet, 'BK', ['kode', 'nama', 'deskripsi'], ['kode', 'nama'], function (array $row) use ($kurikulum, &$summary) {
-            Bk::updateOrCreate(
-                [
+$this->importBundleSheet($spreadsheet, 'BK', ['kode', 'nama', 'deskripsi'], ['kode', 'nama'], function (array $row) use ($kurikulum, &$summary) {
+            $kode = $this->required($row['kode'] ?? null, 'kode');
+            $nama = $this->required($row['nama'] ?? null, 'nama');
+            $existingPivotBk = KurikulumBk::where('kurikulum_id', $kurikulum->id)
+                ->where('kode_bk', $kode)
+                ->with('bk')
+                ->first();
+            if ($existingPivotBk) {
+                $existingPivotBk->bk->fill(['nama' => $nama, 'deskripsi' => $row['deskripsi'] ?? null])->save();
+            } else {
+                $bk = Bk::create(['nama' => $nama, 'deskripsi' => $row['deskripsi'] ?? null]);
+                KurikulumBk::create([
                     'kurikulum_id' => $kurikulum->id,
-                    'kode' => $this->required($row['kode'] ?? null, 'kode'),
-                ],
-                [
-                    'nama' => $this->required($row['nama'] ?? null, 'nama'),
-                    'deskripsi' => $row['deskripsi'] ?? null,
-                ]
-            );
+                    'bk_id' => $bk->id,
+                    'kode_bk' => $kode,
+                ]);
+            }
 
             $summary['bks']++;
         });

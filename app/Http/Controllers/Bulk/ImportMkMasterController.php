@@ -10,6 +10,7 @@ use App\Models\Evaluasi;
 use App\Models\JoinCplBk;
 use App\Models\JoinCplCpmk;
 use App\Models\JoinSubcpmkPenugasan;
+use App\Models\KurikulumCpl;
 use App\Models\Mk;
 use App\Models\Penugasan;
 use App\Models\Semester;

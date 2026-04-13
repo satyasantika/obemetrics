@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\KurikulumCpl;
+use App\Models\KurikulumBk;
 use App\Models\ProfilCpl;
 use App\States\Kurikulum\KurikulumState;
 use Illuminate\Database\Eloquent\Model;
@@ -36,6 +37,7 @@ class Kurikulum extends Model
     public function cpls(): BelongsToMany
     {
         return $this->belongsToMany(Cpl::class, 'kurikulum_cpls')
+            ->withPivot('kode_cpl')
             ->withTimestamps();
     }
 
@@ -44,9 +46,16 @@ class Kurikulum extends Model
         return $this->hasMany(KurikulumCpl::class);
     }
 
-    public function bks(): HasMany
+    public function bks(): BelongsToMany
     {
-        return $this->hasMany(Bk::class);
+        return $this->belongsToMany(Bk::class, 'kurikulum_bks')
+            ->withPivot('kode_bk')
+            ->withTimestamps();
+    }
+
+    public function kurikulumBks(): HasMany
+    {
+        return $this->hasMany(KurikulumBk::class);
     }
 
     public function mks(): HasMany

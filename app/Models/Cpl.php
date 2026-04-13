@@ -17,7 +17,16 @@ class Cpl extends Model
     public function kurikulums(): BelongsToMany
     {
         return $this->belongsToMany(Kurikulum::class, 'kurikulum_cpls')
+            ->withPivot('kode_cpl')
             ->withTimestamps();
+    }
+
+    public function getKodeAttribute(): ?string
+    {
+        if (isset($this->pivot) && isset($this->pivot->kode_cpl)) {
+            return $this->pivot->kode_cpl;
+        }
+        return $this->attributes['kode'] ?? null;
     }
 
     public function profilCpls(): HasMany

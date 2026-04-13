@@ -21,7 +21,7 @@ class CplController extends Controller
 
     public function index(Kurikulum $kurikulum)
     {
-        $cpls = $kurikulum->cpls()->orderBy('kode')->get();
+        $cpls = $kurikulum->cpls()->orderBy('kurikulum_cpls.kode_cpl')->get();
         return view('obe.cpl', compact('kurikulum','cpls'));
     }
 
@@ -39,17 +39,33 @@ class CplController extends Controller
             'cakupan' => 'required|string|max:255',
         ]);
 
-        $cpl = Cpl::firstOrNew(['kode' => $validated['kode']]);
-        $cpl->fill([
-            'nama' => $validated['nama'],
-            'cakupan' => $validated['cakupan'],
-        ]);
-        $cpl->save();
+        $kode = $validated['kode'];
 
-        KurikulumCpl::firstOrCreate([
-            'kurikulum_id' => $kurikulum->id,
-            'cpl_id' => $cpl->id,
-        ]);
+        // Find by kode_cpl within this kurikulum
+        $pivot = KurikulumCpl::where('kurikulum_id', $kurikulum->id)
+            ->where('kode_cpl', $kode)
+            ->with('cpl')
+            ->first();
+
+        if ($pivot) {
+            $cpl = $pivot->cpl;
+            $cpl->fill([
+                'nama' => $validated['nama'],
+                'cakupan' => $validated['cakupan'],
+            ])->save();
+        } else {
+            $cpl = Cpl::make([
+                'nama' => $validated['nama'],
+                'cakupan' => $validated['cakupan'],
+            ]);
+            $cpl->save();
+
+            KurikulumCpl::create([
+                'kurikulum_id' => $kurikulum->id,
+                'cpl_id' => $cpl->id,
+                'kode_cpl' => $kode,
+            ]);
+        }
 
         $name = $cpl->nama;
         SyncKurikulumState::sync($kurikulum);
@@ -63,7 +79,7 @@ class CplController extends Controller
             ->with('warning', 'Gunakan tombol edit (modal) pada daftar CPL.');
     }
 
-    public function update(Request $request, Kurikulum $kurikulum, Cpl $cpl)
+public function update(Request $request, Kurikulum $kurikulum, Cpl $cpl)
     {
         if (!$kurikulum->cpls()->whereKey($cpl->id)->exists()) {
             abort(404);
@@ -76,8 +92,17 @@ class CplController extends Controller
         ]);
 
         $name = $cpl->nama;
-        $data = $request->all();
-        $cpl->fill($data)->save();
+
+        // Update kode_cpl on the pivot
+        KurikulumCpl::where('kurikulum_id', $kurikulum->id)
+            ->where('cpl_id', $cpl->id)
+            ->update(['kode_cpl' => $request->input('kode')]);
+
+        // Update CPL entity (nama and cakupan only)
+        $cpl->fill([
+            'nama' => $request->input('nama'),
+            'cakupan' => $request->input('cakupan'),
+        ])->save();
 
         return to_route('kurikulums.cpls.index', $kurikulum)->with('success','CPL: '.$name.' telah diperbarui');
     }
