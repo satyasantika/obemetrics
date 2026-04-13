@@ -20,7 +20,7 @@ class JoinCplCpmkController extends Controller
 
     public function index(Mk $mk)
     {
-        $cplbks = $mk->joinCplMks()
+        $cplbks = $mk->cplMks()
             ->with('cplBk')
             ->get()
             ->pluck('cplBk')

@@ -198,8 +198,8 @@
                                             !$kurikulumModal->bks()->exists() &&
                                             !$kurikulumModal->mks()->exists() &&
                                             !$kurikulumModal->profilCpls()->exists() &&
-                                            !$kurikulumModal->joinCplBks()->exists() &&
-                                            !$kurikulumModal->joinCplMks()->exists() &&
+                                            !$kurikulumModal->cplBks()->exists() &&
+                                            !$kurikulumModal->cplMks()->exists() &&
                                             !$kurikulumModal->joinMkUsers()->exists();
                                     @endphp
                                     @if ($canDeleteKurikulum)

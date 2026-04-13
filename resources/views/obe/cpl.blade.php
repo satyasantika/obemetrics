@@ -153,7 +153,7 @@
                 </div>
                 <div class="modal-footer bg-light-subtle border-top">
                     @php
-                        $canDeleteCpl = !$cpl->profilCpls()->exists() && !$cpl->joinCplBks()->exists();
+                        $canDeleteCpl = !$cpl->profilCpls()->exists() && !$cpl->cplBks()->exists();
                     @endphp
                     @if ($canDeleteCpl)
                         <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold shadow-sm me-auto" onclick="if(confirm('Yakin akan menghapus CPL {{ $cpl->kode }}?')){ document.getElementById('delete-cpl-{{ $cpl->id }}').submit(); }"><i class="bi bi-trash"></i> Hapus</button>

@@ -174,12 +174,15 @@ return new class extends Migration
             $table->timestamps();
         });
         // interaksi cpl-mk
-        Schema::create('join_cpl_mks', function (Blueprint $table) {
+        Schema::create('cpl_mks', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->foreignUuid('cpl_bk_id')->nullable()->constrained('cpl_bks')->onUpdate('cascade')->onDelete('cascade');
-            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('cpl_bk_id')->constrained('cpl_bks')->onUpdate('cascade')->onDelete('cascade');
+            // mk_id must be selected from kurikulum_mks (scoped in application layer)
+            $table->foreignUuid('mk_id')->constrained('mks')->onUpdate('cascade')->onDelete('cascade');
             $table->double('bobot')->default(100)->nullable();
-            $table->foreignUuid('kurikulum_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->unique(['mk_id', 'cpl_bk_id'], 'uniq_cpl_mks_mk_cpl_bk');
+            $table->index('mk_id', 'idx_cpl_mks_mk_id');
+            $table->index('cpl_bk_id', 'idx_cpl_mks_cpl_bk_id');
             $table->timestamps();
         });
         // interaksi mk-dosen
@@ -201,7 +204,7 @@ return new class extends Migration
             $table->text('deskripsi')->nullable();
             $table->timestamps();
         });
-        // interaksi cpl-cpmk (diambil dari tabel cpl_bks dan join_cpl_mks)
+        // interaksi cpl-cpmk (diambil dari tabel cpl_bks dan cpl_mks)
         Schema::create('join_cpl_cpmks', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
             $table->foreignUuid('cpl_bk_id')->nullable()->constrained('cpl_bks')->onUpdate('cascade')->onDelete('cascade');
@@ -362,12 +365,11 @@ return new class extends Migration
         });
         Schema::dropIfExists('join_mk_users');
         // interaksi cpl-mk
-        Schema::table('join_cpl_mks', function (Blueprint $table) {
-            $table->dropForeign('join_cpl_mks_cpl_bk_id_foreign');
-            $table->dropForeign('join_cpl_mks_mk_id_foreign');
-            $table->dropForeign('join_cpl_mks_kurikulum_id_foreign');
+        Schema::table('cpl_mks', function (Blueprint $table) {
+            $table->dropForeign('cpl_mks_cpl_bk_id_foreign');
+            $table->dropForeign('cpl_mks_mk_id_foreign');
         });
-        Schema::dropIfExists('join_cpl_mks');
+        Schema::dropIfExists('cpl_mks');
         // interaksi kurikulum-mk
         Schema::table('kurikulum_mks', function (Blueprint $table) {
             $table->dropForeign('kurikulum_mks_kurikulum_id_foreign');

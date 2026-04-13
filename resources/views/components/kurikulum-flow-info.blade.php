@@ -45,7 +45,7 @@
                     $flowSteps = [
                         ['label' => 'Data Master',      'url' => route('kurikulums.profils.index', $kurikulum->id),       'done' => $step1Done, 'active' => !$step1Done],
                         ['label' => 'Interaksi',        'url' => route('kurikulums.profilcpls.index', $kurikulum->id), 'done' => $step2Done, 'active' => $step1Done && !$step2Done],
-                        ['label' => 'Bobot CPL per MK', 'url' => route('kurikulums.joincplmks.index', $kurikulum->id),    'done' => $step3Done, 'active' => $step2Done && !$step3Done],
+                        ['label' => 'Bobot CPL per MK', 'url' => route('kurikulums.cplmks.index', $kurikulum->id),    'done' => $step3Done, 'active' => $step2Done && !$step3Done],
                         ['label' => 'Kontrak MK',       'url' => route('kontrakmks.index', ['kurikulum' => $kurikulum->id]), 'done' => $step4Done, 'active' => $step3Done && !$step4Done],
                         ['label' => 'Laporan',          'url' => route('kurikulums.analisis-asesmen', $kurikulum->id),    'done' => false,      'active' => $step4Done],
                     ];
@@ -146,7 +146,7 @@
         @php
             $missingJoins = [];
             if (!$kurikulum->profilCpls()->exists()) $missingJoins[] = ['label' => 'Interaksi Profil – CPL', 'target' => 'profil_cpls'];
-            if (!$kurikulum->joinCplBks()->exists())     $missingJoins[] = ['label' => 'Interaksi CPL – BK',     'target' => 'cpl_bks'];
+            if (!$kurikulum->cplBks()->exists())     $missingJoins[] = ['label' => 'Interaksi CPL – BK',     'target' => 'cpl_bks'];
             $allJoinsMissing = count($missingJoins) === 2;
             $bundleJoinUrl = route('settings.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_kurikulum_bundle', 'return_url' => url()->current()]);
         @endphp
@@ -172,14 +172,14 @@
         </div>
         @elseif ($st instanceof KurikulumBelumBobot)
         @php
-            $joinCplMkExists = $kurikulum->joinCplMks()->exists();
-            $joinCplMkUrl    = route('settings.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_cpl_mks', 'return_url' => url()->current()]);
-            $bobotPageUrl    = route('kurikulums.joincplmks.index', $kurikulum->id);
+            $cplMkExists = $kurikulum->cplMks()->exists();
+            $cplMkUrl    = route('settings.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'cpl_mks', 'return_url' => url()->current()]);
+            $bobotPageUrl    = route('kurikulums.cplmks.index', $kurikulum->id);
         @endphp
         <div class="alert alert-warning mt-3 mb-0 py-2 px-3">
-            @if (!$joinCplMkExists)
+            @if (!$cplMkExists)
                 <div class="mb-1">Interaksi sudah lengkap. Lanjutkan dengan mengunggah bobot CPL tiap MK:</div>
-                <a href="{{ $joinCplMkUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold">
+                <a href="{{ $cplMkUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold">
                     <i class="bi bi-upload me-1"></i> Upload Bobot CPL per MK
                 </a>
             @else
@@ -188,7 +188,7 @@
                     <a href="{{ $bobotPageUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold">
                         <i class="bi bi-table me-1"></i> Halaman Bobot CPL per MK
                     </a>
-                    <a href="{{ $joinCplMkUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold">
+                    <a href="{{ $cplMkUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold">
                         <i class="bi bi-upload me-1"></i> Upload Bobot CPL per MK
                     </a>
                 </div>

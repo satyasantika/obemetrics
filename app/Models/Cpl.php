@@ -35,7 +35,7 @@ class Cpl extends Model
         return $this->hasMany(ProfilCpl::class);
     }
 
-    public function joinCplBks(): HasMany
+    public function cplBks(): HasMany
     {
         return $this->hasMany(CplBk::class);
     }

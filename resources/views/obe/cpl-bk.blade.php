@@ -32,7 +32,7 @@
                                         Jika ingin mengubah interaksi yang dikunci, hapus terlebih dahulu bobot CPL pada MK di halaman Interaksi CPL >< MK.
                                     </div>
                                 </div>
-                                <a href="{{ route('kurikulums.joincplmks.index', [$kurikulum->id]) }}" class="btn btn-sm lock-hint-link rounded-pill px-3 fw-semibold">
+                                <a href="{{ route('kurikulums.cplmks.index', [$kurikulum->id]) }}" class="btn btn-sm lock-hint-link rounded-pill px-3 fw-semibold">
                                     <i class="bi bi-arrow-up-right-circle"></i> Buka Interaksi CPL >< MK
                                 </a>
                             </div>

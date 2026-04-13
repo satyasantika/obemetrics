@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\CplBk;
+use App\Models\CplMk;
 use App\Models\KurikulumBk;
 use App\Models\KurikulumCpl;
 use App\Models\KurikulumMk;
@@ -79,16 +81,16 @@ class Kurikulum extends Model
             ->whereIn('cpl_id', $this->cpls()->pluck('cpls.id'));
     }
 
-    public function joinCplBks(): Builder
+    public function cplBks(): Builder
     {
         return CplBk::query()
             ->whereIn('cpl_id', $this->cpls()->pluck('cpls.id'))
             ->whereIn('bk_id', $this->bks()->pluck('bks.id'));
     }
 
-    public function joinCplMks(): HasMany
+    public function cplMks(): HasManyThrough
     {
-        return $this->hasMany(JoinCplMk::class);
+        return $this->hasManyThrough(CplMk::class, KurikulumMk::class, 'kurikulum_id', 'mk_id', 'id', 'mk_id');
     }
 
     public function joinMkUsers(): HasMany

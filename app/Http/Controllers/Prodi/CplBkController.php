@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Prodi;
 
 use App\Actions\SyncKurikulumState;
 use App\Models\Bk;
+use App\Models\CplMk;
 use App\Models\Cpl;
-use App\Models\JoinCplMk;
 use App\Models\Kurikulum;
 use Illuminate\Http\Request;
 use App\Models\CplBk;
@@ -29,7 +29,7 @@ class CplBkController extends Controller
             ->whereIn('bk_id', $scopeBkIds)
             ->get(['id', 'cpl_id', 'bk_id']);
 
-        $lockedCplBkIds = JoinCplMk::query()
+        $lockedCplBkIds = CplMk::query()
             ->whereIn('cpl_bk_id', $linkedCplBks->pluck('id'))
             ->pluck('cpl_bk_id')
             ->unique()
@@ -102,7 +102,7 @@ class CplBkController extends Controller
                     ->with('success', $bk->kode . ' telah diinteraksi dengan ' . $cpl->kode);
         } else {
             if ($cplBk) {
-                if (JoinCplMk::query()->where('cpl_bk_id', $cplBk->id)->exists()) {
+                if (CplMk::query()->where('cpl_bk_id', $cplBk->id)->exists()) {
                     if ($expectsJson) {
                         return response()->json([
                             'status' => 'error',

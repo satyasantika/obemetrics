@@ -114,7 +114,7 @@ public function update(Request $request, Kurikulum $kurikulum, Bk $bk)
         }
 
         $name = $bk->nama;
-        if ($bk->joinCplBks()->exists() || $bk->joinCplMks()->exists()) {
+        if ($bk->cplBks()->exists() || $bk->cplMks()->exists()) {
             return to_route('kurikulums.bks.index', $kurikulum)
                 ->with('error','BK: '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
         }

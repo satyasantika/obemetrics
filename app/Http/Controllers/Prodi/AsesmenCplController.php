@@ -499,19 +499,19 @@ class AsesmenCplController extends Controller
 
     private function resolveMksPerCpl(Kurikulum $kurikulum)
     {
-        return $kurikulum->joinCplMks()
+        return $kurikulum->cplMks()
             ->with([
                 'mk',
                 'cplBk:id,cpl_id',
             ])
             ->get()
-            ->filter(function ($joinCplMk) use ($kurikulum) {
-                return $joinCplMk->mk !== null
-                    && $joinCplMk->cplBk !== null
-                    && !empty($joinCplMk->cplBk->cpl_id)
-                    && (string) $joinCplMk->mk->kurikulum_id === (string) $kurikulum->id;
+            ->filter(function ($cplMk) use ($kurikulum) {
+                return $cplMk->mk !== null
+                    && $cplMk->cplBk !== null
+                    && !empty($cplMk->cplBk->cpl_id)
+                    && (string) $cplMk->mk->kurikulum_id === (string) $kurikulum->id;
             })
-            ->groupBy(fn ($joinCplMk) => (string) $joinCplMk->cplBk->cpl_id)
+            ->groupBy(fn ($cplMk) => (string) $cplMk->cplBk->cpl_id)
             ->map(function ($items) {
                 return $items
                     ->pluck('mk')
@@ -524,17 +524,17 @@ class AsesmenCplController extends Controller
 
     private function resolveBobotFraksiPerCplMk(Kurikulum $kurikulum, $mksPerCpl)
     {
-        $rows = $kurikulum->joinCplMks()
+        $rows = $kurikulum->cplMks()
             ->with([
                 'mk:id,sks',
                 'cplBk:id,cpl_id',
             ])
             ->get()
-            ->filter(function ($joinCplMk) use ($kurikulum) {
-                return $joinCplMk->mk !== null
-                    && $joinCplMk->cplBk !== null
-                    && !empty($joinCplMk->cplBk->cpl_id)
-                    && (string) $joinCplMk->mk->kurikulum_id === (string) $kurikulum->id;
+            ->filter(function ($cplMk) use ($kurikulum) {
+                return $cplMk->mk !== null
+                    && $cplMk->cplBk !== null
+                    && !empty($cplMk->cplBk->cpl_id)
+                    && (string) $cplMk->mk->kurikulum_id === (string) $kurikulum->id;
             });
 
         // Kumpulkan "kontribusi CPL" per MK per CPL, dengan penjumlahan bobot mapping (jika ada multipel baris per MK)

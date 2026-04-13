@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\CplBk;
+use App\Models\CplMk;
 use App\Models\KurikulumBk;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -36,15 +37,15 @@ class Bk extends Model
         return $this->hasMany(KurikulumBk::class);
     }
 
-    public function joinCplBks(): HasMany
+    public function cplBks(): HasMany
     {
         return $this->hasMany(CplBk::class);
     }
 
-    public function joinCplMks(): HasManyThrough
+    public function cplMks(): HasManyThrough
     {
         return $this->hasManyThrough(
-            JoinCplMk::class,
+            CplMk::class,
             CplBk::class,
             'bk_id',
             'cpl_bk_id',

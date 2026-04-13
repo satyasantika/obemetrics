@@ -4,15 +4,15 @@ namespace App\Http\Controllers\Prodi;
 
 use App\Actions\SyncKurikulumState;
 use App\Models\Cpl;
+use App\Models\CplMk;
 use App\Models\JoinCplCpmk;
-use App\Models\JoinCplMk;
 use App\Models\Kurikulum;
 use App\Models\Mk;
 use Illuminate\Http\Request;
 use App\Models\CplBk;
 use App\Http\Controllers\Controller;
 
-class JoinCplMkController extends Controller
+class CplMKController extends Controller
 {
     function __construct()
     {
@@ -26,7 +26,13 @@ class JoinCplMkController extends Controller
             ->orderBy('kode')
             ->get();
 
-        $bkIds = $kurikulum->bks()->pluck('bks.id');
+        $kurikulumBkCodeByBkId = $kurikulum->bks()
+            ->get()
+            ->mapWithKeys(function ($bk) {
+                return [(string) $bk->id => (string) ($bk->pivot->kode_bk ?? $bk->kode ?? '-')];
+            });
+
+        $bkIds = $kurikulumBkCodeByBkId->keys();
         $cplBkByCpl = CplBk::query()
             ->with('bk')
             ->whereIn('cpl_id', $cpls->pluck('id'))
@@ -45,16 +51,16 @@ class JoinCplMkController extends Controller
         foreach ($cpls as $cpl) {
             $bkColumns = ($cplBkByCpl->get($cpl->id, collect()))
                 ->filter(fn ($join) => $join->bk)
-                ->sortBy(fn ($join) => (string) $join->bk->kode)
+                ->sortBy(fn ($join) => (string) $kurikulumBkCodeByBkId->get((string) $join->bk_id, (string) $join->bk->kode))
                 ->values()
-                ->map(function ($join) use ($cpl) {
+                ->map(function ($join) use ($cpl, $kurikulumBkCodeByBkId) {
                     return [
                         'type' => 'bk',
                         'cpl_id' => $cpl->id,
                         'cpl_kode' => $cpl->kode,
                         'cpl_nama' => $cpl->nama,
                         'cpl_bk_id' => $join->id,
-                        'bk_kode' => $join->bk->kode,
+                        'bk_kode' => $kurikulumBkCodeByBkId->get((string) $join->bk_id, (string) ($join->bk->kode ?? '-')),
                         'bk_nama' => $join->bk->nama,
                     ];
                 })
@@ -90,8 +96,7 @@ class JoinCplMkController extends Controller
             ->values()
             ->flip();
 
-        $linkedRows = JoinCplMk::query()
-            ->where('kurikulum_id', $kurikulum->id)
+        $linkedRows = CplMk::query()
             ->whereIn('mk_id', $mks->pluck('id'))
             ->get();
 
@@ -181,6 +186,21 @@ class JoinCplMkController extends Controller
             ], 422);
         }
 
+        $cplInKurikulum = $kurikulum->cpls()->whereKey($cpl->id)->exists();
+        $mkInKurikulum = $kurikulum->mks()->whereKey($mk->id)->exists();
+
+        if (!$cplInKurikulum || !$mkInKurikulum) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'CPL atau MK tidak terdaftar pada kurikulum ini.',
+                ], 422);
+            }
+
+            return to_route('kurikulums.cplmks.index', $kurikulumId)
+                ->with('error', 'CPL atau MK tidak terdaftar pada kurikulum ini.');
+        }
+
         $selectedCplBkId = $validated['cpl_bk_id'] ?? null;
 
         if ($selectedCplBkId) {
@@ -197,9 +217,8 @@ class JoinCplMkController extends Controller
                 ], 422);
             }
 
-            $relationQuery = JoinCplMk::query()
+            $relationQuery = CplMk::query()
                 ->where('mk_id', $mk->id)
-                ->where('kurikulum_id', $kurikulumId)
                 ->where('cpl_bk_id', $selectedCplBkId);
 
             $existingRows = $relationQuery
@@ -231,7 +250,7 @@ class JoinCplMkController extends Controller
 
             if (!$hasBobotValue) {
                 if ($existingRows->isNotEmpty()) {
-                    JoinCplMk::query()
+                    CplMk::query()
                         ->whereIn('id', $existingRows->pluck('id'))
                         ->delete();
                 }
@@ -252,13 +271,12 @@ class JoinCplMkController extends Controller
 
                 $duplicateIds = $existingRows->skip(1)->pluck('id');
                 if ($duplicateIds->isNotEmpty()) {
-                    JoinCplMk::query()->whereIn('id', $duplicateIds)->delete();
+                    CplMk::query()->whereIn('id', $duplicateIds)->delete();
                 }
             } else {
-                $row = JoinCplMk::create([
+                $row = CplMk::create([
                     'cpl_bk_id' => $selectedCplBkId,
                     'mk_id' => $mk->id,
-                    'kurikulum_id' => $kurikulumId,
                     'bobot' => $bobot,
                 ]);
             }
@@ -278,9 +296,8 @@ class JoinCplMkController extends Controller
             ->whereIn('bk_id', $kurikulum->bks()->pluck('bks.id'))
             ->pluck('id');
 
-        $existingRows = JoinCplMk::query()
+        $existingRows = CplMk::query()
             ->where('mk_id', $mk->id)
-            ->where('kurikulum_id', $kurikulumId)
                 ->whereIn('cpl_bk_id', function ($query) use ($cpl, $kurikulum) {
                 $query->select('id')
                     ->from('cpl_bks')
@@ -291,18 +308,17 @@ class JoinCplMkController extends Controller
 
         if ($request->has('is_linked')) {
             if ($eligibleCplBkIds->isEmpty()) {
-                return to_route('kurikulums.joincplmks.index', $kurikulumId)
+                return to_route('kurikulums.cplmks.index', $kurikulumId)
                     ->with('error', 'Interaksi CPL >< MK tidak dapat dibuat karena belum ada jalur CPL >< BK >< MK.');
             }
 
             $bobotValue = $request->filled('bobot') ? (float) $request->input('bobot') : null;
 
             foreach ($eligibleCplBkIds as $cplBkId) {
-                JoinCplMk::updateOrCreate(
+                CplMk::updateOrCreate(
                     [
                         'cpl_bk_id' => $cplBkId,
                         'mk_id' => $mk->id,
-                        'kurikulum_id' => $kurikulumId,
                     ],
                     [
                         'bobot' => $bobotValue,
@@ -310,9 +326,8 @@ class JoinCplMkController extends Controller
                 );
             }
 
-            JoinCplMk::query()
+            CplMk::query()
                 ->where('mk_id', $mk->id)
-                ->where('kurikulum_id', $kurikulumId)
                 ->whereIn('cpl_bk_id', function ($query) use ($cpl, $kurikulum) {
                     $query->select('id')
                         ->from('cpl_bks')
@@ -324,7 +339,7 @@ class JoinCplMkController extends Controller
 
             SyncKurikulumState::sync($kurikulum);
 
-            return to_route('kurikulums.joincplmks.index', $kurikulumId)
+            return to_route('kurikulums.cplmks.index', $kurikulumId)
                 ->with('success', $mk->kode . ' telah diinteraksi dengan ' . $cpl->kode);
         } else {
             if ($existingRows->isNotEmpty()) {
@@ -334,17 +349,17 @@ class JoinCplMkController extends Controller
                     ->exists();
 
                 if ($isUsed) {
-                    return to_route('kurikulums.joincplmks.index', $kurikulumId)
+                    return to_route('kurikulums.cplmks.index', $kurikulumId)
                         ->with('error', 'Interaksi dikunci karena sudah digunakan pada relasi CPL >< CPMK.');
                 }
 
-                JoinCplMk::query()
+                CplMk::query()
                     ->whereIn('id', $existingRows->pluck('id'))
                     ->delete();
             }
             SyncKurikulumState::sync($kurikulum);
 
-            return to_route('kurikulums.joincplmks.index', $kurikulumId)
+            return to_route('kurikulums.cplmks.index', $kurikulumId)
                 ->with('warning', $mk->kode . ' sudah tidak berinteraksi dengan ' . $cpl->kode);
         }
     }

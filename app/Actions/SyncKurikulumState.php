@@ -27,10 +27,10 @@ class SyncKurikulumState
             && $kurikulum->joinMkUsers()->exists();
 
         $interaksiComplete = $kurikulum->profilCpls()->exists()
-            && $kurikulum->joinCplBks()->exists();
+            && $kurikulum->cplBks()->exists();
 
         $mkIds         = $kurikulum->mks()->pluck('mks.id');
-        $bobotedMkIds  = $kurikulum->joinCplMks()->distinct()->pluck('join_cpl_mks.mk_id');
+        $bobotedMkIds  = $kurikulum->cplMks()->distinct()->pluck('cpl_mks.mk_id');
         $kontrakMkIds  = $kurikulum->kontrakMks()->distinct()->pluck('kontrak_mks.mk_id');
 
         $bobotComplete = $mkIds->isNotEmpty() && $mkIds->diff($bobotedMkIds)->isEmpty();

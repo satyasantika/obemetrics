@@ -8,15 +8,13 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class JoinCplMk extends Model
+class CplMk extends Model
 {
     use HasFactory, HasUuids;
-    protected $guarded = ['id'];
 
-    public function kurikulum(): BelongsTo
-    {
-        return $this->belongsTo(Kurikulum::class);
-    }
+    protected $table = 'cpl_mks';
+
+    protected $guarded = ['id'];
 
     public function cplBk(): BelongsTo
     {

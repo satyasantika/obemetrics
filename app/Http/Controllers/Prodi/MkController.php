@@ -26,7 +26,7 @@ class MkController extends Controller
         $mks = $kurikulum->mks()
             ->orderBy('semester')
             ->orderBy('kurikulum_mks.kode_mk')
-            ->withCount(['joinCplMks', 'joinMkUsers', 'kontrakMks', 'cpmks', 'penugasans'])
+            ->withCount(['cplMks', 'joinMkUsers', 'kontrakMks', 'cpmks', 'penugasans'])
             ->get();
 
         $prodiUsers = $kurikulum->prodi->prodiUsers()->with('user')->get();
@@ -52,7 +52,7 @@ class MkController extends Controller
         $canDeleteByMk = [];
         foreach ($mks as $mk) {
             $canDeleteByMk[$mk->id] =
-                (int) $mk->join_cpl_mks_count === 0 &&
+                (int) $mk->cpl_mks_count === 0 &&
                 (int) $mk->join_mk_users_count === 0 &&
                 (int) $mk->kontrak_mks_count === 0 &&
                 (int) $mk->cpmks_count === 0 &&
@@ -162,7 +162,7 @@ class MkController extends Controller
 
         $name = $mk->nama;
         if (
-            $mk->joinCplMks()->exists() ||
+            $mk->cplMks()->exists() ||
             $mk->joinMkUsers()->exists() ||
             $mk->kontrakMks()->exists() ||
             $mk->cpmks()->exists() ||

@@ -103,8 +103,8 @@ Route::middleware('auth')->group(function () {
         Route::get('kurikulums/{kurikulum}/cplbks', [App\Http\Controllers\Prodi\CplBkController::class,'index'])->name('kurikulums.cplbks.index');
         Route::put('kurikulums/{kurikulum}/cplbks/{cpl}/{bk}', [App\Http\Controllers\Prodi\CplBkController::class, 'update'])->name('kurikulums.cplbks.update');
         // CPL >< MK
-        Route::get('kurikulums/{kurikulum}/joincplmks', [App\Http\Controllers\Prodi\JoinCplMkController::class,'index'])->name('kurikulums.joincplmks.index');
-        Route::put('kurikulums/{kurikulum}/joincplmks/{cpl}/{mk}', [App\Http\Controllers\Prodi\JoinCplMkController::class, 'update'])->name('kurikulums.joincplmks.update');
+        Route::get('kurikulums/{kurikulum}/cplmks', [App\Http\Controllers\Prodi\CplMKController::class,'index'])->name('kurikulums.cplmks.index');
+        Route::put('kurikulums/{kurikulum}/cplmks/{cpl}/{mk}', [App\Http\Controllers\Prodi\CplMKController::class, 'update'])->name('kurikulums.cplmks.update');
         // Asesmen CPL
         Route::get('kurikulums/{kurikulum}/rencana-asesmen', [App\Http\Controllers\Prodi\AsesmenCplController::class,'rencanaAsesmen'])->name('kurikulums.rencana-asesmen');
         Route::get('kurikulums/{kurikulum}/analisis-asesmen', [App\Http\Controllers\Prodi\AsesmenCplController::class,'analisisAsesmen'])->name('kurikulums.analisis-asesmen');
