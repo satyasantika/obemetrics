@@ -26,7 +26,7 @@ class SyncKurikulumState
             && $kurikulum->mks()->exists()
             && $kurikulum->joinMkUsers()->exists();
 
-        $interaksiComplete = $kurikulum->joinProfilCpls()->exists()
+        $interaksiComplete = $kurikulum->profilCpls()->exists()
             && $kurikulum->joinCplBks()->exists();
 
         $mkIds         = $kurikulum->mks()->pluck('id');

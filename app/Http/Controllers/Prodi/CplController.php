@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Prodi;
 
 use App\Actions\SyncKurikulumState;
 use App\Models\Cpl;
+use App\Models\KurikulumCpl;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Kurikulum;
@@ -20,7 +21,7 @@ class CplController extends Controller
 
     public function index(Kurikulum $kurikulum)
     {
-        $cpls = Cpl::where('kurikulum_id',$kurikulum->id)->get();
+        $cpls = $kurikulum->cpls()->orderBy('kode')->get();
         return view('obe.cpl', compact('kurikulum','cpls'));
     }
 
@@ -30,10 +31,27 @@ class CplController extends Controller
             ->with('warning', 'Gunakan tombol Tambah CPL (modal) pada halaman CPL.');
     }
 
-    public function store(Request $request, Kurikulum $kurikulum, Cpl $cpl)
+    public function store(Request $request, Kurikulum $kurikulum)
     {
-        $name = $request->name;
-        Cpl::create($request->all());
+        $validated = $request->validate([
+            'kode' => 'required|string|max:255',
+            'nama' => 'required|string',
+            'cakupan' => 'required|string|max:255',
+        ]);
+
+        $cpl = Cpl::firstOrNew(['kode' => $validated['kode']]);
+        $cpl->fill([
+            'nama' => $validated['nama'],
+            'cakupan' => $validated['cakupan'],
+        ]);
+        $cpl->save();
+
+        KurikulumCpl::firstOrCreate([
+            'kurikulum_id' => $kurikulum->id,
+            'cpl_id' => $cpl->id,
+        ]);
+
+        $name = $cpl->nama;
         SyncKurikulumState::sync($kurikulum);
 
         return to_route('kurikulums.cpls.index', $kurikulum)->with('success','CPL: '.$name.' telah ditambahkan');
@@ -47,6 +65,16 @@ class CplController extends Controller
 
     public function update(Request $request, Kurikulum $kurikulum, Cpl $cpl)
     {
+        if (!$kurikulum->cpls()->whereKey($cpl->id)->exists()) {
+            abort(404);
+        }
+
+        $request->validate([
+            'kode' => 'required|string|max:255',
+            'nama' => 'required|string',
+            'cakupan' => 'required|string|max:255',
+        ]);
+
         $name = $cpl->nama;
         $data = $request->all();
         $cpl->fill($data)->save();
@@ -56,12 +84,21 @@ class CplController extends Controller
 
     public function destroy(Kurikulum $kurikulum, Cpl $cpl)
     {
+        if (!$kurikulum->cpls()->whereKey($cpl->id)->exists()) {
+            abort(404);
+        }
+
         $name = $cpl->nama;
-        if ($cpl->joinProfilCpls()->exists() || $cpl->joinCplBks()->exists()) {
+        if ($cpl->profilCpls()->exists() || $cpl->joinCplBks()->exists()) {
             return to_route('kurikulums.cpls.index', $kurikulum)
                 ->with('error','CPL: '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
         }
-        $cpl->delete();
+
+        $kurikulum->cpls()->detach($cpl->id);
+        if (!$cpl->kurikulums()->exists()) {
+            $cpl->delete();
+        }
+
         SyncKurikulumState::sync($kurikulum);
         return to_route('kurikulums.cpls.index', $kurikulum)->with('warning','CPL: '.$name.' telah dihapus');
     }

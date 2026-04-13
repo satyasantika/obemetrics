@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\KurikulumCpl;
+use App\Models\ProfilCpl;
 use App\States\Kurikulum\KurikulumState;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\ModelStates\HasStates;
@@ -30,9 +33,15 @@ class Kurikulum extends Model
         return $this->hasMany(Profil::class);
     }
 
-    public function cpls(): HasMany
+    public function cpls(): BelongsToMany
     {
-        return $this->hasMany(Cpl::class);
+        return $this->belongsToMany(Cpl::class, 'kurikulum_cpls')
+            ->withTimestamps();
+    }
+
+    public function kurikulumCpls(): HasMany
+    {
+        return $this->hasMany(KurikulumCpl::class);
     }
 
     public function bks(): HasMany
@@ -45,9 +54,9 @@ class Kurikulum extends Model
         return $this->hasMany(Mk::class);
     }
 
-    public function joinProfilCpls(): HasMany
+    public function profilCpls(): HasMany
     {
-        return $this->hasMany(JoinProfilCpl::class);
+        return $this->hasMany(ProfilCpl::class);
     }
 
     public function joinCplBks(): HasMany

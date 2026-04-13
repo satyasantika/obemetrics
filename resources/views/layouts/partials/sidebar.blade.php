@@ -21,7 +21,7 @@
                     'kurikulums.cpls.*',
                     'kurikulums.bks.*',
                     'kurikulums.mks.*',
-                    'kurikulums.joinprofilcpls.*',
+                    'kurikulums.profilcpls.*',
                     'kurikulums.joincplbks.*',
                     'kurikulums.joincplmks.*',
                     'kurikulums.rencana-asesmen',
@@ -95,12 +95,12 @@
                 $cplExists = false;
                 $bkExists = false;
                 $mkExists = false;
-                $joinProfilCplExists = false;
+                $profilCplExists = false;
                 $joinCplBkExists = false;
                 $joinCplMkExists = false;
 
                 $dataComplete = false;
-                $joinProfilCplBKExists = false;
+                $profilCplBkExists = false;
                 $mustImportJoinMaster = false;
                 $reportsReady = false;
                 $kontrakMkExists = false;
@@ -113,13 +113,13 @@
                     $bkExists = $selectedKurikulum->bks()->exists();
                     $mkExists = $selectedKurikulum->mks()->exists();
 
-                    $joinProfilCplExists = $selectedKurikulum->joinProfilCpls()->exists();
+                    $profilCplExists = $selectedKurikulum->profilCpls()->exists();
                     $joinCplBkExists = $selectedKurikulum->joinCplBks()->exists();
                     $joinCplMkExists = $selectedKurikulum->joinCplMks()->exists();
 
                     $dataComplete = $profilExists && $cplExists && $bkExists && $mkExists;
-                    $joinProfilCplBKExists = $joinProfilCplExists && $joinCplBkExists;
-                    $mustImportJoinMaster = $dataComplete && !$joinProfilCplBKExists;
+                    $profilCplBkExists = $profilCplExists && $joinCplBkExists;
+                    $mustImportJoinMaster = $dataComplete && !$profilCplBkExists;
                     $reportsReady = $joinCplMkExists;
                     $kontrakMkExists = \App\Models\KontrakMk::query()
                         ->whereHas('mk', function ($query) use ($selectedKurikulum) {
@@ -244,25 +244,25 @@
                         </li>
 
                         <li class="nav-item">
-                            <a href="{{ $joinProfilCplBKExists ? route('kurikulums.joinprofilcpls.index', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
-                               class="nav-link {{ request()->routeIs('kurikulums.joinprofilcpls.*') ? 'active' : '' }} {{ $joinProfilCplBKExists ? '' : 'disabled' }}"
-                               @if(!$joinProfilCplBKExists) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $profilCplBkExists ? route('kurikulums.profilcpls.index', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
+                               class="nav-link {{ request()->routeIs('kurikulums.profilcpls.*') ? 'active' : '' }} {{ $profilCplBkExists ? '' : 'disabled' }}"
+                               @if(!$profilCplBkExists) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-link"></i>
                                 <p>Interaksi Profil >< CPL</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ $joinProfilCplBKExists ? route('kurikulums.joincplbks.index', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
-                               class="nav-link {{ request()->routeIs('kurikulums.joincplbks.*') ? 'active' : '' }} {{ $joinProfilCplBKExists ? '' : 'disabled' }}"
-                               @if(!$joinProfilCplBKExists) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $profilCplBkExists ? route('kurikulums.joincplbks.index', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
+                               class="nav-link {{ request()->routeIs('kurikulums.joincplbks.*') ? 'active' : '' }} {{ $profilCplBkExists ? '' : 'disabled' }}"
+                               @if(!$profilCplBkExists) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-link"></i>
                                 <p>Interaksi CPL >< BK</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ $joinProfilCplBKExists ? route('kurikulums.joincplmks.index', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
-                               class="nav-link {{ request()->routeIs('kurikulums.joincplmks.*') ? 'active' : '' }} {{ $joinProfilCplBKExists ? '' : 'disabled' }}"
-                               @if(!$joinProfilCplBKExists) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $profilCplBkExists ? route('kurikulums.joincplmks.index', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
+                               class="nav-link {{ request()->routeIs('kurikulums.joincplmks.*') ? 'active' : '' }} {{ $profilCplBkExists ? '' : 'disabled' }}"
+                               @if(!$profilCplBkExists) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-sliders-h"></i>
                                 <p>Bobot CPL tiap MK</p>
                             </a>

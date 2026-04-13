@@ -350,7 +350,7 @@ class AsesmenCplController extends Controller
         $mksPerCpl = $this->resolveMksPerCpl($kurikulum);
 
         $profils = $kurikulum->profils()->get();
-        $joinProfilCplsByProfil = $kurikulum->joinProfilCpls()
+        $profilCplsByProfil = $kurikulum->profilCpls()
             ->get()
             ->groupBy('profil_id');
 
@@ -372,7 +372,7 @@ class AsesmenCplController extends Controller
 
         $byMahasiswa = $kontrakMks->groupBy('mahasiswa_id');
 
-        $detailPerMahasiswa = $byMahasiswa->map(function ($kontraks, $mahasiswaId) use ($cpls, $mksPerCpl, $profils, $joinProfilCplsByProfil, $target, $resolveHuruf, $hurufToBobot, $poinToHuruf, $gradePointMap) {
+        $detailPerMahasiswa = $byMahasiswa->map(function ($kontraks, $mahasiswaId) use ($cpls, $mksPerCpl, $profils, $profilCplsByProfil, $target, $resolveHuruf, $hurufToBobot, $poinToHuruf, $gradePointMap) {
             $mahasiswa = $kontraks->first()->mahasiswa;
 
             $totalSks = (int) $kontraks->sum(fn ($kontrak) => (int) optional($kontrak->mk)->sks);
@@ -447,8 +447,8 @@ class AsesmenCplController extends Controller
             });
 
             $cplScoreById = $cplScores->keyBy('id');
-            $profilScores = $profils->map(function ($profil) use ($joinProfilCplsByProfil, $cplScoreById) {
-                $cplIds = optional($joinProfilCplsByProfil->get($profil->id))
+            $profilScores = $profils->map(function ($profil) use ($profilCplsByProfil, $cplScoreById) {
+                $cplIds = optional($profilCplsByProfil->get($profil->id))
                     ->pluck('cpl_id')
                     ->filter()
                     ->unique() ?? collect();

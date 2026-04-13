@@ -28,7 +28,7 @@ class ProfilController extends Controller
             ->where('kurikulum_id', $kurikulum->id)
             ->where(function ($query) {
                 $query->whereHas('profil_indikators')
-                    ->orWhereHas('joinProfilCpls');
+                    ->orWhereHas('profilCpls');
             })
             ->pluck('id')
             ->map(fn ($id) => (string) $id)
@@ -104,7 +104,7 @@ class ProfilController extends Controller
     public function destroy(Kurikulum $kurikulum, Profil $profil)
     {
         $name = strtoupper($profil->nama);
-        if ($profil->profil_indikators()->exists() || $profil->joinProfilCpls()->exists()) {
+        if ($profil->profil_indikators()->exists() || $profil->profilCpls()->exists()) {
             return to_route('kurikulums.profils.index', $kurikulum)
                 ->with('error','Profil '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
         }

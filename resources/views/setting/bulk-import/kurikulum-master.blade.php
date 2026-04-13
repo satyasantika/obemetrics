@@ -49,7 +49,7 @@
                             <div class="col-md-3"></div>
                             <div class="col">
                                 @php
-                                    $directSaveTargets = ['kurikulum_bundle', 'join_kurikulum_bundle', 'join_profil_cpls', 'join_cpl_bks', 'join_cpl_mks'];
+                                    $directSaveTargets = ['kurikulum_bundle', 'join_kurikulum_bundle', 'profil_cpls', 'join_cpl_bks', 'join_cpl_mks'];
                                     $isDirectSaveTarget = in_array($target, $directSaveTargets, true);
                                 @endphp
                                 <button type="submit" class="btn btn-primary btn-sm">
@@ -67,7 +67,7 @@
 
     <div class="row justify-content-center">
         <div class="col">
-            @if (!in_array($target, ['join_kurikulum_bundle', 'join_profil_cpls', 'join_cpl_bks', 'join_cpl_mks'], true) && !empty($preview['rows']))
+            @if (!in_array($target, ['join_kurikulum_bundle', 'profil_cpls', 'join_cpl_bks', 'join_cpl_mks'], true) && !empty($preview['rows']))
                 <div class="card mt-3">
                     <div class="card-header">
                         <span class="h5">Preview @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>

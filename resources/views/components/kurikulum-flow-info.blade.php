@@ -44,7 +44,7 @@
                 @php
                     $flowSteps = [
                         ['label' => 'Data Master',      'url' => route('kurikulums.profils.index', $kurikulum->id),       'done' => $step1Done, 'active' => !$step1Done],
-                        ['label' => 'Interaksi',        'url' => route('kurikulums.joinprofilcpls.index', $kurikulum->id), 'done' => $step2Done, 'active' => $step1Done && !$step2Done],
+                        ['label' => 'Interaksi',        'url' => route('kurikulums.profilcpls.index', $kurikulum->id), 'done' => $step2Done, 'active' => $step1Done && !$step2Done],
                         ['label' => 'Bobot CPL per MK', 'url' => route('kurikulums.joincplmks.index', $kurikulum->id),    'done' => $step3Done, 'active' => $step2Done && !$step3Done],
                         ['label' => 'Kontrak MK',       'url' => route('kontrakmks.index', ['kurikulum' => $kurikulum->id]), 'done' => $step4Done, 'active' => $step3Done && !$step4Done],
                         ['label' => 'Laporan',          'url' => route('kurikulums.analisis-asesmen', $kurikulum->id),    'done' => false,      'active' => $step4Done],
@@ -145,7 +145,7 @@
         @elseif ($st instanceof KurikulumBelumInteraksi)
         @php
             $missingJoins = [];
-            if (!$kurikulum->joinProfilCpls()->exists()) $missingJoins[] = ['label' => 'Interaksi Profil – CPL', 'target' => 'join_profil_cpls'];
+            if (!$kurikulum->profilCpls()->exists()) $missingJoins[] = ['label' => 'Interaksi Profil – CPL', 'target' => 'profil_cpls'];
             if (!$kurikulum->joinCplBks()->exists())     $missingJoins[] = ['label' => 'Interaksi CPL – BK',     'target' => 'join_cpl_bks'];
             $allJoinsMissing = count($missingJoins) === 2;
             $bundleJoinUrl = route('settings.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_kurikulum_bundle', 'return_url' => url()->current()]);

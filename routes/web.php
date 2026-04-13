@@ -97,8 +97,8 @@ Route::middleware('auth')->group(function () {
         Route::resource('kurikulums.mks', App\Http\Controllers\Prodi\MkController::class)->except('show');
         Route::resource('profils.profilindikators', App\Http\Controllers\Prodi\ProfilIndikatorController::class)->except('index','show');
         // Profil >< CPL
-        Route::get('kurikulums/{kurikulum}/joinprofilcpls', [App\Http\Controllers\Prodi\JoinProfilCplController::class,'index'])->name('kurikulums.joinprofilcpls.index');
-        Route::put('kurikulums/{kurikulum}/joinprofilcpls/{profil}/{cpl}', [App\Http\Controllers\Prodi\JoinProfilCplController::class, 'update'])->name('kurikulums.joinprofilcpls.update');
+        Route::get('kurikulums/{kurikulum}/profilcpls', [App\Http\Controllers\Prodi\ProfilCplController::class,'index'])->name('kurikulums.profilcpls.index');
+        Route::put('kurikulums/{kurikulum}/profilcpls/{profil}/{cpl}', [App\Http\Controllers\Prodi\ProfilCplController::class, 'update'])->name('kurikulums.profilcpls.update');
         // CPL >< BK
         Route::get('kurikulums/{kurikulum}/joincplbks', [App\Http\Controllers\Prodi\JoinCplBkController::class,'index'])->name('kurikulums.joincplbks.index');
         Route::put('kurikulums/{kurikulum}/joincplbks/{cpl}/{bk}', [App\Http\Controllers\Prodi\JoinCplBkController::class, 'update'])->name('kurikulums.joincplbks.update');

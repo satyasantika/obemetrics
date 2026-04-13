@@ -1363,7 +1363,12 @@ class ImportMkMasterController extends Controller
                 $nama = $this->required($row['nama'] ?? null, 'nama');
                 $kodeCpl = $this->required($row['kode_cpl'] ?? null, 'kode_cpl');
 
-                $cpl = Cpl::query()->where('kurikulum_id', $mk->kurikulum_id)->where('kode', $kodeCpl)->first();
+                $cpl = Cpl::query()
+                    ->where('kode', $kodeCpl)
+                    ->whereHas('kurikulums', function ($query) use ($mk) {
+                        $query->where('kurikulums.id', $mk->kurikulum_id);
+                    })
+                    ->first();
                 if (!$cpl) {
                     throw new \RuntimeException('CPL tidak ditemukan: ' . $kodeCpl);
                 }

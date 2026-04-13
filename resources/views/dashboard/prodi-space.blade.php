@@ -197,7 +197,7 @@
                                             !$kurikulumModal->cpls()->exists() &&
                                             !$kurikulumModal->bks()->exists() &&
                                             !$kurikulumModal->mks()->exists() &&
-                                            !$kurikulumModal->joinProfilCpls()->exists() &&
+                                            !$kurikulumModal->profilCpls()->exists() &&
                                             !$kurikulumModal->joinCplBks()->exists() &&
                                             !$kurikulumModal->joinCplMks()->exists() &&
                                             !$kurikulumModal->joinMkUsers()->exists();

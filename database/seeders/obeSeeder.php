@@ -95,8 +95,8 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'create bulk-import joinmkusers'])->assignRole('admin','operator prodi');
         Permission::create(['name' => 'delete bulk-import joinmkusers'])->assignRole('admin','operator prodi');
 
-        Permission::create(['name' => 'read join profil cpls'])->assignRole('pimpinan prodi');
-        Permission::create(['name' => 'update join profil cpls'])->assignRole('pimpinan prodi');
+        Permission::create(['name' => 'read profil cpls'])->assignRole('pimpinan prodi');
+        Permission::create(['name' => 'update profil cpls'])->assignRole('pimpinan prodi');
 
         Permission::create(['name' => 'read join cpl bks'])->assignRole('pimpinan prodi');
         Permission::create(['name' => 'update join cpl bks'])->assignRole('pimpinan prodi');

@@ -7,15 +7,15 @@ use App\Models\Cpl;
 use App\Models\Profil;
 use App\Models\Kurikulum;
 use Illuminate\Http\Request;
-use App\Models\JoinProfilCpl;
+use App\Models\ProfilCpl;
 use App\Http\Controllers\Controller;
 
-class JoinProfilCplController extends Controller
+class ProfilCplController extends Controller
 {
     function __construct()
     {
-        $this->middleware('permission:read join profil cpls', ['only' => ['index']]);
-        $this->middleware('permission:update join profil cpls', ['only' => ['update']]);
+        $this->middleware('permission:read profil cpls', ['only' => ['index']]);
+        $this->middleware('permission:update profil cpls', ['only' => ['update']]);
     }
 
     public function index(Kurikulum $kurikulum)
@@ -40,15 +40,15 @@ class JoinProfilCplController extends Controller
             ], 422);
         }
 
-        $joinprofilcpl = JoinProfilCpl::where('kurikulum_id', $kurikulum->id)
+        $profilCpl = ProfilCpl::where('kurikulum_id', $kurikulum->id)
                                         ->where('profil_id', $profil->id)
                                         ->where('cpl_id', $cpl->id)
                                         ->first();
         $expectsJson = $request->expectsJson() || $request->ajax();
 
         if ($request->has('is_linked')) {
-            if (!$joinprofilcpl) {
-                JoinProfilCpl::create([
+            if (!$profilCpl) {
+                ProfilCpl::create([
                     'profil_id' => $profil->id,
                     'cpl_id' => $cpl->id,
                     'kurikulum_id' => $kurikulum->id,
@@ -68,8 +68,8 @@ class JoinProfilCplController extends Controller
             return back()
                     ->with('success', $cpl->kode . ' telah diset untuk profil ' . $profil->nama);
         } else {
-            if ($joinprofilcpl) {
-                $joinprofilcpl->delete();
+            if ($profilCpl) {
+                $profilCpl->delete();
                 }
             SyncKurikulumState::sync($kurikulum);
 
@@ -81,7 +81,7 @@ class JoinProfilCplController extends Controller
                 ]);
             }
 
-                return to_route('kurikulums.joinprofilcpls.index', $kurikulum->id)
+                return to_route('kurikulums.profilcpls.index', $kurikulum->id)
                     ->with('warning', $cpl->kode . ' telah dihapus dari profil ' . $profil->nama);
         }
 

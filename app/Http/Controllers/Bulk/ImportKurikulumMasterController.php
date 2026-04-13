@@ -10,7 +10,8 @@ use App\Models\JoinCplBk;
 use App\Models\JoinCplCpmk;
 use App\Models\JoinCplMk;
 use App\Models\JoinMkUser;
-use App\Models\JoinProfilCpl;
+use App\Models\KurikulumCpl;
+use App\Models\ProfilCpl;
 use App\Models\KontrakMk;
 use App\Models\Kurikulum;
 use App\Models\Mahasiswa;
@@ -60,7 +61,7 @@ class ImportKurikulumMasterController extends Controller
             'columns' => ['kode', 'nama', 'cakupan'],
             'required' => ['kode', 'nama', 'cakupan'],
         ],
-        'join_profil_cpls' => [
+        'profil_cpls' => [
             'label' => 'CPL untuk Profil Lulusan',
             'columns' => ['kode_profil', 'nama_profil', 'kode_cpl', 'nama_cpl'],
             'required' => ['kode_profil', 'kode_cpl'],
@@ -163,12 +164,12 @@ class ImportKurikulumMasterController extends Controller
                     return $this->commitJoinKurikulumBundle($spreadsheet, $kurikulum);
                 });
 
-                $success = "Import interaksi master berhasil: Profil >< CPL ({$result['join_profil_cpls']['linked']} aktif), CPL >< BK ({$result['join_cpl_bks']['linked']} aktif) aktif).";
+                $success = "Import interaksi master berhasil: Profil >< CPL ({$result['profil_cpls']['linked']} aktif), CPL >< BK ({$result['join_cpl_bks']['linked']} aktif) aktif).";
 
                 $redirect = redirect()->to($this->resolveReturnUrl($request))
                     ->with('success', $success);
 
-                $removed = ($result['join_profil_cpls']['removed'] ?? 0)
+                $removed = ($result['profil_cpls']['removed'] ?? 0)
                     + ($result['join_cpl_bks']['removed'] ?? 0);
 
                 if ($removed > 0) {
@@ -196,15 +197,15 @@ class ImportKurikulumMasterController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray(null, true, true, true);
 
-            if (in_array($target, ['join_profil_cpls', 'join_cpl_bks', 'join_cpl_mks'], true)) {
+            if (in_array($target, ['profil_cpls', 'join_cpl_bks', 'join_cpl_mks'], true)) {
                 $result = match ($target) {
-                    'join_profil_cpls' => $this->saveJoinProfilCplMatrix($rows, $kurikulum),
+                    'profil_cpls' => $this->saveProfilCplMatrix($rows, $kurikulum),
                     'join_cpl_bks' => $this->saveJoinCplBkMatrix($rows, $kurikulum),
                     'join_cpl_mks' => $this->saveJoinCplMkMatrix($rows, $kurikulum),
                 };
 
                 $successLabel = match ($target) {
-                    'join_profil_cpls' => 'Interaksi Profil >< CPL',
+                    'profil_cpls' => 'Interaksi Profil >< CPL',
                     'join_cpl_bks' => 'Interaksi CPL >< BK',
                     'join_cpl_mks' => 'Interaksi CPL >< MK',
                 };
@@ -373,7 +374,7 @@ class ImportKurikulumMasterController extends Controller
         if ($target === 'join_kurikulum_bundle') {
             $fresh = $kurikulum->fresh();
 
-            $interaksiLengkap = $fresh->joinProfilCpls()->exists()
+            $interaksiLengkap = $fresh->profilCpls()->exists()
                 && $fresh->joinCplBks()->exists();
 
             $semuaMkSudahBobot = $interaksiLengkap
@@ -420,11 +421,11 @@ class ImportKurikulumMasterController extends Controller
             ]);
         }
 
-        if ($target === 'join_profil_cpls') {
+        if ($target === 'profil_cpls') {
             $profils = $kurikulum->profils()->orderBy('nama')->get();
             $cpls = $kurikulum->cpls()->orderBy('kode')->get();
 
-            $linkedMap = JoinProfilCpl::query()
+            $linkedMap = ProfilCpl::query()
                 ->where('kurikulum_id', $kurikulum->id)
                 ->whereIn('profil_id', $profils->pluck('id'))
                 ->whereIn('cpl_id', $cpls->pluck('id'))
@@ -643,28 +644,29 @@ class ImportKurikulumMasterController extends Controller
                 $kode = $this->required($row['kode'] ?? null, 'kode');
                 $nama = $this->required($row['nama'] ?? null, 'nama');
                 $cakupan = $this->required($row['cakupan'] ?? null, 'cakupan');
-                Cpl::updateOrCreate(
-                    ['kurikulum_id' => $kurikulum->id, 'kode' => $kode],
+                $cpl = Cpl::updateOrCreate(
+                    ['kode' => $kode],
                     ['nama' => $nama, 'cakupan' => $cakupan]
                 );
+                KurikulumCpl::firstOrCreate([
+                    'kurikulum_id' => $kurikulum->id,
+                    'cpl_id' => $cpl->id,
+                ]);
                 return;
 
-            case 'join_profil_cpls':
+            case 'profil_cpls':
                 $profil = $this->findProfilByRow($kurikulum, $row);
                 if (!$profil) {
                     throw new \RuntimeException('Profil tidak ditemukan dari kolom nama_profil/kode_profil.');
                 }
 
                 $kodeCpl = $this->required($row['kode_cpl'] ?? null, 'kode_cpl');
-                $cpl = Cpl::query()
-                    ->where('kurikulum_id', $kurikulum->id)
-                    ->where('kode', $kodeCpl)
-                    ->first();
+                $cpl = $kurikulum->cpls()->where('kode', $kodeCpl)->first();
                 if (!$cpl) {
                     throw new \RuntimeException('CPL tidak ditemukan untuk kode_cpl: ' . $kodeCpl);
                 }
 
-                JoinProfilCpl::updateOrCreate(
+                ProfilCpl::updateOrCreate(
                     ['kurikulum_id' => $kurikulum->id, 'profil_id' => $profil->id, 'cpl_id' => $cpl->id],
                     []
                 );
@@ -683,7 +685,7 @@ class ImportKurikulumMasterController extends Controller
                 $kodeCpl = $this->required($row['kode_cpl'] ?? null, 'kode_cpl');
                 $kodeBk = $this->required($row['kode_bk'] ?? null, 'kode_bk');
 
-                $cpl = Cpl::query()->where('kurikulum_id', $kurikulum->id)->where('kode', $kodeCpl)->first();
+                $cpl = $kurikulum->cpls()->where('kode', $kodeCpl)->first();
                 $bk = Bk::query()->where('kurikulum_id', $kurikulum->id)->where('kode', $kodeBk)->first();
                 if (!$cpl || !$bk) {
                     throw new \RuntimeException('CPL/BK tidak ditemukan untuk relasi.');
@@ -1095,7 +1097,7 @@ class ImportKurikulumMasterController extends Controller
         return null;
     }
 
-    private function saveJoinProfilCplMatrix(array $rows, Kurikulum $kurikulum): array
+    private function saveProfilCplMatrix(array $rows, Kurikulum $kurikulum): array
     {
         $headerRow = $rows[2] ?? [];
         $profilByColumn = [];
@@ -1179,7 +1181,7 @@ class ImportKurikulumMasterController extends Controller
             throw new \RuntimeException('Tidak ada baris CPL pada template interaksi.');
         }
 
-        $existingRows = JoinProfilCpl::query()
+        $existingRows = ProfilCpl::query()
             ->where('kurikulum_id', $kurikulum->id)
             ->whereIn('cpl_id', $scopeCplIds)
             ->whereIn('profil_id', $scopeProfilIds)
@@ -1196,7 +1198,7 @@ class ImportKurikulumMasterController extends Controller
         }
 
         foreach ($desiredPairs as $pair) {
-            JoinProfilCpl::updateOrCreate(
+            ProfilCpl::updateOrCreate(
                 [
                     'kurikulum_id' => $pair['kurikulum_id'],
                     'profil_id' => $pair['profil_id'],
@@ -1255,7 +1257,7 @@ class ImportKurikulumMasterController extends Controller
             }
 
             $kodeCpl = trim((string) Str::before($cplCell, "\n"));
-            $cpl = Cpl::query()->where('kurikulum_id', $kurikulum->id)->where('kode', $kodeCpl)->first();
+            $cpl = $kurikulum->cpls()->where('kode', $kodeCpl)->first();
             if (!$cpl) {
                 throw new \RuntimeException('CPL tidak ditemukan pada baris ' . $rowIndex . ': ' . $kodeCpl);
             }
@@ -1767,7 +1769,7 @@ class ImportKurikulumMasterController extends Controller
 
         $sheetProfilCpl = $spreadsheet->createSheet(0);
         $sheetProfilCpl->setTitle('JOIN_PROFIL_CPL');
-        $this->fillJoinProfilCplSheet($sheetProfilCpl, $kurikulum, true);
+        $this->fillProfilCplSheet($sheetProfilCpl, $kurikulum, true);
 
         $sheetCplBk = $spreadsheet->createSheet(1);
         $sheetCplBk->setTitle('JOIN_CPL_BK');
@@ -1788,17 +1790,17 @@ class ImportKurikulumMasterController extends Controller
         }
 
         return [
-            'join_profil_cpls' => $this->saveJoinProfilCplMatrix($sheetProfilCpl->toArray(null, true, true, true), $kurikulum),
+            'profil_cpls' => $this->saveProfilCplMatrix($sheetProfilCpl->toArray(null, true, true, true), $kurikulum),
             'join_cpl_bks' => $this->saveJoinCplBkMatrix($sheetCplBk->toArray(null, true, true, true), $kurikulum),
         ];
     }
 
-    private function fillJoinProfilCplSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
+    private function fillProfilCplSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
     {
         $profils = $kurikulum->profils()->orderBy('kode')->get();
         $cpls = $kurikulum->cpls()->orderBy('kode')->get();
 
-        $linkedMap = JoinProfilCpl::query()
+        $linkedMap = ProfilCpl::query()
             ->where('kurikulum_id', $kurikulum->id)
             ->whereIn('profil_id', $profils->pluck('id'))
             ->whereIn('cpl_id', $cpls->pluck('id'))
@@ -2124,9 +2126,8 @@ class ImportKurikulumMasterController extends Controller
         });
 
         $this->importBundleSheet($spreadsheet, 'CPL', ['kode', 'nama', 'cakupan'], ['kode', 'nama', 'cakupan'], function (array $row) use ($kurikulum, &$summary) {
-            Cpl::updateOrCreate(
+            $cpl = Cpl::updateOrCreate(
                 [
-                    'kurikulum_id' => $kurikulum->id,
                     'kode' => $this->required($row['kode'] ?? null, 'kode'),
                 ],
                 [
@@ -2134,6 +2135,11 @@ class ImportKurikulumMasterController extends Controller
                     'cakupan' => $this->required($row['cakupan'] ?? null, 'cakupan'),
                 ]
             );
+
+            KurikulumCpl::firstOrCreate([
+                'kurikulum_id' => $kurikulum->id,
+                'cpl_id' => $cpl->id,
+            ]);
 
             $summary['cpls']++;
         });
