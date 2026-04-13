@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class JoinCplBk extends Model
+class CplBk extends Model
 {
     use HasFactory, HasUuids;
     protected $guarded = ['id'];

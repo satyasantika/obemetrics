@@ -36,7 +36,7 @@ class Cpl extends Model
 
     public function joinCplBks(): HasMany
     {
-        return $this->hasMany(JoinCplBk::class);
+        return $this->hasMany(CplBk::class);
     }
 
 }

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Dosen;
 
 use App\Models\Mk;
 use App\Models\Cpmk;
-use App\Models\JoinCplBk;
+use App\Models\CplBk;
 use App\Models\JoinCplCpmk;
 use Illuminate\Http\Request;
 use App\Actions\SyncMkState;
@@ -20,7 +20,7 @@ class JoinCplCpmkController extends Controller
 
     public function index(Mk $mk)
     {
-        $joincplbks = $mk->joinCplMks()
+        $cplbks = $mk->joinCplMks()
             ->with('joinCplBk')
             ->get()
             ->pluck('joinCplBk')
@@ -30,28 +30,28 @@ class JoinCplCpmkController extends Controller
 
         $linkedPairMap = JoinCplCpmk::query()
             ->where('mk_id', $mk->id)
-            ->get(['join_cpl_bk_id', 'cpmk_id'])
-            ->mapWithKeys(fn ($row) => [($row->join_cpl_bk_id.'|'.$row->cpmk_id) => true])
+            ->get(['cpl_bk_id', 'cpmk_id'])
+            ->mapWithKeys(fn ($row) => [($row->cpl_bk_id.'|'.$row->cpmk_id) => true])
             ->all();
 
         $lockedPairMap = JoinCplCpmk::query()
             ->where('mk_id', $mk->id)
             ->whereHas('subcpmks')
-            ->get(['join_cpl_bk_id', 'cpmk_id'])
-            ->mapWithKeys(fn ($row) => [($row->join_cpl_bk_id.'|'.$row->cpmk_id) => true])
+            ->get(['cpl_bk_id', 'cpmk_id'])
+            ->mapWithKeys(fn ($row) => [($row->cpl_bk_id.'|'.$row->cpmk_id) => true])
             ->all();
 
         return view('obe.cpl-cpmk')
                 ->with('mk', $mk)
-                ->with('joincplbks', $joincplbks)
+                ->with('cplbks', $cplbks)
                 ->with('cpmks', $mk->cpmks)
                 ->with('linkedPairMap', $linkedPairMap)
                 ->with('lockedPairMap', $lockedPairMap);
     }
 
-    public function update(Request $request, JoinCplBk $joincplbk, Cpmk $cpmk)
+    public function update(Request $request, CplBk $joincplbk, Cpmk $cpmk)
     {
-        $joincplcpmk = JoinCplCpmk::where('join_cpl_bk_id', $joincplbk->id)
+        $joincplcpmk = JoinCplCpmk::where('cpl_bk_id', $joincplbk->id)
                                         ->where('cpmk_id', $cpmk->id)
                                         ->first();
         $expectsJson = $request->expectsJson() || $request->ajax();
@@ -59,7 +59,7 @@ class JoinCplCpmkController extends Controller
         if ($request->has('is_linked')) {
             if (!$joincplcpmk) {
                 JoinCplCpmk::create([
-                    'join_cpl_bk_id' => $joincplbk->id,
+                    'cpl_bk_id' => $joincplbk->id,
                     'cpmk_id' => $cpmk->id,
                     'mk_id' => $request->mk_id,
                 ]);

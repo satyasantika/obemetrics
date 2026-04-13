@@ -37,16 +37,16 @@ class Bk extends Model
 
     public function joinCplBks(): HasMany
     {
-        return $this->hasMany(JoinCplBk::class);
+        return $this->hasMany(CplBk::class);
     }
 
     public function joinCplMks(): HasManyThrough
     {
         return $this->hasManyThrough(
             JoinCplMk::class,
-            JoinCplBk::class,
+            CplBk::class,
             'bk_id',
-            'join_cpl_bk_id',
+            'cpl_bk_id',
             'id',
             'id'
         );

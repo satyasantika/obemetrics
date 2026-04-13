@@ -14,7 +14,7 @@ class JoinCplCpmk extends Model
 
     public function joinCplBk(): BelongsTo
     {
-        return $this->belongsTo(JoinCplBk::class);
+        return $this->belongsTo(CplBk::class);
     }
 
     public function cpmk(): BelongsTo

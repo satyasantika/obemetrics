@@ -24,7 +24,9 @@
                     <div class="row">
                         <div class="col">
                             @php
-                                $linkedPairMap = \App\Models\ProfilCpl::where('kurikulum_id', $kurikulum->id)
+                                $linkedPairMap = \App\Models\ProfilCpl::query()
+                                    ->whereIn('profil_id', $profils->pluck('id'))
+                                    ->whereIn('cpl_id', $cpls->pluck('id'))
                                     ->get(['profil_id', 'cpl_id'])
                                     ->mapWithKeys(function ($item) {
                                         return [$item->profil_id . '|' . $item->cpl_id => true];

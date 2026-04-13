@@ -8,10 +8,10 @@ use App\Models\Cpl;
 use App\Models\JoinCplMk;
 use App\Models\Kurikulum;
 use Illuminate\Http\Request;
-use App\Models\JoinCplBk;
+use App\Models\CplBk;
 use App\Http\Controllers\Controller;
 
-class JoinCplBkController extends Controller
+class CplBkController extends Controller
 {
     function __construct()
     {
@@ -24,14 +24,14 @@ class JoinCplBkController extends Controller
         $scopeCplIds = $kurikulum->cpls()->pluck('cpls.id');
         $scopeBkIds = $kurikulum->bks()->pluck('bks.id');
 
-        $linkedCplBks = JoinCplBk::query()
+        $linkedCplBks = CplBk::query()
             ->whereIn('cpl_id', $scopeCplIds)
             ->whereIn('bk_id', $scopeBkIds)
             ->get(['id', 'cpl_id', 'bk_id']);
 
-        $lockedJoinCplBkIds = JoinCplMk::query()
-            ->whereIn('join_cpl_bk_id', $linkedCplBks->pluck('id'))
-            ->pluck('join_cpl_bk_id')
+        $lockedCplBkIds = JoinCplMk::query()
+            ->whereIn('cpl_bk_id', $linkedCplBks->pluck('id'))
+            ->pluck('cpl_bk_id')
             ->unique()
             ->flip();
 
@@ -40,7 +40,7 @@ class JoinCplBkController extends Controller
             ->all();
 
         $lockedPairMap = $linkedCplBks
-            ->filter(fn ($row) => $lockedJoinCplBkIds->has($row->id))
+            ->filter(fn ($row) => $lockedCplBkIds->has($row->id))
             ->mapWithKeys(fn ($row) => [($row->cpl_id.'|'.$row->bk_id) => true])
             ->all();
 
@@ -74,7 +74,7 @@ class JoinCplBkController extends Controller
             ], 422);
         }
 
-        $joincplbk = JoinCplBk::where('cpl_id', $cpl->id)
+        $joincplbk = CplBk::where('cpl_id', $cpl->id)
             ->where('bk_id', $bk->id)
             ->first();
 
@@ -82,7 +82,7 @@ class JoinCplBkController extends Controller
 
         if ($request->has('is_linked')) {
             if (!$joincplbk) {
-                JoinCplBk::create([
+                CplBk::create([
                     'cpl_id' => $cpl->id,
                     'bk_id' => $bk->id,
                 ]);
@@ -98,11 +98,11 @@ class JoinCplBkController extends Controller
                 ]);
             }
 
-                return to_route('kurikulums.joincplbks.index', $kurikulum->id)
+                return to_route('kurikulums.cplbks.index', $kurikulum->id)
                     ->with('success', $bk->kode . ' telah diinteraksi dengan ' . $cpl->kode);
         } else {
             if ($joincplbk) {
-                if (JoinCplMk::query()->where('join_cpl_bk_id', $joincplbk->id)->exists()) {
+                if (JoinCplMk::query()->where('cpl_bk_id', $joincplbk->id)->exists()) {
                     if ($expectsJson) {
                         return response()->json([
                             'status' => 'error',
@@ -111,7 +111,7 @@ class JoinCplBkController extends Controller
                         ], 422);
                     }
 
-                    return to_route('kurikulums.joincplbks.index', $kurikulum->id)
+                    return to_route('kurikulums.cplbks.index', $kurikulum->id)
                         ->with('error', 'Interaksi dikunci karena sudah digunakan pada relasi CPL >< MK.');
                 }
                 $joincplbk->delete();
@@ -126,7 +126,7 @@ class JoinCplBkController extends Controller
                 ]);
             }
 
-                return to_route('kurikulums.joincplbks.index', $kurikulum->id)
+                return to_route('kurikulums.cplbks.index', $kurikulum->id)
                     ->with('warning', $bk->kode . ' sudah tidak berinteraksi dengan ' . $cpl->kode);
         }
 

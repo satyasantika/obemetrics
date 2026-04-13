@@ -6,7 +6,7 @@ use App\Actions\SyncKurikulumState;
 use App\Http\Controllers\Controller;
 use App\Models\Bk;
 use App\Models\Cpl;
-use App\Models\JoinCplBk;
+use App\Models\CplBk;
 use App\Models\JoinCplCpmk;
 use App\Models\JoinCplMk;
 use App\Models\JoinMkUser;
@@ -73,7 +73,7 @@ class ImportKurikulumMasterController extends Controller
             'columns' => ['kode', 'nama', 'deskripsi'],
             'required' => ['kode', 'nama'],
         ],
-        'join_cpl_bks' => [
+        'cpl_bks' => [
             'label' => 'Bahan Kajian untuk CPL',
             'columns' => ['kode_cpl', 'nama_cpl', 'kode_bk', 'nama_bk'],
             'required' => ['kode_cpl', 'kode_bk'],
@@ -166,20 +166,20 @@ class ImportKurikulumMasterController extends Controller
                     return $this->commitJoinKurikulumBundle($spreadsheet, $kurikulum);
                 });
 
-                $success = "Import interaksi master berhasil: Profil >< CPL ({$result['profil_cpls']['linked']} aktif), CPL >< BK ({$result['join_cpl_bks']['linked']} aktif) aktif).";
+                $success = "Import interaksi master berhasil: Profil >< CPL ({$result['profil_cpls']['linked']} aktif), CPL >< BK ({$result['cpl_bks']['linked']} aktif) aktif).";
 
                 $redirect = redirect()->to($this->resolveReturnUrl($request))
                     ->with('success', $success);
 
                 $removed = ($result['profil_cpls']['removed'] ?? 0)
-                    + ($result['join_cpl_bks']['removed'] ?? 0);
+                    + ($result['cpl_bks']['removed'] ?? 0);
 
                 if ($removed > 0) {
                     $redirect->with('danger', "{$removed} interaksi dibuang karena sel pada template dikosongkan.");
                 }
 
-                if (($result['join_cpl_bks']['locked_skipped'] ?? 0) > 0) {
-                    $redirect->with('warning', "{$result['join_cpl_bks']['locked_skipped']} interaksi CPL >< BK tidak dapat dihapus karena masih dipakai dalam pembobotan CPL >< MK.");
+                if (($result['cpl_bks']['locked_skipped'] ?? 0) > 0) {
+                    $redirect->with('warning', "{$result['cpl_bks']['locked_skipped']} interaksi CPL >< BK tidak dapat dihapus karena masih dipakai dalam pembobotan CPL >< MK.");
                 }
 
                 SyncKurikulumState::sync($kurikulum->fresh());
@@ -199,16 +199,16 @@ class ImportKurikulumMasterController extends Controller
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray(null, true, true, true);
 
-            if (in_array($target, ['profil_cpls', 'join_cpl_bks', 'join_cpl_mks'], true)) {
+            if (in_array($target, ['profil_cpls', 'cpl_bks', 'join_cpl_mks'], true)) {
                 $result = match ($target) {
                     'profil_cpls' => $this->saveProfilCplMatrix($rows, $kurikulum),
-                    'join_cpl_bks' => $this->saveJoinCplBkMatrix($rows, $kurikulum),
+                    'cpl_bks' => $this->saveCplBkMatrix($rows, $kurikulum),
                     'join_cpl_mks' => $this->saveJoinCplMkMatrix($rows, $kurikulum),
                 };
 
                 $successLabel = match ($target) {
                     'profil_cpls' => 'Interaksi Profil >< CPL',
-                    'join_cpl_bks' => 'Interaksi CPL >< BK',
+                    'cpl_bks' => 'Interaksi CPL >< BK',
                     'join_cpl_mks' => 'Interaksi CPL >< MK',
                 };
 
@@ -428,7 +428,6 @@ class ImportKurikulumMasterController extends Controller
             $cpls = $kurikulum->cpls()->orderBy('kurikulum_cpls.kode_cpl')->get();
 
             $linkedMap = ProfilCpl::query()
-                ->where('kurikulum_id', $kurikulum->id)
                 ->whereIn('profil_id', $profils->pluck('id'))
                 ->whereIn('cpl_id', $cpls->pluck('id'))
                 ->get()
@@ -488,12 +487,11 @@ class ImportKurikulumMasterController extends Controller
             ]);
         }
 
-        if ($target === 'join_cpl_bks') {
+        if ($target === 'cpl_bks') {
             $bks = $kurikulum->bks()->orderBy('kurikulum_bks.kode_bk')->get();
             $cpls = $kurikulum->cpls()->orderBy('kurikulum_cpls.kode_cpl')->get();
 
-            $linkedMap = JoinCplBk::query()
-                ->where('kurikulum_id', $kurikulum->id)
+            $linkedMap = CplBk::query()
                 ->whereIn('bk_id', $bks->pluck('id'))
                 ->whereIn('cpl_id', $cpls->pluck('id'))
                 ->get()
@@ -675,7 +673,7 @@ class ImportKurikulumMasterController extends Controller
                 }
 
                 ProfilCpl::updateOrCreate(
-                    ['kurikulum_id' => $kurikulum->id, 'profil_id' => $profil->id, 'cpl_id' => $cpl->id],
+                    ['profil_id' => $profil->id, 'cpl_id' => $cpl->id],
                     []
                 );
                 return;
@@ -699,17 +697,18 @@ class ImportKurikulumMasterController extends Controller
                 }
                 return;
 
-            case 'join_cpl_bks':
+            case 'cpl_bks':
                 $kodeCpl = $this->required($row['kode_cpl'] ?? null, 'kode_cpl');
                 $kodeBk = $this->required($row['kode_bk'] ?? null, 'kode_bk');
 
                 $cpl = $kurikulum->cpls()->wherePivot('kode_cpl', $kodeCpl)->first();
+                $bk = $kurikulum->bks()->wherePivot('kode_bk', $kodeBk)->first();
                 if (!$cpl || !$bk) {
                     throw new \RuntimeException('CPL/BK tidak ditemukan untuk relasi.');
                 }
 
-                JoinCplBk::updateOrCreate(
-                    ['kurikulum_id' => $kurikulum->id, 'cpl_id' => $cpl->id, 'bk_id' => $bk->id],
+                CplBk::updateOrCreate(
+                    ['cpl_id' => $cpl->id, 'bk_id' => $bk->id],
                     []
                 );
                 return;
@@ -1058,9 +1057,8 @@ class ImportKurikulumMasterController extends Controller
             ]);
         }
 
-        $status['exists'] = Bk::query()
-            ->where('kurikulum_id', $kurikulum->id)
-            ->where('kode', $kodeBk)
+        $status['exists'] = $kurikulum->bks()
+            ->where('bks.kode', $kodeBk)
             ->exists();
 
         return array_merge($row, $status);
@@ -1141,8 +1139,7 @@ class ImportKurikulumMasterController extends Controller
             }
 
             $profilName = trim((string) Str::before($profilHeader, "\n"));
-            $profil = Profil::query()
-                ->where('kurikulum_id', $kurikulum->id)
+            $profil = $kurikulum->profils()
                 ->where('nama', $profilName)
                 ->first();
 
@@ -1176,9 +1173,8 @@ class ImportKurikulumMasterController extends Controller
                 continue;
             }
 
-            $cpl = Cpl::query()
-                ->where('kurikulum_id', $kurikulum->id)
-                ->where('kode', $kodeCpl)
+            $cpl = $kurikulum->cpls()
+                ->wherePivot('kode_cpl', $kodeCpl)
                 ->first();
             if (!$cpl) {
                 throw new \RuntimeException('CPL tidak ditemukan pada baris ' . $rowIndex . ': ' . $kodeCpl);
@@ -1197,7 +1193,6 @@ class ImportKurikulumMasterController extends Controller
                 }
 
                 $desiredPairs[$cpl->id . '_' . $profil->id] = [
-                    'kurikulum_id' => $kurikulum->id,
                     'cpl_id' => $cpl->id,
                     'profil_id' => $profil->id,
                 ];
@@ -1210,7 +1205,6 @@ class ImportKurikulumMasterController extends Controller
         }
 
         $existingRows = ProfilCpl::query()
-            ->where('kurikulum_id', $kurikulum->id)
             ->whereIn('cpl_id', $scopeCplIds)
             ->whereIn('profil_id', $scopeProfilIds)
             ->get();
@@ -1228,7 +1222,6 @@ class ImportKurikulumMasterController extends Controller
         foreach ($desiredPairs as $pair) {
             ProfilCpl::updateOrCreate(
                 [
-                    'kurikulum_id' => $pair['kurikulum_id'],
                     'profil_id' => $pair['profil_id'],
                     'cpl_id' => $pair['cpl_id'],
                 ],
@@ -1242,7 +1235,7 @@ class ImportKurikulumMasterController extends Controller
         ];
     }
 
-    private function saveJoinCplBkMatrix(array $rows, Kurikulum $kurikulum): array
+    private function saveCplBkMatrix(array $rows, Kurikulum $kurikulum): array
     {
         $headerRow = $rows[2] ?? [];
         $bkByColumn = [];
@@ -1258,7 +1251,14 @@ class ImportKurikulumMasterController extends Controller
             }
 
             $kodeBk = trim((string) Str::before($header, "\n"));
-            $bk = $kurikulum->bks()->where('kode', $kodeBk)->first();
+            $bk = $kurikulum->bks()
+                ->wherePivot('kode_bk', $kodeBk)
+                ->first();
+            if (!$bk) {
+                $bk = $kurikulum->bks()
+                    ->where('bks.kode', $kodeBk)
+                    ->first();
+            }
             if (!$bk) {
                 throw new \RuntimeException('BK tidak ditemukan pada header: ' . $kodeBk);
             }
@@ -1285,7 +1285,14 @@ class ImportKurikulumMasterController extends Controller
             }
 
             $kodeCpl = trim((string) Str::before($cplCell, "\n"));
-            $cpl = $kurikulum->cpls()->where('kode', $kodeCpl)->first();
+            $cpl = $kurikulum->cpls()
+                ->wherePivot('kode_cpl', $kodeCpl)
+                ->first();
+            if (!$cpl) {
+                $cpl = $kurikulum->cpls()
+                    ->where('cpls.kode', $kodeCpl)
+                    ->first();
+            }
             if (!$cpl) {
                 throw new \RuntimeException('CPL tidak ditemukan pada baris ' . $rowIndex . ': ' . $kodeCpl);
             }
@@ -1302,7 +1309,6 @@ class ImportKurikulumMasterController extends Controller
                 }
 
                 $desiredPairs[$cpl->id . '_' . $bk->id] = [
-                    'kurikulum_id' => $kurikulum->id,
                     'cpl_id' => $cpl->id,
                     'bk_id' => $bk->id,
                 ];
@@ -1314,8 +1320,7 @@ class ImportKurikulumMasterController extends Controller
             throw new \RuntimeException('Tidak ada baris CPL pada template interaksi.');
         }
 
-        $existingRows = JoinCplBk::query()
-            ->where('kurikulum_id', $kurikulum->id)
+        $existingRows = CplBk::query()
             ->whereIn('cpl_id', $scopeCplIds)
             ->whereIn('bk_id', $scopeBkIds)
             ->get();
@@ -1324,16 +1329,16 @@ class ImportKurikulumMasterController extends Controller
         $removed = 0;
         $lockedSkipped = 0;
 
-        $lockedJoinCplBkIds = JoinCplMk::query()
-            ->whereIn('join_cpl_bk_id', $existingRows->pluck('id'))
-            ->pluck('join_cpl_bk_id')
+        $lockedCplBkIds = JoinCplMk::query()
+            ->whereIn('cpl_bk_id', $existingRows->pluck('id'))
+            ->pluck('cpl_bk_id')
             ->unique()
             ->flip();
 
         foreach ($existingRows as $existingRow) {
             $key = $existingRow->cpl_id . '_' . $existingRow->bk_id;
             if (!in_array($key, $desiredKeys, true)) {
-                if ($lockedJoinCplBkIds->has($existingRow->id)) {
+                if ($lockedCplBkIds->has($existingRow->id)) {
                     $lockedSkipped++;
                     continue;
                 }
@@ -1344,9 +1349,8 @@ class ImportKurikulumMasterController extends Controller
         }
 
         foreach ($desiredPairs as $pair) {
-            JoinCplBk::updateOrCreate(
+            CplBk::updateOrCreate(
                 [
-                    'kurikulum_id' => $pair['kurikulum_id'],
                     'cpl_id' => $pair['cpl_id'],
                     'bk_id' => $pair['bk_id'],
                 ],
@@ -1377,7 +1381,14 @@ class ImportKurikulumMasterController extends Controller
             }
 
             $kodeBk = trim((string) Str::before($header, "\n"));
-            $bk = $kurikulum->bks()->where('kode', $kodeBk)->first();
+            $bk = $kurikulum->bks()
+                ->wherePivot('kode_bk', $kodeBk)
+                ->first();
+            if (!$bk) {
+                $bk = $kurikulum->bks()
+                    ->where('bks.kode', $kodeBk)
+                    ->first();
+            }
             if (!$bk) {
                 throw new \RuntimeException('BK tidak ditemukan pada header: ' . $kodeBk);
             }
@@ -1433,8 +1444,8 @@ class ImportKurikulumMasterController extends Controller
             throw new \RuntimeException('Tidak ada baris MK pada template interaksi.');
         }
 
-        $joinCplBkRows = JoinCplBk::query()
-            ->where('kurikulum_id', $kurikulum->id)
+        $joinCplBkRows = CplBk::query()
+            ->whereIn('cpl_id', $kurikulum->cpls()->pluck('cpls.id'))
             ->whereIn('bk_id', $scopeBkIds)
             ->get(['id', 'bk_id']);
 
@@ -1444,7 +1455,7 @@ class ImportKurikulumMasterController extends Controller
 
         $lockedPairMap = JoinCplCpmk::query()
             ->whereIn('mk_id', $scopeMkIds)
-            ->whereIn('join_cpl_bk_id', $joinCplBkRows->pluck('id'))
+            ->whereIn('cpl_bk_id', $joinCplBkRows->pluck('id'))
             ->with('joinCplBk:id,bk_id')
             ->get()
             ->mapWithKeys(function ($row) {
@@ -1458,7 +1469,7 @@ class ImportKurikulumMasterController extends Controller
         $existingRows = JoinCplMk::query()
             ->where('kurikulum_id', $kurikulum->id)
             ->whereIn('mk_id', $scopeMkIds)
-            ->whereIn('join_cpl_bk_id', $joinCplBkRows->pluck('id'))
+            ->whereIn('cpl_bk_id', $joinCplBkRows->pluck('id'))
             ->with('joinCplBk:id,bk_id')
             ->get();
 
@@ -1491,7 +1502,7 @@ class ImportKurikulumMasterController extends Controller
                     [
                         'kurikulum_id' => $pair['kurikulum_id'],
                         'mk_id' => $pair['mk_id'],
-                        'join_cpl_bk_id' => $joinCplBkId,
+                        'cpl_bk_id' => $joinCplBkId,
                     ],
                     []
                 );
@@ -1536,24 +1547,31 @@ class ImportKurikulumMasterController extends Controller
                 throw new \RuntimeException('Header BK tidak valid pada kolom ' . $columnLetter . '.');
             }
 
-            $cpl = Cpl::query()
-                ->where('kurikulum_id', $kurikulum->id)
-                ->where('kode', $activeCplKode)
+            $cpl = $kurikulum->cpls()
+                ->wherePivot('kode_cpl', $activeCplKode)
                 ->first();
+            if (!$cpl) {
+                $cpl = $kurikulum->cpls()
+                    ->where('cpls.kode', $activeCplKode)
+                    ->first();
+            }
             if (!$cpl) {
                 throw new \RuntimeException('CPL tidak ditemukan pada header: ' . $activeCplKode);
             }
 
-            $bk = Bk::query()
-                ->where('kurikulum_id', $kurikulum->id)
-                ->where('kode', $kodeBk)
+            $bk = $kurikulum->bks()
+                ->wherePivot('kode_bk', $kodeBk)
                 ->first();
+            if (!$bk) {
+                $bk = $kurikulum->bks()
+                    ->where('bks.kode', $kodeBk)
+                    ->first();
+            }
             if (!$bk) {
                 throw new \RuntimeException('BK tidak ditemukan pada header: ' . $kodeBk);
             }
 
-            $joinCplBk = JoinCplBk::query()
-                ->where('kurikulum_id', $kurikulum->id)
+            $joinCplBk = CplBk::query()
                 ->where('cpl_id', $cpl->id)
                 ->where('bk_id', $bk->id)
                 ->first();
@@ -1571,7 +1589,7 @@ class ImportKurikulumMasterController extends Controller
 
         $desiredPairs = [];
         $scopeMkIds = [];
-        $scopeJoinCplBkIds = collect($joinCplBkByColumn)->pluck('id')->unique()->values()->all();
+        $scopeCplBkIds = collect($joinCplBkByColumn)->pluck('id')->unique()->values()->all();
         $skippedUnavailableInputs = 0;
 
         foreach ($rows as $rowIndex => $row) {
@@ -1585,9 +1603,8 @@ class ImportKurikulumMasterController extends Controller
             }
 
             $kodeMk = trim((string) Str::before($mkCell, "\n"));
-            $mk = Mk::query()
-                ->where('kurikulum_id', $kurikulum->id)
-                ->where('kode', $kodeMk)
+            $mk = $kurikulum->mks()
+                ->where('mks.kode', $kodeMk)
                 ->first();
             if (!$mk) {
                 throw new \RuntimeException('MK tidak ditemukan pada baris ' . $rowIndex . ': ' . $kodeMk);
@@ -1614,7 +1631,7 @@ class ImportKurikulumMasterController extends Controller
                 $desiredPairs[$mk->id . '_' . $joinCplBk->id] = [
                     'kurikulum_id' => $kurikulum->id,
                     'mk_id' => $mk->id,
-                    'join_cpl_bk_id' => $joinCplBk->id,
+                    'cpl_bk_id' => $joinCplBk->id,
                     'bobot' => $bobot,
                 ];
             }
@@ -1627,14 +1644,14 @@ class ImportKurikulumMasterController extends Controller
 
         $lockedMap = JoinCplCpmk::query()
             ->whereIn('mk_id', $scopeMkIds)
-            ->whereIn('join_cpl_bk_id', $scopeJoinCplBkIds)
+            ->whereIn('cpl_bk_id', $scopeCplBkIds)
             ->get()
-            ->mapWithKeys(fn ($row) => [($row->mk_id . '_' . $row->join_cpl_bk_id) => true]);
+            ->mapWithKeys(fn ($row) => [($row->mk_id . '_' . $row->cpl_bk_id) => true]);
 
         $existingRows = JoinCplMk::query()
             ->where('kurikulum_id', $kurikulum->id)
             ->whereIn('mk_id', $scopeMkIds)
-            ->whereIn('join_cpl_bk_id', $scopeJoinCplBkIds)
+            ->whereIn('cpl_bk_id', $scopeCplBkIds)
             ->get();
 
         $desiredKeys = array_keys($desiredPairs);
@@ -1642,7 +1659,7 @@ class ImportKurikulumMasterController extends Controller
         $lockedSkipped = 0;
 
         foreach ($existingRows as $existingRow) {
-            $key = $existingRow->mk_id . '_' . $existingRow->join_cpl_bk_id;
+            $key = $existingRow->mk_id . '_' . $existingRow->cpl_bk_id;
             if (in_array($key, $desiredKeys, true)) {
                 continue;
             }
@@ -1661,7 +1678,7 @@ class ImportKurikulumMasterController extends Controller
                 [
                     'kurikulum_id' => $pair['kurikulum_id'],
                     'mk_id' => $pair['mk_id'],
-                    'join_cpl_bk_id' => $pair['join_cpl_bk_id'],
+                    'cpl_bk_id' => $pair['cpl_bk_id'],
                 ],
                 [
                     'bobot' => $pair['bobot'],
@@ -1729,7 +1746,7 @@ class ImportKurikulumMasterController extends Controller
                 'name' => 'MK',
                 'columns' => ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan', 'deskripsi'],
                 'required' => ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan'],
-                'rows' => $kurikulum->mks()                    ->orderBy('kurikulum_mks.kode_mk')                    ->get(['mks.kode', 'mks.nama', 'mks.semester', 'mks.sks_teori', 'mks.sks_praktik', 'mks.sks_lapangan', 'mks.deskripsi'])
+                'rows' => $kurikulum->mks()->orderBy('kode')->get(['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan', 'deskripsi'])
                     ->map(fn ($item) => [
                         'kode' => (string) ($item->kode ?? ''),
                         'nama' => (string) ($item->nama ?? ''),
@@ -1801,7 +1818,7 @@ class ImportKurikulumMasterController extends Controller
 
         $sheetCplBk = $spreadsheet->createSheet(1);
         $sheetCplBk->setTitle('JOIN_CPL_BK');
-        $this->fillJoinCplBkSheet($sheetCplBk, $kurikulum, true);
+        $this->fillCplBkSheet($sheetCplBk, $kurikulum, true);
 
         $spreadsheet->setActiveSheetIndex(0);
 
@@ -1819,17 +1836,16 @@ class ImportKurikulumMasterController extends Controller
 
         return [
             'profil_cpls' => $this->saveProfilCplMatrix($sheetProfilCpl->toArray(null, true, true, true), $kurikulum),
-            'join_cpl_bks' => $this->saveJoinCplBkMatrix($sheetCplBk->toArray(null, true, true, true), $kurikulum),
+            'cpl_bks' => $this->saveCplBkMatrix($sheetCplBk->toArray(null, true, true, true), $kurikulum),
         ];
     }
 
     private function fillProfilCplSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
     {
         $profils = $kurikulum->profils()->orderBy('kode')->get();
-        $cpls = $kurikulum->cpls()->orderBy('kode')->get();
+        $cpls = $kurikulum->cpls()->orderBy('kurikulum_cpls.kode_cpl')->get();
 
         $linkedMap = ProfilCpl::query()
-            ->where('kurikulum_id', $kurikulum->id)
             ->whereIn('profil_id', $profils->pluck('id'))
             ->whereIn('cpl_id', $cpls->pluck('id'))
             ->get()
@@ -1876,13 +1892,12 @@ class ImportKurikulumMasterController extends Controller
         }
     }
 
-    private function fillJoinCplBkSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
+    private function fillCplBkSheet($sheet, Kurikulum $kurikulum, bool $withValidation): void
     {
         $bks = $kurikulum->bks()->orderBy('kode')->get();
         $cpls = $kurikulum->cpls()->orderBy('kode')->get();
 
-        $linkedMap = JoinCplBk::query()
-            ->where('kurikulum_id', $kurikulum->id)
+        $linkedMap = CplBk::query()
             ->whereIn('bk_id', $bks->pluck('id'))
             ->whereIn('cpl_id', $cpls->pluck('id'))
             ->get()
@@ -1962,7 +1977,7 @@ class ImportKurikulumMasterController extends Controller
 
             foreach ($bkColumns as $join) {
                 $cplBkColumns->push([
-                    'join_cpl_bk_id' => $join->id,
+                    'cpl_bk_id' => $join->id,
                     'bk_kode' => $join->bk->kode,
                     'bk_nama' => $join->bk->nama,
                 ]);
@@ -1976,9 +1991,9 @@ class ImportKurikulumMasterController extends Controller
         $linkedRows = JoinCplMk::query()
             ->where('kurikulum_id', $kurikulum->id)
             ->whereIn('mk_id', $mks->pluck('id'))
-            ->whereIn('join_cpl_bk_id', $cplBkColumns->pluck('join_cpl_bk_id'))
+            ->whereIn('cpl_bk_id', $cplBkColumns->pluck('cpl_bk_id'))
             ->get()
-            ->keyBy(fn ($row) => $row->mk_id . '_' . $row->join_cpl_bk_id);
+            ->keyBy(fn ($row) => $row->mk_id . '_' . $row->cpl_bk_id);
 
         $sheet->setCellValue('A1', 'MATA KULIAH');
         $sheet->getStyle('A1')->getFont()->setBold(true);
@@ -2015,7 +2030,7 @@ class ImportKurikulumMasterController extends Controller
             $columnIndex = 2;
             foreach ($cplBkColumns as $column) {
                 $columnLetter = Coordinate::stringFromColumnIndex($columnIndex);
-                $pairKey = $mk->id . '_' . $column['join_cpl_bk_id'];
+                $pairKey = $mk->id . '_' . $column['cpl_bk_id'];
                 $bobot = $linkedRows->has($pairKey) ? $linkedRows->get($pairKey)->bobot : null;
                 $sheet->setCellValue($columnLetter . $rowIndex, $bobot !== null ? (float) $bobot : '');
                 $columnIndex++;

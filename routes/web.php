@@ -100,8 +100,8 @@ Route::middleware('auth')->group(function () {
         Route::get('kurikulums/{kurikulum}/profilcpls', [App\Http\Controllers\Prodi\ProfilCplController::class,'index'])->name('kurikulums.profilcpls.index');
         Route::put('kurikulums/{kurikulum}/profilcpls/{profil}/{cpl}', [App\Http\Controllers\Prodi\ProfilCplController::class, 'update'])->name('kurikulums.profilcpls.update');
         // CPL >< BK
-        Route::get('kurikulums/{kurikulum}/joincplbks', [App\Http\Controllers\Prodi\JoinCplBkController::class,'index'])->name('kurikulums.joincplbks.index');
-        Route::put('kurikulums/{kurikulum}/joincplbks/{cpl}/{bk}', [App\Http\Controllers\Prodi\JoinCplBkController::class, 'update'])->name('kurikulums.joincplbks.update');
+        Route::get('kurikulums/{kurikulum}/cplbks', [App\Http\Controllers\Prodi\CplBkController::class,'index'])->name('kurikulums.cplbks.index');
+        Route::put('kurikulums/{kurikulum}/cplbks/{cpl}/{bk}', [App\Http\Controllers\Prodi\CplBkController::class, 'update'])->name('kurikulums.cplbks.update');
         // CPL >< MK
         Route::get('kurikulums/{kurikulum}/joincplmks', [App\Http\Controllers\Prodi\JoinCplMkController::class,'index'])->name('kurikulums.joincplmks.index');
         Route::put('kurikulums/{kurikulum}/joincplmks/{cpl}/{mk}', [App\Http\Controllers\Prodi\JoinCplMkController::class, 'update'])->name('kurikulums.joincplmks.update');

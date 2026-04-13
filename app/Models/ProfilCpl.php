@@ -24,9 +24,4 @@ class ProfilCpl extends Model
     {
         return $this->belongsTo(Cpl::class);
     }
-
-    public function kurikulum(): BelongsTo
-    {
-        return $this->belongsTo(Kurikulum::class);
-    }
 }

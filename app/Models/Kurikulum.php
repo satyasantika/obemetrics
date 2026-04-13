@@ -9,10 +9,11 @@ use App\Models\ProfilCpl;
 use App\States\Kurikulum\KurikulumState;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\ModelStates\HasStates;
 
@@ -71,14 +72,18 @@ class Kurikulum extends Model
         return $this->hasMany(KurikulumMk::class);
     }
 
-    public function profilCpls(): HasMany
+    public function profilCpls(): Builder
     {
-        return $this->hasMany(ProfilCpl::class);
+        return ProfilCpl::query()
+            ->whereIn('profil_id', $this->profils()->pluck('profils.id'))
+            ->whereIn('cpl_id', $this->cpls()->pluck('cpls.id'));
     }
 
-    public function joinCplBks(): HasMany
+    public function joinCplBks(): Builder
     {
-        return $this->hasMany(JoinCplBk::class);
+        return CplBk::query()
+            ->whereIn('cpl_id', $this->cpls()->pluck('cpls.id'))
+            ->whereIn('bk_id', $this->bks()->pluck('bks.id'));
     }
 
     public function joinCplMks(): HasMany

@@ -24,7 +24,7 @@
                                 <thead>
                                     <tr>
                                         <th></th>
-                                        @forelse ($joincplbks as $joincplbk)
+                                        @forelse ($cplbks as $joincplbk)
                                             <th class="text-center" style="min-width: 90px;">
                                                 <div class="d-flex flex-column align-items-center gap-1"
                                                      data-bs-toggle="popover"
@@ -50,7 +50,7 @@
                                             {{ $cpmk->kode }}
                                             <br>{{ $cpmk->nama }}
                                         </td>
-                                        @forelse ($joincplbks as $joincplbk)
+                                        @forelse ($cplbks as $joincplbk)
                                             <td>
                                                 @php
                                                 $pairKey = $joincplbk->id.'|'.$cpmk->id;
@@ -90,7 +90,7 @@
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="{{ $joincplbks->count()+1 }}"><span class="bg-warning text-dark p-2">
+                                        <td colspan="{{ $cplbks->count()+1 }}"><span class="bg-warning text-dark p-2">
                                             Belum ada data CPMK untuk Mata Kuliah ini.</span>
                                         </td>
                                     </tr>

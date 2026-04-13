@@ -79,7 +79,7 @@
                                         </th>
                                         @forelse ($cplBkColumns as $column)
                                             @php
-                                                $pairKey = ($column['join_cpl_bk_id'] ?? 'na') . '|' . $mk->id;
+                                                $pairKey = ($column['cpl_bk_id'] ?? 'na') . '|' . $mk->id;
                                                 $isAvailable = $availablePairMap->has($pairKey);
                                                 $isLinked = $linkedPairMap->has($pairKey);
                                                 $isLocked = $lockedPairMap->has($pairKey);
@@ -95,7 +95,7 @@
                                                         @csrf
                                                         @method('PUT')
                                                         <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
-                                                        <input type="hidden" name="join_cpl_bk_id" value="{{ $column['join_cpl_bk_id'] }}">
+                                                        <input type="hidden" name="cpl_bk_id" value="{{ $column['cpl_bk_id'] }}">
                                                         <div class="d-flex align-items-center gap-1">
                                                             <input
                                                                 class="form-control form-control-sm bobot-input"

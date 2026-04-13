@@ -22,7 +22,7 @@
                     'kurikulums.bks.*',
                     'kurikulums.mks.*',
                     'kurikulums.profilcpls.*',
-                    'kurikulums.joincplbks.*',
+                    'kurikulums.cplbks.*',
                     'kurikulums.joincplmks.*',
                     'kurikulums.rencana-asesmen',
                     'kurikulums.analisis-asesmen',
@@ -252,8 +252,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ $profilCplBkExists ? route('kurikulums.joincplbks.index', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
-                               class="nav-link {{ request()->routeIs('kurikulums.joincplbks.*') ? 'active' : '' }} {{ $profilCplBkExists ? '' : 'disabled' }}"
+                            <a href="{{ $profilCplBkExists ? route('kurikulums.cplbks.index', [$selectedKurikulum->id]) : 'javascript:void(0)' }}"
+                               class="nav-link {{ request()->routeIs('kurikulums.cplbks.*') ? 'active' : '' }} {{ $profilCplBkExists ? '' : 'disabled' }}"
                                @if(!$profilCplBkExists) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-link"></i>
                                 <p>Interaksi CPL >< BK</p>

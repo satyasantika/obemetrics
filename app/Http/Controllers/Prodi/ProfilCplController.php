@@ -40,10 +40,17 @@ class ProfilCplController extends Controller
             ], 422);
         }
 
-        $profilCpl = ProfilCpl::where('kurikulum_id', $kurikulum->id)
-                                        ->where('profil_id', $profil->id)
-                                        ->where('cpl_id', $cpl->id)
-                                        ->first();
+        if ((string) $profil->kurikulum_id !== (string) $kurikulum->id || !$kurikulum->cpls()->whereKey($cpl->id)->exists()) {
+            return response()->json([
+                'status' => 'error',
+                'linked' => false,
+                'message' => 'Profil/CPL tidak berada pada kurikulum yang dipilih.',
+            ], 422);
+        }
+
+        $profilCpl = ProfilCpl::where('profil_id', $profil->id)
+            ->where('cpl_id', $cpl->id)
+            ->first();
         $expectsJson = $request->expectsJson() || $request->ajax();
 
         if ($request->has('is_linked')) {
@@ -51,7 +58,6 @@ class ProfilCplController extends Controller
                 ProfilCpl::create([
                     'profil_id' => $profil->id,
                     'cpl_id' => $cpl->id,
-                    'kurikulum_id' => $kurikulum->id,
                 ]);
             }
 

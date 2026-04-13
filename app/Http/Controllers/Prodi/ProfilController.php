@@ -22,10 +22,9 @@ class ProfilController extends Controller
 
     public function index(Kurikulum $kurikulum)
     {
-        $profils = Profil::where('kurikulum_id', $kurikulum->id)->get();
+        $profils = $kurikulum->profils()->orderBy('kode')->get();
 
-        $nonDeletableProfilIds = Profil::query()
-            ->where('kurikulum_id', $kurikulum->id)
+        $nonDeletableProfilIds = $kurikulum->profils()
             ->where(function ($query) {
                 $query->whereHas('profil_indikators')
                     ->orWhereHas('profilCpls');
@@ -79,8 +78,24 @@ class ProfilController extends Controller
 
     public function store(Request $request, Kurikulum $kurikulum, Profil $profil)
     {
-        $name = strtoupper($request->name);
-        Profil::create($request->all());
+        $validated = $request->validate([
+            'kode' => 'required|string|max:255',
+            'nama' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+        ]);
+
+        $profil = Profil::updateOrCreate(
+            [
+                'kurikulum_id' => $kurikulum->id,
+                'kode' => trim((string) $validated['kode']),
+            ],
+            [
+                'nama' => $validated['nama'],
+                'deskripsi' => $validated['deskripsi'] ?? null,
+            ]
+        );
+
+        $name = strtoupper($validated['nama']);
         SyncKurikulumState::sync($kurikulum);
 
         return to_route('kurikulums.profils.index', $kurikulum)->with('success','profil '.$name.' telah ditambahkan');
@@ -94,21 +109,40 @@ class ProfilController extends Controller
 
     public function update(Request $request, Kurikulum $kurikulum, Profil $profil)
     {
+        if ((string) $profil->kurikulum_id !== (string) $kurikulum->id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'kode' => 'required|string|max:255',
+            'nama' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string',
+        ]);
+
         $name = strtoupper($profil->nama);
-        $data = $request->all();
-        $profil->fill($data)->save();
+        $profil->fill([
+            'kode' => trim((string) $validated['kode']),
+            'nama' => $validated['nama'],
+            'deskripsi' => $validated['deskripsi'] ?? null,
+        ])->save();
 
         return to_route('kurikulums.profils.index', $kurikulum)->with('success','Profil '.$name.' telah diperbarui');
     }
 
     public function destroy(Kurikulum $kurikulum, Profil $profil)
     {
+        if ((string) $profil->kurikulum_id !== (string) $kurikulum->id) {
+            abort(404);
+        }
+
         $name = strtoupper($profil->nama);
         if ($profil->profil_indikators()->exists() || $profil->profilCpls()->exists()) {
             return to_route('kurikulums.profils.index', $kurikulum)
                 ->with('error','Profil '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
         }
+
         $profil->delete();
+
         SyncKurikulumState::sync($kurikulum);
         return to_route('kurikulums.profils.index', $kurikulum)->with('warning','Profil '.$name.' telah dihapus');
     }

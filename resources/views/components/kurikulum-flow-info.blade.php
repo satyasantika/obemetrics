@@ -146,7 +146,7 @@
         @php
             $missingJoins = [];
             if (!$kurikulum->profilCpls()->exists()) $missingJoins[] = ['label' => 'Interaksi Profil – CPL', 'target' => 'profil_cpls'];
-            if (!$kurikulum->joinCplBks()->exists())     $missingJoins[] = ['label' => 'Interaksi CPL – BK',     'target' => 'join_cpl_bks'];
+            if (!$kurikulum->joinCplBks()->exists())     $missingJoins[] = ['label' => 'Interaksi CPL – BK',     'target' => 'cpl_bks'];
             $allJoinsMissing = count($missingJoins) === 2;
             $bundleJoinUrl = route('settings.import.kurikulum-master', ['kurikulum' => $kurikulum->id, 'target' => 'join_kurikulum_bundle', 'return_url' => url()->current()]);
         @endphp

@@ -7,10 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Cpl;
 use App\Models\Cpmk;
 use App\Models\Evaluasi;
-use App\Models\JoinCplBk;
+use App\Models\CplBk;
 use App\Models\JoinCplCpmk;
 use App\Models\JoinSubcpmkPenugasan;
-use App\Models\KurikulumCpl;
 use App\Models\Mk;
 use App\Models\Penugasan;
 use App\Models\Semester;
@@ -480,10 +479,10 @@ class ImportMkMasterController extends Controller
 
             $linkedMap = JoinCplCpmk::query()
                 ->where('mk_id', $mk->id)
-                ->whereIn('join_cpl_bk_id', $joinCplBks->pluck('id'))
+                ->whereIn('cpl_bk_id', $joinCplBks->pluck('id'))
                 ->whereIn('cpmk_id', $cpmks->pluck('id'))
                 ->get()
-                ->keyBy(fn ($row) => $row->cpmk_id . '_' . $row->join_cpl_bk_id);
+                ->keyBy(fn ($row) => $row->cpmk_id . '_' . $row->cpl_bk_id);
 
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
@@ -597,8 +596,10 @@ class ImportMkMasterController extends Controller
                 $kodeCpmk = $this->required($row['kode_cpmk'] ?? null, 'kode_cpmk');
 
                 $cpl = Cpl::query()
-                    ->where('kurikulum_id', $mk->kurikulum_id)
                     ->where('kode', $kodeCpl)
+                    ->whereHas('kurikulums', function ($query) use ($mk) {
+                        $query->where('kurikulums.id', $mk->kurikulum_id);
+                    })
                     ->first();
                 if (!$cpl) {
                     throw new \RuntimeException('CPL tidak ditemukan: ' . $kodeCpl);
@@ -609,9 +610,13 @@ class ImportMkMasterController extends Controller
                     throw new \RuntimeException('CPMK tidak ditemukan: ' . $kodeCpmk);
                 }
 
-                $joinCplBks = JoinCplBk::query()
-                    ->where('kurikulum_id', $mk->kurikulum_id)
+                $joinCplBks = CplBk::query()
                     ->where('cpl_id', $cpl->id)
+                    ->whereIn('bk_id', function ($query) use ($mk) {
+                        $query->select('bk_id')
+                            ->from('kurikulum_bks')
+                            ->where('kurikulum_id', $mk->kurikulum_id);
+                    })
                     ->get();
 
                 if ($joinCplBks->isEmpty()) {
@@ -620,7 +625,7 @@ class ImportMkMasterController extends Controller
 
                 foreach ($joinCplBks as $joinCplBk) {
                     JoinCplCpmk::updateOrCreate(
-                        ['mk_id' => $mk->id, 'join_cpl_bk_id' => $joinCplBk->id, 'cpmk_id' => $cpmk->id],
+                        ['mk_id' => $mk->id, 'cpl_bk_id' => $joinCplBk->id, 'cpmk_id' => $cpmk->id],
                         []
                     );
                 }
@@ -634,16 +639,22 @@ class ImportMkMasterController extends Controller
                 $kodeCpl = $this->required($row['kode_cpl'] ?? null, 'kode_cpl');
 
                 $cpl = Cpl::query()
-                    ->where('kurikulum_id', $mk->kurikulum_id)
                     ->where('kode', $kodeCpl)
+                    ->whereHas('kurikulums', function ($query) use ($mk) {
+                        $query->where('kurikulums.id', $mk->kurikulum_id);
+                    })
                     ->first();
                 if (!$cpl) {
                     throw new \RuntimeException('CPL tidak ditemukan: ' . $kodeCpl);
                 }
 
-                $joinCplBkIds = JoinCplBk::query()
-                    ->where('kurikulum_id', $mk->kurikulum_id)
+                $joinCplBkIds = CplBk::query()
                     ->where('cpl_id', $cpl->id)
+                    ->whereIn('bk_id', function ($query) use ($mk) {
+                        $query->select('bk_id')
+                            ->from('kurikulum_bks')
+                            ->where('kurikulum_id', $mk->kurikulum_id);
+                    })
                     ->pluck('id');
 
                 if ($joinCplBkIds->isEmpty()) {
@@ -652,7 +663,7 @@ class ImportMkMasterController extends Controller
 
                 $joinCplCpmkQuery = JoinCplCpmk::query()
                     ->where('mk_id', $mk->id)
-                    ->whereIn('join_cpl_bk_id', $joinCplBkIds);
+                    ->whereIn('cpl_bk_id', $joinCplBkIds);
 
                 $kodeCpmk = trim((string) ($row['kode_cpmk'] ?? ''));
                 $namaCpmk = trim((string) ($row['nama_cpmk'] ?? ''));
@@ -845,8 +856,10 @@ class ImportMkMasterController extends Controller
             }
 
             $cpl = Cpl::query()
-                ->where('kurikulum_id', $mk->kurikulum_id)
                 ->where('kode', $kodeCpl)
+                ->whereHas('kurikulums', function ($query) use ($mk) {
+                    $query->where('kurikulums.id', $mk->kurikulum_id);
+                })
                 ->first();
             if (!$cpl) {
                 return array_merge($row, [
@@ -856,9 +869,13 @@ class ImportMkMasterController extends Controller
                 ]);
             }
 
-            $joinCplBkIds = JoinCplBk::query()
-                ->where('kurikulum_id', $mk->kurikulum_id)
+            $joinCplBkIds = CplBk::query()
                 ->where('cpl_id', $cpl->id)
+                ->whereIn('bk_id', function ($query) use ($mk) {
+                    $query->select('bk_id')
+                        ->from('kurikulum_bks')
+                        ->where('kurikulum_id', $mk->kurikulum_id);
+                })
                 ->pluck('id');
             if ($joinCplBkIds->isEmpty()) {
                 return array_merge($row, [
@@ -870,7 +887,7 @@ class ImportMkMasterController extends Controller
 
             $joinCplCpmkQuery = JoinCplCpmk::query()
                 ->where('mk_id', $mk->id)
-                ->whereIn('join_cpl_bk_id', $joinCplBkIds);
+                ->whereIn('cpl_bk_id', $joinCplBkIds);
 
             $kodeCpmk = trim((string) ($row['kode_cpmk'] ?? ''));
             $namaCpmk = trim((string) ($row['nama_cpmk'] ?? ''));
@@ -1080,7 +1097,7 @@ class ImportMkMasterController extends Controller
 
         $desiredPairs = [];
         $scopeCpmkIds = [];
-        $scopeJoinCplBkIds = $joinCplBks->pluck('id')->values()->all();
+        $scopeCplBkIds = $joinCplBks->pluck('id')->values()->all();
 
         foreach ($rows as $rowIndex => $row) {
             if ($rowIndex === 1) {
@@ -1113,7 +1130,7 @@ class ImportMkMasterController extends Controller
                 $desiredPairs[$cpmk->id . '_' . $joinCplBk->id] = [
                     'mk_id' => $mk->id,
                     'cpmk_id' => $cpmk->id,
-                    'join_cpl_bk_id' => $joinCplBk->id,
+                    'cpl_bk_id' => $joinCplBk->id,
                 ];
             }
         }
@@ -1126,13 +1143,13 @@ class ImportMkMasterController extends Controller
         $existingRows = JoinCplCpmk::query()
             ->where('mk_id', $mk->id)
             ->whereIn('cpmk_id', $scopeCpmkIds)
-            ->whereIn('join_cpl_bk_id', $scopeJoinCplBkIds)
+            ->whereIn('cpl_bk_id', $scopeCplBkIds)
             ->get();
 
         $desiredKeys = array_keys($desiredPairs);
         $removed = 0;
         foreach ($existingRows as $existingRow) {
-            $key = $existingRow->cpmk_id . '_' . $existingRow->join_cpl_bk_id;
+            $key = $existingRow->cpmk_id . '_' . $existingRow->cpl_bk_id;
             if (!in_array($key, $desiredKeys, true)) {
                 $existingRow->delete();
                 $removed++;
@@ -1144,7 +1161,7 @@ class ImportMkMasterController extends Controller
                 [
                     'mk_id' => $pair['mk_id'],
                     'cpmk_id' => $pair['cpmk_id'],
-                    'join_cpl_bk_id' => $pair['join_cpl_bk_id'],
+                    'cpl_bk_id' => $pair['cpl_bk_id'],
                 ],
                 []
             );
@@ -1374,9 +1391,13 @@ class ImportMkMasterController extends Controller
                     throw new \RuntimeException('CPL tidak ditemukan: ' . $kodeCpl);
                 }
 
-                $joinCplBkIds = JoinCplBk::query()
-                    ->where('kurikulum_id', $mk->kurikulum_id)
+                $joinCplBkIds = CplBk::query()
                     ->where('cpl_id', $cpl->id)
+                    ->whereIn('bk_id', function ($query) use ($mk) {
+                        $query->select('bk_id')
+                            ->from('kurikulum_bks')
+                            ->where('kurikulum_id', $mk->kurikulum_id);
+                    })
                     ->pluck('id');
 
                 if ($joinCplBkIds->isEmpty()) {
@@ -1477,7 +1498,7 @@ class ImportMkMasterController extends Controller
     {
         $query = JoinCplCpmk::query()
             ->where('mk_id', $mk->id)
-            ->whereIn('join_cpl_bk_id', $joinCplBkIds);
+            ->whereIn('cpl_bk_id', $joinCplBkIds);
 
         $selectedCpmk = null;
         if ($kodeCpmk !== '') {
@@ -1511,7 +1532,7 @@ class ImportMkMasterController extends Controller
         return JoinCplCpmk::updateOrCreate(
             [
                 'mk_id' => $mk->id,
-                'join_cpl_bk_id' => $joinCplBkId,
+                'cpl_bk_id' => $joinCplBkId,
                 'cpmk_id' => $selectedCpmk->id,
             ],
             []
