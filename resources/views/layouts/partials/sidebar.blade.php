@@ -96,7 +96,7 @@
                 $bkExists = false;
                 $mkExists = false;
                 $profilCplExists = false;
-                $joinCplBkExists = false;
+                $cplBkExists = false;
                 $joinCplMkExists = false;
 
                 $dataComplete = false;
@@ -114,11 +114,11 @@
                     $mkExists = $selectedKurikulum->mks()->exists();
 
                     $profilCplExists = $selectedKurikulum->profilCpls()->exists();
-                    $joinCplBkExists = $selectedKurikulum->joinCplBks()->exists();
+                    $cplBkExists = $selectedKurikulum->joinCplBks()->exists();
                     $joinCplMkExists = $selectedKurikulum->joinCplMks()->exists();
 
                     $dataComplete = $profilExists && $cplExists && $bkExists && $mkExists;
-                    $profilCplBkExists = $profilCplExists && $joinCplBkExists;
+                    $profilCplBkExists = $profilCplExists && $cplBkExists;
                     $mustImportJoinMaster = $dataComplete && !$profilCplBkExists;
                     $reportsReady = $joinCplMkExists;
                     $kontrakMkExists = \App\Models\KontrakMk::query()

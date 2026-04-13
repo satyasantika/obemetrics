@@ -24,17 +24,17 @@
                                 <thead>
                                     <tr>
                                         <th></th>
-                                        @forelse ($cplbks as $joincplbk)
+                                        @forelse ($cplbks as $cplbk)
                                             <th class="text-center" style="min-width: 90px;">
                                                 <div class="d-flex flex-column align-items-center gap-1"
                                                      data-bs-toggle="popover"
                                                      data-bs-trigger="hover focus"
                                                      data-bs-placement="top"
-                                                     data-bs-title="{{ $joincplbk->cpl->kode }}"
-                                                     data-bs-content="{{ $joincplbk->cpl->nama }}">
-                                                    <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis fw-bold" style="font-size: 0.8rem;">{{ $joincplbk->cpl->kode }}</span>
-                                                    {{-- @if($joincplbk->bk?->kode)
-                                                    <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill" style="font-size: 0.65rem;">{{ $joincplbk->bk->kode }}</span>
+                                                     data-bs-title="{{ $cplbk->cpl->kode }}"
+                                                     data-bs-content="{{ $cplbk->cpl->nama }}">
+                                                    <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis fw-bold" style="font-size: 0.8rem;">{{ $cplbk->cpl->kode }}</span>
+                                                    {{-- @if($cplbk->bk?->kode)
+                                                    <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill" style="font-size: 0.65rem;">{{ $cplbk->bk->kode }}</span>
                                                     @endif --}}
                                                 </div>
                                             </th>
@@ -50,14 +50,14 @@
                                             {{ $cpmk->kode }}
                                             <br>{{ $cpmk->nama }}
                                         </td>
-                                        @forelse ($cplbks as $joincplbk)
+                                        @forelse ($cplbks as $cplbk)
                                             <td>
                                                 @php
-                                                $pairKey = $joincplbk->id.'|'.$cpmk->id;
+                                                $pairKey = $cplbk->id.'|'.$cpmk->id;
                                                 $cek = isset($linkedPairMap[$pairKey]);
                                                 $isLocked = isset($lockedPairMap[$pairKey]);
                                                 @endphp
-                                                <form action="{{ route('mks.joincplcpmks.update', ['mk' => $mk->id, 'joincplbk' => $joincplbk->id, 'cpmk' => $cpmk->id]) }}" method="POST" class="live-cplcpmk-form" data-is-locked="{{ $isLocked ? '1' : '0' }}">
+                                                <form action="{{ route('mks.joincplcpmks.update', ['mk' => $mk->id, 'cplbk' => $cplbk->id, 'cpmk' => $cpmk->id]) }}" method="POST" class="live-cplcpmk-form" data-is-locked="{{ $isLocked ? '1' : '0' }}">
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="cpmk_id" value="{{ $cpmk->id }}">
@@ -68,7 +68,7 @@
                                                             class="form-check-input"
                                                             type="checkbox"
                                                             name="is_linked"
-                                                            id="is_linked_{{ $joincplbk->id }}_{{ $cpmk->id }}"
+                                                            id="is_linked_{{ $cplbk->id }}_{{ $cpmk->id }}"
                                                             onchange="this.form.requestSubmit()"
                                                             @checked($cek)
                                                             @disabled($isLocked)
@@ -78,7 +78,7 @@
                                                     </div>
                                                 </form>
                                                 <div class="mt-1">
-                                                    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle link-status-badge {{ $cek ? '' : 'd-none' }}">{{ $joincplbk->cpl->kode }}</span>
+                                                    <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle link-status-badge {{ $cek ? '' : 'd-none' }}">{{ $cplbk->cpl->kode }}</span>
                                                 </div>
                                                 @if ($isLocked)
                                                     <span class="badge bg-secondary" title="Dikunci" aria-label="Dikunci"><i class="bi bi-lock-fill"></i></span>

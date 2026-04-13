@@ -150,7 +150,7 @@
                                     </td>
                                     <td>
                                         {{ $asesmens
-                                            ->pluck('joinSubcpmkPenugasans.*.subcpmk.joinCplCpmk.joinCplBk.Cpl.kode')
+                                            ->pluck('joinSubcpmkPenugasans.*.subcpmk.joinCplCpmk.cplBk.Cpl.kode')
                                             ->flatten()
                                             ->filter()
                                             ->unique()

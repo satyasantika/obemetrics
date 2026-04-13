@@ -6,8 +6,8 @@ use App\Actions\SyncMkState;
 use App\Http\Controllers\Controller;
 use App\Models\Cpl;
 use App\Models\Cpmk;
-use App\Models\Evaluasi;
 use App\Models\CplBk;
+use App\Models\Evaluasi;
 use App\Models\JoinCplCpmk;
 use App\Models\JoinSubcpmkPenugasan;
 use App\Models\Mk;
@@ -474,15 +474,15 @@ class ImportMkMasterController extends Controller
             }
 
         if ($target === 'join_cpl_cpmks') {
-            $joinCplBks = $mk->joinCplMks->pluck('joinCplBk')->flatten()->filter()->unique('id')->values();
+            $joinCplBks = $mk->joinCplMks->pluck('cplBk')->flatten()->filter()->unique('id')->values();
             $cpmks = $mk->cpmks()->orderBy('kode')->get();
 
             $linkedMap = JoinCplCpmk::query()
                 ->where('mk_id', $mk->id)
-                ->whereIn('cpl_bk_id', $joinCplBks->pluck('id'))
+                ->whereIn('join_cpl_bk_id', $joinCplBks->pluck('id'))
                 ->whereIn('cpmk_id', $cpmks->pluck('id'))
                 ->get()
-                ->keyBy(fn ($row) => $row->cpmk_id . '_' . $row->cpl_bk_id);
+                ->keyBy(fn ($row) => $row->cpmk_id . '_' . $row->join_cpl_bk_id);
 
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
@@ -491,9 +491,9 @@ class ImportMkMasterController extends Controller
             $sheet->getColumnDimension('A')->setWidth(36);
 
             $columnIndex = 2;
-            foreach ($joinCplBks as $joinCplBk) {
+            foreach ($joinCplBks as $cplBk) {
                 $column = Coordinate::stringFromColumnIndex($columnIndex);
-                $sheet->setCellValue($column . '1', (string) ($joinCplBk->cpl->kode ?? ''));
+                $sheet->setCellValue($column . '1', (string) ($cplBk->cpl->kode ?? ''));
                 $sheet->getStyle($column . '1')->getFont()->setBold(true);
                 $sheet->getColumnDimension($column)->setWidth(16);
                 $columnIndex++;
@@ -505,9 +505,9 @@ class ImportMkMasterController extends Controller
                 $sheet->getStyle('A' . $rowIndex)->getAlignment()->setWrapText(true);
 
                 $columnIndex = 2;
-                foreach ($joinCplBks as $joinCplBk) {
+                foreach ($joinCplBks as $cplBk) {
                     $column = Coordinate::stringFromColumnIndex($columnIndex);
-                    $isLinked = $linkedMap->has($cpmk->id . '_' . $joinCplBk->id);
+                    $isLinked = $linkedMap->has($cpmk->id . '_' . $cplBk->id);
                     $sheet->setCellValue($column . $rowIndex, $isLinked ? 'V' : '');
                     $columnIndex++;
                 }
@@ -623,9 +623,9 @@ class ImportMkMasterController extends Controller
                     throw new \RuntimeException('Relasi CPL >< BK belum ada untuk kode_cpl: ' . $kodeCpl);
                 }
 
-                foreach ($joinCplBks as $joinCplBk) {
+                foreach ($joinCplBks as $cplBk) {
                     JoinCplCpmk::updateOrCreate(
-                        ['mk_id' => $mk->id, 'cpl_bk_id' => $joinCplBk->id, 'cpmk_id' => $cpmk->id],
+                        ['mk_id' => $mk->id, 'join_cpl_bk_id' => $cplBk->id, 'cpmk_id' => $cpmk->id],
                         []
                     );
                 }
@@ -648,7 +648,7 @@ class ImportMkMasterController extends Controller
                     throw new \RuntimeException('CPL tidak ditemukan: ' . $kodeCpl);
                 }
 
-                $joinCplBkIds = CplBk::query()
+                $cplBkIds = CplBk::query()
                     ->where('cpl_id', $cpl->id)
                     ->whereIn('bk_id', function ($query) use ($mk) {
                         $query->select('bk_id')
@@ -657,13 +657,13 @@ class ImportMkMasterController extends Controller
                     })
                     ->pluck('id');
 
-                if ($joinCplBkIds->isEmpty()) {
+                if ($cplBkIds->isEmpty()) {
                     throw new \RuntimeException('Relasi CPL >< BK tidak ditemukan untuk kode_cpl: ' . $kodeCpl);
                 }
 
                 $joinCplCpmkQuery = JoinCplCpmk::query()
                     ->where('mk_id', $mk->id)
-                    ->whereIn('cpl_bk_id', $joinCplBkIds);
+                    ->whereIn('join_cpl_bk_id', $cplBkIds);
 
                 $kodeCpmk = trim((string) ($row['kode_cpmk'] ?? ''));
                 $namaCpmk = trim((string) ($row['nama_cpmk'] ?? ''));
@@ -869,7 +869,7 @@ class ImportMkMasterController extends Controller
                 ]);
             }
 
-            $joinCplBkIds = CplBk::query()
+            $cplBkIds = CplBk::query()
                 ->where('cpl_id', $cpl->id)
                 ->whereIn('bk_id', function ($query) use ($mk) {
                     $query->select('bk_id')
@@ -877,7 +877,7 @@ class ImportMkMasterController extends Controller
                         ->where('kurikulum_id', $mk->kurikulum_id);
                 })
                 ->pluck('id');
-            if ($joinCplBkIds->isEmpty()) {
+            if ($cplBkIds->isEmpty()) {
                 return array_merge($row, [
                     'exists' => false,
                     'can_save' => false,
@@ -887,7 +887,7 @@ class ImportMkMasterController extends Controller
 
             $joinCplCpmkQuery = JoinCplCpmk::query()
                 ->where('mk_id', $mk->id)
-                ->whereIn('cpl_bk_id', $joinCplBkIds);
+                ->whereIn('join_cpl_bk_id', $cplBkIds);
 
             $kodeCpmk = trim((string) ($row['kode_cpmk'] ?? ''));
             $namaCpmk = trim((string) ($row['nama_cpmk'] ?? ''));
@@ -1077,7 +1077,7 @@ class ImportMkMasterController extends Controller
 
     private function saveJoinCplCpmkMatrix(array $rows, Mk $mk): array
     {
-        $joinCplBks = $mk->joinCplMks->pluck('joinCplBk')->flatten()->filter()->unique('id')->values();
+        $joinCplBks = $mk->joinCplMks->pluck('cplBk')->flatten()->filter()->unique('id')->values();
         if ($joinCplBks->isEmpty()) {
             throw new \RuntimeException('Data relasi CPL >< BK belum tersedia untuk MK ini.');
         }
@@ -1087,17 +1087,17 @@ class ImportMkMasterController extends Controller
             throw new \RuntimeException('Data CPMK belum tersedia untuk MK ini.');
         }
 
-        $joinCplBkByColumn = [];
+        $cplBkByColumn = [];
         $columnIndex = 2;
-        foreach ($joinCplBks as $joinCplBk) {
+        foreach ($joinCplBks as $cplBk) {
             $column = Coordinate::stringFromColumnIndex($columnIndex);
-            $joinCplBkByColumn[$column] = $joinCplBk;
+            $cplBkByColumn[$column] = $cplBk;
             $columnIndex++;
         }
 
         $desiredPairs = [];
         $scopeCpmkIds = [];
-        $scopeCplBkIds = $joinCplBks->pluck('id')->values()->all();
+        $scopeJoinCplBkIds = $joinCplBks->pluck('id')->values()->all();
 
         foreach ($rows as $rowIndex => $row) {
             if ($rowIndex === 1) {
@@ -1117,7 +1117,7 @@ class ImportMkMasterController extends Controller
 
             $scopeCpmkIds[] = $cpmk->id;
 
-            foreach ($joinCplBkByColumn as $columnLetter => $joinCplBk) {
+            foreach ($cplBkByColumn as $columnLetter => $cplBk) {
                 $raw = trim((string) ($row[$columnLetter] ?? ''));
                 if ($raw === '') {
                     continue;
@@ -1127,10 +1127,10 @@ class ImportMkMasterController extends Controller
                     throw new \RuntimeException('Nilai tidak valid pada baris ' . $rowIndex . ', kolom ' . $columnLetter . '. Gunakan huruf V atau kosong.');
                 }
 
-                $desiredPairs[$cpmk->id . '_' . $joinCplBk->id] = [
+                $desiredPairs[$cpmk->id . '_' . $cplBk->id] = [
                     'mk_id' => $mk->id,
                     'cpmk_id' => $cpmk->id,
-                    'cpl_bk_id' => $joinCplBk->id,
+                    'join_cpl_bk_id' => $cplBk->id,
                 ];
             }
         }
@@ -1143,13 +1143,13 @@ class ImportMkMasterController extends Controller
         $existingRows = JoinCplCpmk::query()
             ->where('mk_id', $mk->id)
             ->whereIn('cpmk_id', $scopeCpmkIds)
-            ->whereIn('cpl_bk_id', $scopeCplBkIds)
+            ->whereIn('join_cpl_bk_id', $scopeJoinCplBkIds)
             ->get();
 
         $desiredKeys = array_keys($desiredPairs);
         $removed = 0;
         foreach ($existingRows as $existingRow) {
-            $key = $existingRow->cpmk_id . '_' . $existingRow->cpl_bk_id;
+            $key = $existingRow->cpmk_id . '_' . $existingRow->join_cpl_bk_id;
             if (!in_array($key, $desiredKeys, true)) {
                 $existingRow->delete();
                 $removed++;
@@ -1161,7 +1161,7 @@ class ImportMkMasterController extends Controller
                 [
                     'mk_id' => $pair['mk_id'],
                     'cpmk_id' => $pair['cpmk_id'],
-                    'cpl_bk_id' => $pair['cpl_bk_id'],
+                    'join_cpl_bk_id' => $pair['join_cpl_bk_id'],
                 ],
                 []
             );
@@ -1324,11 +1324,11 @@ class ImportMkMasterController extends Controller
             ->whereHas('joinCplCpmk', function ($query) use ($mk) {
                 $query->where('mk_id', $mk->id);
             })
-            ->with(['joinCplCpmk.cpmk:id,kode,nama', 'joinCplCpmk.joinCplBk.cpl:id,kode'])
+            ->with(['joinCplCpmk.cpmk:id,kode,nama', 'joinCplCpmk.cplBk.cpl:id,kode'])
             ->orderBy('kode')
             ->get(['id', 'join_cpl_cpmk_id', 'kode', 'nama', 'kompetensi_c', 'kompetensi_a', 'kompetensi_p', 'indikator', 'evaluasi'])
             ->map(function ($item) {
-                $cplKode = (string) ($item->joinCplCpmk?->joinCplBk?->cpl?->kode ?? '');
+                $cplKode = (string) ($item->joinCplCpmk?->cplBk?->cpl?->kode ?? '');
                 $cpmkKode = (string) ($item->joinCplCpmk?->cpmk?->kode ?? '');
                 $cpmkNama = (string) ($item->joinCplCpmk?->cpmk?->nama ?? '');
 
@@ -1391,7 +1391,7 @@ class ImportMkMasterController extends Controller
                     throw new \RuntimeException('CPL tidak ditemukan: ' . $kodeCpl);
                 }
 
-                $joinCplBkIds = CplBk::query()
+                $cplBkIds = CplBk::query()
                     ->where('cpl_id', $cpl->id)
                     ->whereIn('bk_id', function ($query) use ($mk) {
                         $query->select('bk_id')
@@ -1400,13 +1400,13 @@ class ImportMkMasterController extends Controller
                     })
                     ->pluck('id');
 
-                if ($joinCplBkIds->isEmpty()) {
+                if ($cplBkIds->isEmpty()) {
                     throw new \RuntimeException('Relasi CPL >< BK tidak ditemukan untuk kode_cpl: ' . $kodeCpl);
                 }
 
                 $kodeCpmk = trim((string) ($row['kode_cpmk'] ?? ''));
                 $namaCpmk = trim((string) ($row['nama_cpmk'] ?? ''));
-                $joinCplCpmk = $this->resolveJoinCplCpmkForBundleSubcpmk($mk, $joinCplBkIds->all(), $kodeCpmk, $namaCpmk, $kode);
+                $joinCplCpmk = $this->resolveJoinCplCpmkForBundleSubcpmk($mk, $cplBkIds->all(), $kodeCpmk, $namaCpmk, $kode);
 
                 Subcpmk::updateOrCreate(
                     [
@@ -1494,11 +1494,11 @@ class ImportMkMasterController extends Controller
         }
     }
 
-    private function resolveJoinCplCpmkForBundleSubcpmk(Mk $mk, array $joinCplBkIds, string $kodeCpmk, string $namaCpmk, string $kodeSubcpmk): JoinCplCpmk
+    private function resolveJoinCplCpmkForBundleSubcpmk(Mk $mk, array $cplBkIds, string $kodeCpmk, string $namaCpmk, string $kodeSubcpmk): JoinCplCpmk
     {
         $query = JoinCplCpmk::query()
             ->where('mk_id', $mk->id)
-            ->whereIn('cpl_bk_id', $joinCplBkIds);
+            ->whereIn('join_cpl_bk_id', $cplBkIds);
 
         $selectedCpmk = null;
         if ($kodeCpmk !== '') {
@@ -1524,15 +1524,15 @@ class ImportMkMasterController extends Controller
             throw new \RuntimeException('Join CPL CPMK tidak ditemukan untuk SubCPMK ' . $kodeSubcpmk . '. Isi kode_cpmk atau nama_cpmk yang valid pada sheet SubCPMK.');
         }
 
-        $joinCplBkId = (string) ($joinCplBkIds[0] ?? '');
-        if ($joinCplBkId === '') {
+        $cplBkId = (string) ($cplBkIds[0] ?? '');
+        if ($cplBkId === '') {
             throw new \RuntimeException('Relasi CPL >< BK tidak tersedia untuk membentuk Join CPL CPMK pada SubCPMK ' . $kodeSubcpmk . '.');
         }
 
         return JoinCplCpmk::updateOrCreate(
             [
                 'mk_id' => $mk->id,
-                'cpl_bk_id' => $joinCplBkId,
+                'join_cpl_bk_id' => $cplBkId,
                 'cpmk_id' => $selectedCpmk->id,
             ],
             []

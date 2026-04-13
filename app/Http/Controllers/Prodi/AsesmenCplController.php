@@ -47,11 +47,11 @@ class AsesmenCplController extends Controller
         $nilais = $kurikulum->mks
             ->flatMap(function ($mk) {
                 return $mk->kontrakMks()
-                    ->whereHas('mk.joinCplCpmks.joinCplBk', function ($q) {
+                    ->whereHas('mk.joinCplCpmks.cplBk', function ($q) {
                         $q->whereNotNull('cpl_id');
                     })
                     ->with([
-                        'mk.joinCplCpmks.joinCplBk.cpl',
+                        'mk.joinCplCpmks.cplBk.cpl',
                         'mk.kurikulum',
                         'mahasiswa',
                     ])
@@ -64,7 +64,7 @@ class AsesmenCplController extends Controller
 
                 // Ambil semua cpl_id yang terkait dengan MK ini
                 $cplIds = $kontrakMk->mk->joinCplCpmks
-                    ->pluck('joinCplBk')
+                    ->pluck('cplBk')
                     ->flatten()
                     ->pluck('cpl_id')
                     ->filter()        // buang null
@@ -359,7 +359,7 @@ class AsesmenCplController extends Controller
         $kontrakMks = KontrakMk::query()
             ->with([
                 'mahasiswa',
-                'mk.joinCplCpmks.joinCplBk',
+                'mk.joinCplCpmks.cplBk',
             ])
             ->whereIn('mk_id', $mkIds)
             ->whereHas('mk.kurikulumMks', function ($query) use ($kurikulum) {
@@ -502,16 +502,16 @@ class AsesmenCplController extends Controller
         return $kurikulum->joinCplMks()
             ->with([
                 'mk',
-                'joinCplBk:id,cpl_id',
+                'cplBk:id,cpl_id',
             ])
             ->get()
             ->filter(function ($joinCplMk) use ($kurikulum) {
                 return $joinCplMk->mk !== null
-                    && $joinCplMk->joinCplBk !== null
-                    && !empty($joinCplMk->joinCplBk->cpl_id)
+                    && $joinCplMk->cplBk !== null
+                    && !empty($joinCplMk->cplBk->cpl_id)
                     && (string) $joinCplMk->mk->kurikulum_id === (string) $kurikulum->id;
             })
-            ->groupBy(fn ($joinCplMk) => (string) $joinCplMk->joinCplBk->cpl_id)
+            ->groupBy(fn ($joinCplMk) => (string) $joinCplMk->cplBk->cpl_id)
             ->map(function ($items) {
                 return $items
                     ->pluck('mk')
@@ -527,19 +527,19 @@ class AsesmenCplController extends Controller
         $rows = $kurikulum->joinCplMks()
             ->with([
                 'mk:id,sks',
-                'joinCplBk:id,cpl_id',
+                'cplBk:id,cpl_id',
             ])
             ->get()
             ->filter(function ($joinCplMk) use ($kurikulum) {
                 return $joinCplMk->mk !== null
-                    && $joinCplMk->joinCplBk !== null
-                    && !empty($joinCplMk->joinCplBk->cpl_id)
+                    && $joinCplMk->cplBk !== null
+                    && !empty($joinCplMk->cplBk->cpl_id)
                     && (string) $joinCplMk->mk->kurikulum_id === (string) $kurikulum->id;
             });
 
         // Kumpulkan "kontribusi CPL" per MK per CPL, dengan penjumlahan bobot mapping (jika ada multipel baris per MK)
         $rawBobotByCplMk = $rows
-            ->groupBy(fn ($row) => (string) $row->joinCplBk->cpl_id)
+            ->groupBy(fn ($row) => (string) $row->cplBk->cpl_id)
             ->map(function ($rowsPerCpl) {
                 return $rowsPerCpl
                     ->groupBy('mk_id')

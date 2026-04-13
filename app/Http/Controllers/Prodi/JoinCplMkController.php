@@ -23,9 +23,17 @@ class JoinCplMkController extends Controller
     public function index(Kurikulum $kurikulum)
     {
         $cpls = $kurikulum->cpls()
-            ->with(['joinCplBks.bk'])
             ->orderBy('kode')
             ->get();
+
+        $bkIds = $kurikulum->bks()->pluck('bks.id');
+        $cplBkByCpl = CplBk::query()
+            ->with('bk')
+            ->whereIn('cpl_id', $cpls->pluck('id'))
+            ->whereIn('bk_id', $bkIds)
+            ->get()
+            ->groupBy('cpl_id');
+
         $mks = $kurikulum->mks()
             ->orderBy('semester')
             ->orderBy('kurikulum_mks.kode_mk')
@@ -35,7 +43,7 @@ class JoinCplMkController extends Controller
         $cplBkColumns = collect();
 
         foreach ($cpls as $cpl) {
-            $bkColumns = $cpl->joinCplBks
+            $bkColumns = ($cplBkByCpl->get($cpl->id, collect()))
                 ->filter(fn ($join) => $join->bk)
                 ->sortBy(fn ($join) => (string) $join->bk->kode)
                 ->values()
@@ -76,7 +84,7 @@ class JoinCplMkController extends Controller
             $cplBkColumns = $cplBkColumns->merge($bkColumns);
         }
 
-        $joinCplBkOrderMap = $cplBkColumns
+        $cplBkOrderMap = $cplBkColumns
             ->filter(fn ($column) => ($column['type'] ?? null) === 'bk' && !empty($column['cpl_bk_id']))
             ->pluck('cpl_bk_id')
             ->values()
@@ -89,9 +97,9 @@ class JoinCplMkController extends Controller
 
         $availablePairMap = collect();
 
-        foreach ($cplBkColumns->pluck('cpl_bk_id')->filter()->unique() as $joinCplBkId) {
+        foreach ($cplBkColumns->pluck('cpl_bk_id')->filter()->unique() as $cplBkId) {
             foreach ($mks as $mk) {
-                $availablePairMap->put($joinCplBkId . '|' . $mk->id, true);
+                $availablePairMap->put($cplBkId . '|' . $mk->id, true);
             }
         }
 
@@ -127,11 +135,11 @@ class JoinCplMkController extends Controller
             });
 
         $mkOrderByBkMap = $linkedRows
-            ->filter(fn ($row) => !empty($row->cpl_bk_id) && $joinCplBkOrderMap->has($row->cpl_bk_id))
-            ->groupBy('mk_id')
-            ->map(function ($rows) use ($joinCplBkOrderMap) {
+                ->filter(fn ($row) => !empty($row->cpl_bk_id) && $cplBkOrderMap->has($row->cpl_bk_id))
+                ->groupBy('mk_id')
+                ->map(function ($rows) use ($cplBkOrderMap) {
                 return $rows
-                    ->map(fn ($row) => (int) $joinCplBkOrderMap->get($row->cpl_bk_id))
+                    ->map(fn ($row) => (int) $cplBkOrderMap->get($row->cpl_bk_id))
                     ->min();
             });
 
@@ -176,13 +184,13 @@ class JoinCplMkController extends Controller
         $selectedCplBkId = $validated['cpl_bk_id'] ?? null;
 
         if ($selectedCplBkId) {
-            $joinCplBk = CplBk::query()
+            $cplBk = CplBk::query()
                 ->where('id', $selectedCplBkId)
                 ->where('cpl_id', $cpl->id)
                 ->whereIn('bk_id', $kurikulum->bks()->pluck('bks.id'))
                 ->first();
 
-            if (!$joinCplBk) {
+            if (!$cplBk) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Relasi CPL-BK tidak valid.',
@@ -289,10 +297,10 @@ class JoinCplMkController extends Controller
 
             $bobotValue = $request->filled('bobot') ? (float) $request->input('bobot') : null;
 
-            foreach ($eligibleCplBkIds as $joinCplBkId) {
+            foreach ($eligibleCplBkIds as $cplBkId) {
                 JoinCplMk::updateOrCreate(
                     [
-                        'cpl_bk_id' => $joinCplBkId,
+                        'cpl_bk_id' => $cplBkId,
                         'mk_id' => $mk->id,
                         'kurikulum_id' => $kurikulumId,
                     ],

@@ -68,8 +68,8 @@
                                                      data-bs-title="{{ $subcpmk->kode }}"
                                                      data-bs-content="{{ $subcpmk->nama }}">
                                                     <span class="badge rounded-pill bg-info-subtle text-info-emphasis fw-bold" style="font-size: 0.8rem;">{{ $subcpmk->kode }}</span>
-                                                    {{-- @if($subcpmk->joinCplCpmk?->joinCplBk?->cpl?->kode)
-                                                    <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill" style="font-size: 0.65rem;">{{ $subcpmk->joinCplCpmk->joinCplBk->cpl->kode }}</span>
+                                                    {{-- @if($subcpmk->joinCplCpmk?->cplBk?->cpl?->kode)
+                                                    <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-pill" style="font-size: 0.65rem;">{{ $subcpmk->joinCplCpmk->cplBk->cpl->kode }}</span>
                                                     @endif --}}
                                                 </div>
                                             </th>

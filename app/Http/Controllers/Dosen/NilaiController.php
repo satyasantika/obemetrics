@@ -266,7 +266,7 @@ class NilaiController extends Controller
     private function buildNilaiPageData(Mk $mk, Request $request): array
     {
         $penugasans = $mk->penugasans()
-            ->with('joinSubcpmkPenugasans.subcpmk.joinCplCpmk.joinCplBk.Cpl')
+            ->with('joinSubcpmkPenugasans.subcpmk.joinCplCpmk.cplBk.Cpl')
             ->orderBy('kode')
             ->get();
 
@@ -317,7 +317,7 @@ class NilaiController extends Controller
 
         $cplLabelByPenugasanId = $penugasans->mapWithKeys(function ($penugasan) {
             $label = $penugasan->joinSubcpmkPenugasans
-                ->pluck('subcpmk.joinCplCpmk.joinCplBk.Cpl.kode')
+                ->pluck('subcpmk.joinCplCpmk.cplBk.Cpl.kode')
                 ->flatten()
                 ->filter()
                 ->unique()

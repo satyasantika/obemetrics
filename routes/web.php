@@ -122,7 +122,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('mks.subcpmks', App\Http\Controllers\Dosen\SubCpmkController::class)->except('show');
         // CPL >< BK
         Route::get('mks/{mk}/joincplcpmks', [App\Http\Controllers\Dosen\JoinCplCpmkController::class,'index'])->name('mks.joincplcpmks.index');
-        Route::put('mks/{mk}/joincplcpmks/{joincplbk}/{cpmk}', [App\Http\Controllers\Dosen\JoinCplCpmkController::class, 'update'])->name('mks.joincplcpmks.update');
+        Route::put('mks/{mk}/joincplcpmks/{cplbk}/{cpmk}', [App\Http\Controllers\Dosen\JoinCplCpmkController::class, 'update'])->name('mks.joincplcpmks.update');
         // Tugas Mata Kuliah
         Route::resource('mks.penugasans', App\Http\Controllers\Dosen\PenugasanController::class)->except('show');
         Route::get('mks/{mk}/joinsubcpmkpenugasans', [App\Http\Controllers\Dosen\JoinSubcpmkPenugasanController::class,'index'])->name('mks.joinsubcpmkpenugasans.index');

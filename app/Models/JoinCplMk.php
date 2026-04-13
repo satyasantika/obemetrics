@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\CplBk;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,7 +18,7 @@ class JoinCplMk extends Model
         return $this->belongsTo(Kurikulum::class);
     }
 
-    public function joinCplBk(): BelongsTo
+    public function cplBk(): BelongsTo
     {
         return $this->belongsTo(CplBk::class);
     }

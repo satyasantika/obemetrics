@@ -100,8 +100,8 @@
                                                                 @checked($cek)
                                                                 @disabled($isLocked)
                                                             >
-                                                            <span class="save-status small text-muted"></span>
                                                         </div>
+                                                        <span class="save-status small text-muted"></span>
                                                     </form>
                                                     @if ($isLocked)
                                                         <div class="d-flex justify-content-center mt-1">

@@ -90,8 +90,8 @@
                                                             onchange="this.form.requestSubmit()"
                                                             @checked($cek)
                                                         >
-                                                        <span class="save-status small text-muted"></span>
                                                     </div>
+                                                    <span class="save-status small text-muted"></span>
                                                 </form>
                                             </td>
                                         @empty

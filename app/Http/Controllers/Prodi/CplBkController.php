@@ -74,14 +74,14 @@ class CplBkController extends Controller
             ], 422);
         }
 
-        $joincplbk = CplBk::where('cpl_id', $cpl->id)
+        $cplBk = CplBk::where('cpl_id', $cpl->id)
             ->where('bk_id', $bk->id)
             ->first();
 
         $expectsJson = $request->expectsJson() || $request->ajax();
 
         if ($request->has('is_linked')) {
-            if (!$joincplbk) {
+            if (!$cplBk) {
                 CplBk::create([
                     'cpl_id' => $cpl->id,
                     'bk_id' => $bk->id,
@@ -101,8 +101,8 @@ class CplBkController extends Controller
                 return to_route('kurikulums.cplbks.index', $kurikulum->id)
                     ->with('success', $bk->kode . ' telah diinteraksi dengan ' . $cpl->kode);
         } else {
-            if ($joincplbk) {
-                if (JoinCplMk::query()->where('cpl_bk_id', $joincplbk->id)->exists()) {
+            if ($cplBk) {
+                if (JoinCplMk::query()->where('cpl_bk_id', $cplBk->id)->exists()) {
                     if ($expectsJson) {
                         return response()->json([
                             'status' => 'error',
@@ -114,7 +114,7 @@ class CplBkController extends Controller
                     return to_route('kurikulums.cplbks.index', $kurikulum->id)
                         ->with('error', 'Interaksi dikunci karena sudah digunakan pada relasi CPL >< MK.');
                 }
-                $joincplbk->delete();
+                $cplBk->delete();
                 }
             SyncKurikulumState::sync($kurikulum);
 
