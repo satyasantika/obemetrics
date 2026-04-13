@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use App\Models\KurikulumCpl;
 use App\Models\KurikulumBk;
+use App\Models\KurikulumCpl;
+use App\Models\KurikulumMk;
 use App\Models\ProfilCpl;
 use App\States\Kurikulum\KurikulumState;
 use Illuminate\Database\Eloquent\Model;
@@ -58,9 +59,16 @@ class Kurikulum extends Model
         return $this->hasMany(KurikulumBk::class);
     }
 
-    public function mks(): HasMany
+    public function mks(): BelongsToMany
     {
-        return $this->hasMany(Mk::class);
+        return $this->belongsToMany(Mk::class, 'kurikulum_mks')
+            ->withPivot('kode_mk')
+            ->withTimestamps();
+    }
+
+    public function kurikulumMks(): HasMany
+    {
+        return $this->hasMany(KurikulumMk::class);
     }
 
     public function profilCpls(): HasMany
@@ -85,7 +93,7 @@ class Kurikulum extends Model
 
     public function kontrakMks(): HasManyThrough
     {
-        return $this->hasManyThrough(KontrakMk::class, Mk::class);
+        return $this->hasManyThrough(KontrakMk::class, KurikulumMk::class, 'kurikulum_id', 'mk_id', 'id', 'mk_id');
     }
 
 }

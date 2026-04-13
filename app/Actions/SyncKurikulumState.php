@@ -29,11 +29,8 @@ class SyncKurikulumState
         $interaksiComplete = $kurikulum->profilCpls()->exists()
             && $kurikulum->joinCplBks()->exists();
 
-        $mkIds         = $kurikulum->mks()->pluck('id');
+        $mkIds         = $kurikulum->mks()->pluck('mks.id');
         $bobotedMkIds  = $kurikulum->joinCplMks()->distinct()->pluck('mk_id');
-        $bobotComplete = $mkIds->isNotEmpty() && $mkIds->diff($bobotedMkIds)->isEmpty();
-
-        $kontrakComplete = $kurikulum->kontrakMks()->exists();
 
         $target = match (true) {
             $dataComplete && $interaksiComplete && $bobotComplete && $kontrakComplete => Aktif::class,

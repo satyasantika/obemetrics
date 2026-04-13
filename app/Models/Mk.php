@@ -5,8 +5,10 @@ namespace App\Models;
 use App\States\Mk\MkState;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\ModelStates\HasStates;
 
@@ -19,9 +21,43 @@ class Mk extends Model
         'status' => MkState::class,
     ];
 
-    public function kurikulum(): BelongsTo
+    public function kurikulums(): BelongsToMany
     {
-        return $this->belongsTo(Kurikulum::class);
+        return $this->belongsToMany(Kurikulum::class, 'kurikulum_mks')
+            ->withPivot('kode_mk')
+            ->withTimestamps();
+    }
+
+    public function kurikulumMks(): HasMany
+    {
+        return $this->hasMany(KurikulumMk::class);
+    }
+
+    public function kurikulum(): HasOneThrough
+    {
+        return $this->hasOneThrough(Kurikulum::class, KurikulumMk::class, 'mk_id', 'id', 'id', 'kurikulum_id');
+    }
+
+    public function getKodeAttribute(): ?string
+    {
+        if (isset($this->pivot) && isset($this->pivot->kode_mk)) {
+            return $this->pivot->kode_mk;
+        }
+
+        return $this->attributes['kode'] ?? null;
+    }
+
+    public function getKurikulumIdAttribute(): ?string
+    {
+        if (array_key_exists('kurikulum_id', $this->attributes)) {
+            return $this->attributes['kurikulum_id'];
+        }
+
+        if (isset($this->pivot) && isset($this->pivot->kurikulum_id)) {
+            return $this->pivot->kurikulum_id;
+        }
+
+        return $this->kurikulumMks()->value('kurikulum_id');
     }
 
     public function joinCplMks(): HasMany

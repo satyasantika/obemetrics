@@ -26,7 +26,10 @@ class JoinCplMkController extends Controller
             ->with(['joinCplBks.bk'])
             ->orderBy('kode')
             ->get();
-        $mks = $kurikulum->mks()->orderBy('semester')->orderBy('kode')->get();
+        $mks = $kurikulum->mks()
+            ->orderBy('semester')
+            ->orderBy('kurikulum_mks.kode_mk')
+            ->get();
 
         $cplHeaderGroups = collect();
         $cplBkColumns = collect();

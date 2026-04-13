@@ -260,7 +260,7 @@ class AsesmenCplController extends Controller
     public function laporanMahasiswa(Kurikulum $kurikulum)
     {
         $hasKontrakMk = KontrakMk::query()
-            ->whereHas('mk', function ($query) use ($kurikulum) {
+            ->whereHas('mk.kurikulumMks', function ($query) use ($kurikulum) {
                 $query->where('kurikulum_id', $kurikulum->id);
             })
             ->exists();
@@ -354,7 +354,7 @@ class AsesmenCplController extends Controller
             ->get()
             ->groupBy('profil_id');
 
-        $mkIds = $kurikulum->mks()->pluck('id');
+        $mkIds = $kurikulum->mks()->pluck('mks.id');
 
         $kontrakMks = KontrakMk::query()
             ->with([
@@ -362,7 +362,7 @@ class AsesmenCplController extends Controller
                 'mk.joinCplCpmks.joinCplBk',
             ])
             ->whereIn('mk_id', $mkIds)
-            ->whereHas('mk', function ($query) use ($kurikulum) {
+            ->whereHas('mk.kurikulumMks', function ($query) use ($kurikulum) {
                 $query->where('kurikulum_id', $kurikulum->id);
             })
             ->whereNotNull('mahasiswa_id')
@@ -526,7 +526,7 @@ class AsesmenCplController extends Controller
     {
         $rows = $kurikulum->joinCplMks()
             ->with([
-                'mk:id,kurikulum_id,sks',
+                'mk:id,sks',
                 'joinCplBk:id,cpl_id',
             ])
             ->get()

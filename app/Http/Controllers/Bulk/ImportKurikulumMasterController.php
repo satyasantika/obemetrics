@@ -12,6 +12,7 @@ use App\Models\JoinCplMk;
 use App\Models\JoinMkUser;
 use App\Models\KurikulumBk;
 use App\Models\KurikulumCpl;
+use App\Models\KurikulumMk;
 use App\Models\ProfilCpl;
 use App\Models\KontrakMk;
 use App\Models\Kurikulum;
@@ -722,9 +723,13 @@ class ImportKurikulumMasterController extends Controller
                 $sksLapangan = (int) $this->required($row['sks_lapangan'] ?? null, 'sks_lapangan');
                 $sks = $sksTeori + $sksPraktik + $sksLapangan;
 
-                Mk::updateOrCreate(
-                    ['kurikulum_id' => $kurikulum->id, 'kode' => $kode],
-                    [
+                $existingPivotMk = KurikulumMk::where('kurikulum_id', $kurikulum->id)
+                    ->where('kode_mk', $kode)
+                    ->with('mk')
+                    ->first();
+
+                if ($existingPivotMk) {
+                    $existingPivotMk->mk->fill([
                         'nama' => $nama,
                         'semester' => $semester,
                         'sks_teori' => $sksTeori,
@@ -732,8 +737,24 @@ class ImportKurikulumMasterController extends Controller
                         'sks_lapangan' => $sksLapangan,
                         'sks' => $sks,
                         'deskripsi' => $row['deskripsi'] ?? null,
-                    ]
-                );
+                    ])->save();
+                } else {
+                    $mk = Mk::create([
+                        'nama' => $nama,
+                        'semester' => $semester,
+                        'sks_teori' => $sksTeori,
+                        'sks_praktik' => $sksPraktik,
+                        'sks_lapangan' => $sksLapangan,
+                        'sks' => $sks,
+                        'deskripsi' => $row['deskripsi'] ?? null,
+                    ]);
+
+                    KurikulumMk::create([
+                        'kurikulum_id' => $kurikulum->id,
+                        'mk_id' => $mk->id,
+                        'kode_mk' => $kode,
+                    ]);
+                }
                 return;
 
             case 'mahasiswas':
@@ -760,10 +781,7 @@ class ImportKurikulumMasterController extends Controller
                     throw new \RuntimeException('Semester tidak ditemukan: ' . $kodeSemester);
                 }
 
-                $mk = Mk::query()
-                    ->where('kurikulum_id', $kurikulum->id)
-                    ->where('kode', $kodeMk)
-                    ->first();
+                $mk = $kurikulum->mks()->wherePivot('kode_mk', $kodeMk)->first();
                 if (!$mk) {
                     throw new \RuntimeException('MK tidak ditemukan pada kurikulum ini: ' . $kodeMk);
                 }
@@ -804,10 +822,7 @@ class ImportKurikulumMasterController extends Controller
                     throw new \RuntimeException('Mahasiswa tidak ditemukan: ' . $nim);
                 }
 
-                $mk = Mk::query()
-                    ->where('kurikulum_id', $kurikulum->id)
-                    ->where('kode', $kodeMk)
-                    ->first();
+                $mk = $kurikulum->mks()->wherePivot('kode_mk', $kodeMk)->first();
                 if (!$mk) {
                     throw new \RuntimeException('MK tidak ditemukan pada kurikulum ini: ' . $kodeMk);
                 }
@@ -963,9 +978,9 @@ class ImportKurikulumMasterController extends Controller
                 ]);
             }
 
-            $usedInOtherKurikulum = Mk::query()
+            $usedInOtherKurikulum = KurikulumMk::query()
                 ->where('kurikulum_id', '!=', $kurikulum->id)
-                ->whereRaw('LOWER(TRIM(kode)) = ?', [Str::lower($kodeMk)])
+                ->whereRaw('LOWER(TRIM(kode_mk)) = ?', [Str::lower($kodeMk)])
                 ->exists();
 
             if ($usedInOtherKurikulum) {
@@ -976,9 +991,9 @@ class ImportKurikulumMasterController extends Controller
                 ]);
             }
 
-            $status['exists'] = Mk::query()
+            $status['exists'] = KurikulumMk::query()
                 ->where('kurikulum_id', $kurikulum->id)
-                ->where('kode', $kodeMk)
+                ->where('kode_mk', $kodeMk)
                 ->exists();
 
             return array_merge($row, $status);
@@ -1006,10 +1021,7 @@ class ImportKurikulumMasterController extends Controller
                 ]);
             }
 
-            $mk = Mk::query()
-                ->where('kurikulum_id', $kurikulum->id)
-                ->where('kode', $kodeMk)
-                ->first();
+            $mk = $kurikulum->mks()->wherePivot('kode_mk', $kodeMk)->first();
             if (!$mk) {
                 return array_merge($row, [
                     'exists' => false,
@@ -1392,7 +1404,7 @@ class ImportKurikulumMasterController extends Controller
             }
 
             $kodeMk = trim((string) Str::before($mkCell, "\n"));
-            $mk = Mk::query()->where('kurikulum_id', $kurikulum->id)->where('kode', $kodeMk)->first();
+            $mk = $kurikulum->mks()->wherePivot('kode_mk', $kodeMk)->first();
             if (!$mk) {
                 throw new \RuntimeException('MK tidak ditemukan pada baris ' . $rowIndex . ': ' . $kodeMk);
             }
@@ -1717,7 +1729,7 @@ class ImportKurikulumMasterController extends Controller
                 'name' => 'MK',
                 'columns' => ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan', 'deskripsi'],
                 'required' => ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan'],
-                'rows' => $kurikulum->mks()->orderBy('kode')->get(['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan', 'deskripsi'])
+                'rows' => $kurikulum->mks()                    ->orderBy('kurikulum_mks.kode_mk')                    ->get(['mks.kode', 'mks.nama', 'mks.semester', 'mks.sks_teori', 'mks.sks_praktik', 'mks.sks_lapangan', 'mks.deskripsi'])
                     ->map(fn ($item) => [
                         'kode' => (string) ($item->kode ?? ''),
                         'nama' => (string) ($item->nama ?? ''),
@@ -2190,8 +2202,8 @@ $this->importBundleSheet($spreadsheet, 'BK', ['kode', 'nama', 'deskripsi'], ['ko
             ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan'],
             function (array $row) use ($kurikulum, &$summary) {
                 $kode = $this->required($row['kode'] ?? null, 'kode');
-                $hasDuplicateKode = Mk::query()
-                    ->whereRaw('LOWER(TRIM(kode)) = ?', [Str::lower($kode)])
+                $hasDuplicateKode = KurikulumMk::query()
+                    ->whereRaw('LOWER(TRIM(kode_mk)) = ?', [Str::lower($kode)])
                     ->exists();
 
                 if ($hasDuplicateKode) {
@@ -2203,19 +2215,21 @@ $this->importBundleSheet($spreadsheet, 'BK', ['kode', 'nama', 'deskripsi'], ['ko
                 $sksPraktik = (int) $this->required($row['sks_praktik'] ?? null, 'sks_praktik');
                 $sksLapangan = (int) $this->required($row['sks_lapangan'] ?? null, 'sks_lapangan');
 
-                Mk::create(
-                    [
-                        'kurikulum_id' => $kurikulum->id,
-                        'kode' => $kode,
-                        'nama' => $this->required($row['nama'] ?? null, 'nama'),
-                        'semester' => (int) $this->required($row['semester'] ?? null, 'semester'),
-                        'sks_teori' => $sksTeori,
-                        'sks_praktik' => $sksPraktik,
-                        'sks_lapangan' => $sksLapangan,
-                        'sks' => $sksTeori + $sksPraktik + $sksLapangan,
-                        'deskripsi' => $row['deskripsi'] ?? null,
-                    ]
-                );
+                $mk = Mk::create([
+                    'nama' => $this->required($row['nama'] ?? null, 'nama'),
+                    'semester' => (int) $this->required($row['semester'] ?? null, 'semester'),
+                    'sks_teori' => $sksTeori,
+                    'sks_praktik' => $sksPraktik,
+                    'sks_lapangan' => $sksLapangan,
+                    'sks' => $sksTeori + $sksPraktik + $sksLapangan,
+                    'deskripsi' => $row['deskripsi'] ?? null,
+                ]);
+
+                KurikulumMk::create([
+                    'kurikulum_id' => $kurikulum->id,
+                    'mk_id' => $mk->id,
+                    'kode_mk' => $kode,
+                ]);
 
                 $summary['mks']++;
             }

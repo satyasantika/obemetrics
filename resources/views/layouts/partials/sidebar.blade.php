@@ -122,7 +122,7 @@
                     $mustImportJoinMaster = $dataComplete && !$profilCplBkExists;
                     $reportsReady = $joinCplMkExists;
                     $kontrakMkExists = \App\Models\KontrakMk::query()
-                        ->whereHas('mk', function ($query) use ($selectedKurikulum) {
+                        ->whereHas('mk.kurikulumMks', function ($query) use ($selectedKurikulum) {
                             $query->where('kurikulum_id', $selectedKurikulum->id);
                         })
                         ->exists();

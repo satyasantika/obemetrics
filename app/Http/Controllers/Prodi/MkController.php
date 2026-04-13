@@ -6,6 +6,7 @@ use App\Actions\SyncKurikulumState;
 use App\Models\Mk;
 use App\Models\Kurikulum;
 use App\Models\JoinMkUser;
+use App\Models\KurikulumMk;
 use App\Models\KontrakMk;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -22,7 +23,9 @@ class MkController extends Controller
 
     public function index(Kurikulum $kurikulum)
     {
-        $mks = Mk::where('kurikulum_id', $kurikulum->id)
+        $mks = $kurikulum->mks()
+            ->orderBy('semester')
+            ->orderBy('kurikulum_mks.kode_mk')
             ->withCount(['joinCplMks', 'joinMkUsers', 'kontrakMks', 'cpmks', 'penugasans'])
             ->get();
 
@@ -76,7 +79,7 @@ class MkController extends Controller
     public function store(Request $request, Kurikulum $kurikulum, Mk $mk)
     {
         $kode = trim((string) $request->kode);
-        $conflictMk = $this->findKodeConflict($kode);
+        $conflictMk = $this->findKodeConflict($kode, $kurikulum->id);
         if ($conflictMk) {
             $conflictKurikulum = $conflictMk->kurikulum;
             $conflictProdi = $conflictKurikulum?->prodi;
@@ -87,9 +90,23 @@ class MkController extends Controller
         }
 
         $name = $request->nama;
-        $data = $request->all();
-        $data['sks'] = $request->sks_teori + $request->sks_praktik + $request->sks_lapangan;
-        Mk::create($data);
+        $mk = Mk::create([
+            'nama' => $request->nama,
+            'semester' => $request->semester,
+            'sks_teori' => $request->sks_teori,
+            'sks_praktik' => $request->sks_praktik,
+            'sks_lapangan' => $request->sks_lapangan,
+            'sks' => $request->sks_teori + $request->sks_praktik + $request->sks_lapangan,
+            'deskripsi' => $request->deskripsi,
+            'status' => $request->status ?? 'draft',
+        ]);
+
+        KurikulumMk::create([
+            'kurikulum_id' => $kurikulum->id,
+            'mk_id' => $mk->id,
+            'kode_mk' => $kode,
+        ]);
+
         SyncKurikulumState::sync($kurikulum);
 
         return to_route('kurikulums.mks.index', $kurikulum)->with('success','Mata Kuliah: '.$name.' telah ditambahkan');
@@ -103,8 +120,12 @@ class MkController extends Controller
 
     public function update(Request $request, Kurikulum $kurikulum, Mk $mk)
     {
+        if (!$kurikulum->mks()->whereKey($mk->id)->exists()) {
+            abort(404);
+        }
+
         $kode = trim((string) $request->kode);
-        $conflictMk = $this->findKodeConflict($kode, $mk->id);
+        $conflictMk = $this->findKodeConflict($kode, $kurikulum->id, $mk->id);
         if ($conflictMk) {
             $conflictKurikulum = $conflictMk->kurikulum;
             $conflictProdi = $conflictKurikulum?->prodi;
@@ -115,15 +136,30 @@ class MkController extends Controller
         }
 
         $name = $mk->nama;
-        $data = $request->all();
-        $data['sks'] = $request->sks_teori + $request->sks_praktik + $request->sks_lapangan;
-        $mk->fill($data)->save();
+        KurikulumMk::where('kurikulum_id', $kurikulum->id)
+            ->where('mk_id', $mk->id)
+            ->update(['kode_mk' => $kode]);
+
+        $mk->fill([
+            'nama' => $request->nama,
+            'semester' => $request->semester,
+            'sks_teori' => $request->sks_teori,
+            'sks_praktik' => $request->sks_praktik,
+            'sks_lapangan' => $request->sks_lapangan,
+            'sks' => $request->sks_teori + $request->sks_praktik + $request->sks_lapangan,
+            'deskripsi' => $request->deskripsi,
+            'status' => $request->status ?? $mk->status,
+        ])->save();
 
         return to_route('kurikulums.mks.index', $kurikulum)->with('success','Mata Kuliah: '.$name.' telah diperbarui');
     }
 
     public function destroy(Kurikulum $kurikulum, Mk $mk)
     {
+        if (!$kurikulum->mks()->whereKey($mk->id)->exists()) {
+            abort(404);
+        }
+
         $name = $mk->nama;
         if (
             $mk->joinCplMks()->exists() ||
@@ -135,23 +171,31 @@ class MkController extends Controller
             return to_route('kurikulums.mks.index', $kurikulum)
                 ->with('error','Mata Kuliah: '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
         }
-        $mk->delete();
+
+        $kurikulum->mks()->detach($mk->id);
+        if (!$mk->kurikulums()->exists()) {
+            $mk->delete();
+        }
+
         SyncKurikulumState::sync($kurikulum);
         return to_route('kurikulums.mks.index', $kurikulum)->with('warning','Mata Kuliah: '.$name.' telah dihapus');
     }
 
-    private function findKodeConflict(string $kode, ?string $excludeMkId = null): ?Mk
+    private function findKodeConflict(string $kode, string $kurikulumId, ?string $excludeMkId = null): ?KurikulumMk
     {
         if ($kode === '') {
             return null;
         }
 
-        return Mk::query()
+        return KurikulumMk::query()
             ->with('kurikulum.prodi')
-            ->when($excludeMkId, function ($query) use ($excludeMkId) {
-                $query->where('id', '!=', $excludeMkId);
+            ->when($excludeMkId, function ($query) use ($excludeMkId, $kurikulumId) {
+                $query->where(function ($nested) use ($excludeMkId, $kurikulumId) {
+                    $nested->where('mk_id', '!=', $excludeMkId)
+                        ->orWhere('kurikulum_id', '!=', $kurikulumId);
+                });
             })
-            ->whereRaw('LOWER(TRIM(kode)) = ?', [mb_strtolower($kode)])
+            ->whereRaw('LOWER(TRIM(kode_mk)) = ?', [mb_strtolower($kode)])
             ->first();
     }
 

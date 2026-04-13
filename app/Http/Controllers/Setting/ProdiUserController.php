@@ -113,7 +113,7 @@ class ProdiUserController extends Controller
 
         $isUsedInKontrak = KontrakMk::query()
             ->where('user_id', $prodiuser->user_id)
-            ->whereIn('mk_id', $prodi->kurikulums()->with('mks:id,kurikulum_id')->get()->pluck('mks')->flatten()->pluck('id'))
+            ->whereIn('mk_id', $prodi->kurikulums()->with('mks:id')->get()->pluck('mks')->flatten()->pluck('id'))
             ->exists();
 
         if ($isUsedInJoinMkUser || $isUsedInKontrak) {

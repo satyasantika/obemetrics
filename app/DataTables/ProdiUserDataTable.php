@@ -28,7 +28,7 @@ class ProdiUserDataTable extends DataTable
                 static $lockedUserIds = [];
 
                 if ($prodiKurikulumIds === null || $prodiMkIds === null) {
-                    $prodi = Prodi::query()->with('kurikulums.mks:id,kurikulum_id')->find($this->prodi_id);
+                    $prodi = Prodi::query()->with('kurikulums.mks:id')->find($this->prodi_id);
                     $prodiKurikulumIds = $prodi?->kurikulums?->pluck('id')->values()->all() ?? [];
                     $prodiMkIds = $prodi?->kurikulums?->pluck('mks')->flatten()->pluck('id')->values()->all() ?? [];
                 }
