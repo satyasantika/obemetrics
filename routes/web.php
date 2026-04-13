@@ -82,7 +82,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('userroles', App\Http\Controllers\Setting\UserRoleController::class)->only('edit', 'update');
     Route::resource('userpermissions', App\Http\Controllers\Setting\UserPermissionController::class)->only('edit', 'update');
     Route::resource('prodis', App\Http\Controllers\Setting\ProdiController::class);
-    Route::resource('prodis.joinprodiusers', App\Http\Controllers\Setting\JoinProdiUserController::class);
+    Route::resource('prodis.prodiusers', App\Http\Controllers\Setting\ProdiUserController::class);
     Route::resource('semesters', App\Http\Controllers\Setting\SemesterController::class);
     Route::resource('evaluasis', App\Http\Controllers\Setting\EvaluasiController::class);
     Route::resource('mahasiswas', App\Http\Controllers\Setting\MahasiswaController::class);
@@ -163,11 +163,11 @@ Route::middleware('auth')->group(function () {
     Route::post('settings/import/users/clear', [App\Http\Controllers\Bulk\ImportUserController::class, 'clearPreview'])->name('settings.import.users.clear');
 
     // Bulk Upload User Prodi
-    Route::get('settings/import/joinprodiusers', [App\Http\Controllers\Bulk\ImportJoinProdiUserController::class, 'importJoinProdiUserForm'])->name('settings.import.joinprodiusers');
-    Route::post('settings/import/joinprodiusers', [App\Http\Controllers\Bulk\ImportJoinProdiUserController::class, 'importJoinProdiUser'])->name('settings.import.joinprodiusers');
-    Route::post('settings/import/joinprodiusers/commit', [App\Http\Controllers\Bulk\ImportJoinProdiUserController::class, 'commitJoinProdiUser'])->name('settings.import.joinprodiusers.commit');
-    Route::get('settings/import/joinprodiusers/template', [App\Http\Controllers\Bulk\ImportJoinProdiUserController::class, 'downloadTemplate'])->name('settings.import.joinprodiusers.template');
-    Route::post('settings/import/joinprodiusers/clear', [App\Http\Controllers\Bulk\ImportJoinProdiUserController::class, 'clearPreview'])->name('settings.import.joinprodiusers.clear');
+    Route::get('settings/import/prodiusers', [App\Http\Controllers\Bulk\ImportProdiUserController::class, 'importProdiUserForm'])->name('settings.import.prodiusers');
+    Route::post('settings/import/prodiusers', [App\Http\Controllers\Bulk\ImportProdiUserController::class, 'importProdiUser'])->name('settings.import.prodiusers');
+    Route::post('settings/import/prodiusers/commit', [App\Http\Controllers\Bulk\ImportProdiUserController::class, 'commitProdiUser'])->name('settings.import.prodiusers.commit');
+    Route::get('settings/import/prodiusers/template', [App\Http\Controllers\Bulk\ImportProdiUserController::class, 'downloadTemplate'])->name('settings.import.prodiusers.template');
+    Route::post('settings/import/prodiusers/clear', [App\Http\Controllers\Bulk\ImportProdiUserController::class, 'clearPreview'])->name('settings.import.prodiusers.clear');
 
     // Bulk Upload Pengampu Mata Kuliah
     Route::middleware('ensure.kurikulum.access')->group(function () {

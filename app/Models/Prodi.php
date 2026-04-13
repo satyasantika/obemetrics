@@ -28,9 +28,9 @@ class Prodi extends Model
         return $this->hasMany(Mahasiswa::class);
     }
 
-    public function joinProdiUsers(): HasMany
+    public function prodiUsers(): HasMany
     {
-        return $this->hasMany(JoinProdiUser::class);
+        return $this->hasMany(ProdiUser::class);
     }
 
 }

@@ -242,21 +242,21 @@
                             </tr>
                         </thead>
                         <tbody>
-                        @forelse ($joinProdiUsers as $joinProdiUser)
+                        @forelse ($prodiUsers as $prodiUser)
                             @php
-                                $linkedRow = $linkedDosen->get($joinProdiUser->user_id);
+                                $linkedRow = $linkedDosen->get($prodiUser->user_id);
                                 $isLinked = !is_null($linkedRow);
                                 $isKoordinator = $isLinked ? (bool) $linkedRow->koordinator : false;
-                                $isLocked = $isLinked && $lockedUserIds->has($joinProdiUser->user_id);
-                                $isLockedKoordinator = $isKoordinator && $lockedUserIds->has($joinProdiUser->user_id);
+                                $isLocked = $isLinked && $lockedUserIds->has($prodiUser->user_id);
+                                $isLockedKoordinator = $isKoordinator && $lockedUserIds->has($prodiUser->user_id);
                             @endphp
                             <tr>
-                                <td>{{ $joinProdiUser->user->name }}</td>
+                                <td>{{ $prodiUser->user->name }}</td>
                                 <td class="text-center">
-                                    <form action="{{ route('mks.users.update',[$mk->id,$joinProdiUser->user_id]) }}" method="POST" class="d-inline-block js-joinmkusers-form" data-form-type="linked">
+                                    <form action="{{ route('mks.users.update',[$mk->id,$prodiUser->user_id]) }}" method="POST" class="d-inline-block js-joinmkusers-form" data-form-type="linked">
                                         @csrf
                                         @method('PUT')
-                                        <input type="hidden" name="user_id" value="{{ $joinProdiUser->user_id }}">
+                                        <input type="hidden" name="user_id" value="{{ $prodiUser->user_id }}">
                                         <input type="hidden" name="mk_id" value="{{ $mk->id }}">
                                         <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
                                         <div class="form-check form-switch mb-0">
@@ -268,10 +268,10 @@
                                     </form>
                                 </td>
                                 <td class="text-center">
-                                    <form action="{{ route('mks.users.update',[$mk->id,$joinProdiUser->user_id]) }}" method="POST" class="d-inline-block js-joinmkusers-form" data-form-type="koordinator">
+                                    <form action="{{ route('mks.users.update',[$mk->id,$prodiUser->user_id]) }}" method="POST" class="d-inline-block js-joinmkusers-form" data-form-type="koordinator">
                                         @csrf
                                         @method('PUT')
-                                        <input type="hidden" name="user_id" value="{{ $joinProdiUser->user_id }}">
+                                        <input type="hidden" name="user_id" value="{{ $prodiUser->user_id }}">
                                         <input type="hidden" name="mk_id" value="{{ $mk->id }}">
                                         <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
                                         @if($isLinked)

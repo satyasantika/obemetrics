@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Models\Kurikulum;
 use App\Models\JoinMkUser;
 use Illuminate\Http\Request;
-use App\Models\JoinProdiUser;
+use App\Models\ProdiUser;
 use App\Models\KontrakMk;
 use App\Http\Controllers\Controller;
 
@@ -21,7 +21,7 @@ class JoinMkUserController extends Controller
     public function index(Mk $mk)
     {
         $kurikulum = Kurikulum::findOrFail($mk->kurikulum_id);
-        $join_prodi_users = JoinProdiUser::query()
+        $prodi_users = ProdiUser::query()
             ->where('prodi_id', $mk->kurikulum->prodi_id)
             ->with('user:id,name')
             ->get();
@@ -55,7 +55,7 @@ class JoinMkUserController extends Controller
                 ->with('mk', $mk)
                 ->with('kurikulum', $kurikulum)
                 ->with('mks', $kurikulum->mks)
-                ->with('join_prodi_users', $join_prodi_users)
+                ->with('prodi_users', $prodi_users)
                 ->with('linkedUserMap', $linkedUserMap)
                 ->with('koordinatorUserMap', $koordinatorUserMap)
                 ->with('lockedUserMap', $lockedUserMap);

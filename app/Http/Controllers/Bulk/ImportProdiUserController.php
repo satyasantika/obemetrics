@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Bulk;
 
-use App\Models\JoinProdiUser;
+use App\Models\ProdiUser;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Prodi;
@@ -12,23 +12,23 @@ use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Spatie\Permission\Guard;
 
-class ImportJoinProdiUserController extends Controller
+class ImportProdiUserController extends Controller
 {
     function __construct()
     {
-        $this->middleware('permission:read bulk-import joinprodiusers', ['only' => ['importJoinProdiUserForm','downloadTemplate']]);
-        $this->middleware('permission:create bulk-import joinprodiusers', ['only' => ['importJoinProdiUser', 'commitJoinProdiUser']]);
-        $this->middleware('permission:delete bulk-import joinprodiusers', ['only' => ['clearPreview']]);
+        $this->middleware('permission:read bulk-import prodiusers', ['only' => ['importProdiUserForm','downloadTemplate']]);
+        $this->middleware('permission:create bulk-import prodiusers', ['only' => ['importProdiUser', 'commitProdiUser']]);
+        $this->middleware('permission:delete bulk-import prodiusers', ['only' => ['clearPreview']]);
     }
 
-    public function importJoinProdiUserForm()
+    public function importProdiUserForm()
     {
-        $preview = session('import_joinprodiuser_preview', []);
+        $preview = session('import_prodiuser_preview', []);
         $returnUrl = $this->resolveReturnUrl(request(), $preview);
-        return view('setting.bulk-import.joinprodiuser', compact('preview', 'returnUrl'));
+        return view('setting.bulk-import.prodiuser', compact('preview', 'returnUrl'));
     }
 
-    public function importJoinProdiUser(Request $request)
+    public function importProdiUser(Request $request)
     {
         try {
             // Validate and process the uploaded file
@@ -96,7 +96,7 @@ class ImportJoinProdiUserController extends Controller
                 // Check if kontrak already exists
                 $existing = null;
                 if ($prodi && $dosen) {
-                    $existing = JoinProdiUser::where('prodi_id', $prodi->id)
+                    $existing = ProdiUser::where('prodi_id', $prodi->id)
                                         ->where('user_id', $dosen->id)
                                         ->first();
                 }
@@ -123,7 +123,7 @@ class ImportJoinProdiUserController extends Controller
             }
 
             session([
-                'import_joinprodiuser_preview' => [
+                'import_prodiuser_preview' => [
                     'rows' => $previewRows,
                     'filename' => $file->getClientOriginalName(),
                     'return_url' => $this->resolveReturnUrl($request),
@@ -131,27 +131,27 @@ class ImportJoinProdiUserController extends Controller
             ]);
 
             // Return view directly with all required data
-            $preview = session('import_joinprodiuser_preview', []);
+            $preview = session('import_prodiuser_preview', []);
             $returnUrl = $this->resolveReturnUrl($request, $preview);
-            return view('setting.bulk-import.joinprodiuser', compact('preview', 'returnUrl'))
+            return view('setting.bulk-import.prodiuser', compact('preview', 'returnUrl'))
                             ->with('success', 'Data berhasil dibaca. Silakan pilih data yang akan disimpan.');
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan saat membaca file: ' . $e->getMessage());
         }
     }
 
-    public function commitJoinProdiUser(Request $request)
+    public function commitProdiUser(Request $request)
     {
         $request->validate([
             'selected' => 'array',
             'selected.*' => 'integer',
         ]);
 
-        $preview = session('import_joinprodiuser_preview', []);
+        $preview = session('import_prodiuser_preview', []);
         $rows = $preview['rows'] ?? [];
 
         if (empty($rows)) {
-            return redirect()->route('settings.import.joinprodiusers')
+            return redirect()->route('settings.import.prodiusers')
                             ->with('error', 'Tidak ada data preview untuk diproses.');
         }
 
@@ -172,7 +172,7 @@ class ImportJoinProdiUserController extends Controller
                 continue;
             }
 
-            $joinProdiUser = JoinProdiUser::updateOrCreate(
+            $prodiUser = ProdiUser::updateOrCreate(
                 [
                     'prodi_id' => $row['prodi_actual_id'],
                     'user_id' => $row['dosen_id'],
@@ -182,8 +182,8 @@ class ImportJoinProdiUserController extends Controller
                 ]
             );
 
-            $affectedUserIds[] = (int) $joinProdiUser->user_id;
-            $this->syncPimpinanProdiRole((int) $joinProdiUser->user_id);
+            $affectedUserIds[] = (int) $prodiUser->user_id;
+            $this->syncPimpinanProdiRole((int) $prodiUser->user_id);
             $savedCount++;
         }
 
@@ -191,7 +191,7 @@ class ImportJoinProdiUserController extends Controller
             $this->syncPimpinanProdiRole((int) $affectedUserId);
         }
 
-        session()->forget('import_joinprodiuser_preview');
+        session()->forget('import_prodiuser_preview');
 
         $message = "{$savedCount} data user prodi berhasil disimpan.";
         if ($errorCount > 0) {
@@ -244,8 +244,8 @@ class ImportJoinProdiUserController extends Controller
 
     public function clearPreview()
     {
-        session()->forget('import_joinprodiuser_preview');
-        return redirect()->route('settings.import.joinprodiusers')
+        session()->forget('import_prodiuser_preview');
+        return redirect()->route('settings.import.prodiusers')
                         ->with('success', 'Data preview berhasil dihapus.');
     }
 
@@ -262,7 +262,7 @@ class ImportJoinProdiUserController extends Controller
             $candidate = (string) url()->previous();
         }
 
-        return $candidate !== '' ? $candidate : route('settings.import.joinprodiusers');
+        return $candidate !== '' ? $candidate : route('settings.import.prodiusers');
     }
 
     private function syncPimpinanProdiRole(int $userId): void
@@ -276,7 +276,7 @@ class ImportJoinProdiUserController extends Controller
 
         $role = Role::findOrCreate($roleName, Guard::getDefaultName($user));
 
-        $isPimpinan = JoinProdiUser::query()
+        $isPimpinan = ProdiUser::query()
             ->where('user_id', $userId)
             ->where('status_pimpinan', true)
             ->exists();

@@ -4,7 +4,7 @@ namespace App\DataTables;
 
 use App\Models\User;
 use App\Models\Prodi;
-use App\Models\JoinProdiUser;
+use App\Models\ProdiUser;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\EloquentDataTable;
@@ -12,7 +12,7 @@ use Yajra\DataTables\Services\DataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 
-class JoinProdiUsersDataTable extends DataTable
+class ProdiUserDataTable extends DataTable
 {
     /**
      * Build the DataTable class.
@@ -51,7 +51,7 @@ class JoinProdiUsersDataTable extends DataTable
                 $canDelete = !$lockedUserIds[$row->user_id];
 
                 $action = '<div class="row">';
-                $action .= ' <div class="col-auto"><button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditJoinProdiUser" data-joinprodiuser-id="'.$row->id.'" data-joinprodiuser-username="'.e($row->user->name ?? '').'" data-joinprodiuser-status-pimpinan="'.($statusPimpinan ? '1' : '0').'" data-joinprodiuser-can-delete="'.($canDelete ? '1' : '0').'" title="Edit data user prodi"><i class="bi bi-pencil-square"></i></button></div>';
+                $action .= ' <div class="col-auto"><button type="button" class="btn btn-primary btn-sm action" data-bs-toggle="modal" data-bs-target="#modalEditProdiUser" data-prodiuser-id="'.$row->id.'" data-prodiuser-username="'.e($row->user->name ?? '').'" data-prodiuser-status-pimpinan="'.($statusPimpinan ? '1' : '0').'" data-prodiuser-can-delete="'.($canDelete ? '1' : '0').'" title="Edit data user prodi"><i class="bi bi-pencil-square"></i></button></div>';
                 $action .= '</div>';
                 return $action;
             })
@@ -103,7 +103,7 @@ class JoinProdiUsersDataTable extends DataTable
     /**
      * Get the query source of dataTable.
      */
-    public function query(JoinProdiUser $model): QueryBuilder
+    public function query(ProdiUser $model): QueryBuilder
     {
         $table = $model->getTable();
 
@@ -122,7 +122,7 @@ class JoinProdiUsersDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('joinprodiusers-table')
+                    ->setTableId('prodiusers-table')
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     ->dom("<'row mb-2'<'col-auto'B><'col-auto'f><'col-auto'l>>" .
@@ -159,14 +159,14 @@ class JoinProdiUsersDataTable extends DataTable
                         Button::make([
                                         'text'   => '<i class="bi bi-plus-circle"></i> User',
                                         'className' => 'btn btn-success',
-                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('prodis.joinprodiusers.create',$this->prodi_id).'"; }',
+                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('prodis.prodiusers.create',$this->prodi_id).'"; }',
                                     ]),
                         Button::make('reset'),
                         Button::make('reload'),
                         Button::make([
                                         'text'   => '<i class="bi bi-upload"></i> Banyak User',
                                         'className' => 'btn btn-success',
-                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('settings.import.admin-master', ['target' => 'joinprodiusers']).'"; }',
+                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('settings.import.admin-master', ['target' => 'prodiusers']).'"; }',
                                     ]),
                                 ]);
     }
@@ -196,6 +196,6 @@ class JoinProdiUsersDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Joinprodiusers_' . date('YmdHis');
+        return 'Prodiusers_' . date('YmdHis');
     }
 }

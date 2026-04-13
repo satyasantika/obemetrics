@@ -57,7 +57,7 @@ class HomeController extends Controller
                 'prodi' => $prodi,
                 'kurikulums' => $prodi->kurikulums()->count(),
                 'mahasiswas' => $prodi->mahasiswas()->count(),
-                'dosen' => $prodi->joinProdiUsers()->distinct('user_id')->count('user_id'),
+                'dosen' => $prodi->prodiUsers()->distinct('user_id')->count('user_id'),
             ];
         });
 
@@ -82,7 +82,7 @@ class HomeController extends Controller
             $prodiIds = collect([$requestProdiId]);
         }
 
-        $managedProdis = $user->joinProdiUsers()
+        $managedProdis = $user->prodiUsers()
             ->where('status_pimpinan', true)
             ->whereHas('user', function ($query) {
                 $query->role('pimpinan prodi');
@@ -117,7 +117,7 @@ class HomeController extends Controller
     {
         $user = auth()->user();
 
-        $joinProdiUsers = $user->joinProdiUsers()
+        $prodiUsers = $user->prodiUsers()
             ->with('prodi')
             ->get();
 
@@ -135,12 +135,12 @@ class HomeController extends Controller
                     ->map(fn ($kurikulumRows) => $kurikulumRows->unique('mk_id')->values());
             });
 
-        return view('dashboard.dosen-space', compact('joinProdiUsers', 'mkByProdiKurikulum'));
+        return view('dashboard.dosen-space', compact('prodiUsers', 'mkByProdiKurikulum'));
     }
 
     private function getManagedPimpinanProdiIds(User $user)
     {
-        return $user->joinProdiUsers()
+        return $user->prodiUsers()
             ->where('status_pimpinan', true)
             ->whereHas('user', function ($query) {
                 $query->role('pimpinan prodi');

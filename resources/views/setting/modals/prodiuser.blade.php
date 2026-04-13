@@ -1,23 +1,23 @@
 @php
-    $joinProdiUserUpdateRouteTemplate = route('prodis.joinprodiusers.update', ['prodi' => $prodi->id, 'joinprodiuser' => '__JOINPRODIUSER__']);
-    $joinProdiUserDestroyRouteTemplate = route('prodis.joinprodiusers.destroy', ['prodi' => $prodi->id, 'joinprodiuser' => '__JOINPRODIUSER__']);
+    $prodiUserUpdateRouteTemplate = route('prodis.prodiusers.update', ['prodi' => $prodi->id, 'prodiuser' => '__PRODIUSER__']);
+    $prodiUserDestroyRouteTemplate = route('prodis.prodiusers.destroy', ['prodi' => $prodi->id, 'prodiuser' => '__PRODIUSER__']);
 @endphp
 
-<div class="modal fade" id="modalEditJoinProdiUser" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalEditProdiUser" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="formEditJoinProdiUser" action="#" method="POST">
+            <form id="formEditProdiUser" action="#" method="POST">
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
-                    <h5 class="modal-title" id="modalEditJoinProdiUserTitle">Edit User Prodi</h5>
+                    <h5 class="modal-title" id="modalEditProdiUserTitle">Edit User Prodi</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label">User Dosen</label>
-                            <input type="text" class="form-control" id="editJoinProdiUserName" readonly>
+                            <input type="text" class="form-control" id="editProdiUserName" readonly>
                         </div>
                         <div class="col-12">
                             <div class="form-check form-switch mt-1">
@@ -40,7 +40,7 @@
     </div>
 </div>
 
-<form id="formDeleteJoinProdiUser" action="#" method="POST" class="d-none">
+<form id="formDeleteProdiUser" action="#" method="POST" class="d-none">
     @csrf
     @method('DELETE')
 </form>
@@ -49,15 +49,15 @@
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                const modal = document.getElementById('modalEditJoinProdiUser');
+                const modal = document.getElementById('modalEditProdiUser');
                 if (!modal) {
                     return;
                 }
 
-                const updateRouteTemplate = @json($joinProdiUserUpdateRouteTemplate);
-                const destroyRouteTemplate = @json($joinProdiUserDestroyRouteTemplate);
+                const updateRouteTemplate = @json($prodiUserUpdateRouteTemplate);
+                const destroyRouteTemplate = @json($prodiUserDestroyRouteTemplate);
                 const routeFor = function (template, id) {
-                    return template.replace('__JOINPRODIUSER__', encodeURIComponent(String(id)));
+                    return template.replace('__PRODIUSER__', encodeURIComponent(String(id)));
                 };
 
                 modal.addEventListener('show.bs.modal', function (event) {
@@ -66,15 +66,15 @@
                         return;
                     }
 
-                    const id = String(trigger.getAttribute('data-joinprodiuser-id') || '');
-                    const userName = trigger.getAttribute('data-joinprodiuser-username') || '-';
-                    const isPimpinan = String(trigger.getAttribute('data-joinprodiuser-status-pimpinan') || '0') === '1';
-                    const canDelete = String(trigger.getAttribute('data-joinprodiuser-can-delete') || '0') === '1';
+                    const id = String(trigger.getAttribute('data-prodiuser-id') || '');
+                    const userName = trigger.getAttribute('data-prodiuser-username') || '-';
+                    const isPimpinan = String(trigger.getAttribute('data-prodiuser-status-pimpinan') || '0') === '1';
+                    const canDelete = String(trigger.getAttribute('data-prodiuser-can-delete') || '0') === '1';
 
-                    const editForm = document.getElementById('formEditJoinProdiUser');
-                    const deleteForm = document.getElementById('formDeleteJoinProdiUser');
-                    const title = document.getElementById('modalEditJoinProdiUserTitle');
-                    const inputName = document.getElementById('editJoinProdiUserName');
+                    const editForm = document.getElementById('formEditProdiUser');
+                    const deleteForm = document.getElementById('formDeleteProdiUser');
+                    const title = document.getElementById('modalEditProdiUserTitle');
+                    const inputName = document.getElementById('editProdiUserName');
                     const inputPimpinan = document.getElementById('editJoinProdiStatusPimpinan');
                     const deleteBtn = document.getElementById('editJoinProdiDeleteBtn');
                     const blockedBadge = document.getElementById('editJoinProdiDeleteBlockedBadge');

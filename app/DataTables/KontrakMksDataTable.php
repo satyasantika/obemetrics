@@ -3,7 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\KontrakMk;
-use App\Models\JoinProdiUser;
+use App\Models\ProdiUser;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -83,7 +83,7 @@ class KontrakMksDataTable extends DataTable
         if ($prodiIds->isEmpty() && auth()->check()) {
             $user = auth()->user();
             if ($user->hasRole('prodi') || $user->hasRole('pimpinan prodi')) {
-                $prodiIds = JoinProdiUser::query()
+                $prodiIds = ProdiUser::query()
                     ->where('user_id', $user->id)
                     ->pluck('prodi_id')
                     ->filter()

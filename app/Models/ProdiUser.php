@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class JoinProdiUser extends Model
+class ProdiUser extends Model
 {
     use HasFactory, HasUuids;
     protected $table = 'prodi_users';

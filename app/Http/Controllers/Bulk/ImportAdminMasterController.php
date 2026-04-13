@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Bulk;
 
 use App\Http\Controllers\Controller;
-use App\Models\JoinProdiUser;
+use App\Models\ProdiUser;
 use App\Models\Prodi;
 use App\Models\Role;
 use App\Models\User;
@@ -28,7 +28,7 @@ class ImportAdminMasterController extends Controller
             'columns' => ['name', 'username', 'nidn', 'email', 'password'],
             'required' => ['username'],
         ],
-        'joinprodiusers' => [
+        'prodiusers' => [
             'label' => 'Dosen ke Program Studi',
             'columns' => ['kode_prodi', 'nama_prodi', 'nidn', 'nama_dosen', 'status_pimpinan'],
             'required' => ['kode_prodi', 'nidn'],
@@ -135,7 +135,7 @@ class ImportAdminMasterController extends Controller
         $selectedIndexes = $request->input('selected', []);
         $saved = 0;
         $skipped = [];
-        $affectedJoinProdiUserIds = [];
+        $affectedProdiUserIds = [];
 
         foreach ($selectedIndexes as $idx) {
             if (!isset($rows[$idx])) {
@@ -148,8 +148,8 @@ class ImportAdminMasterController extends Controller
             }
 
             try {
-                if ($target === 'joinprodiusers' && isset($rows[$idx]['nidn'])) {
-                    $affectedJoinProdiUserIds[] = trim((string) $rows[$idx]['nidn']);
+                if ($target === 'prodiusers' && isset($rows[$idx]['nidn'])) {
+                    $affectedProdiUserIds[] = trim((string) $rows[$idx]['nidn']);
                 }
                 $this->persistRow($target, $rows[$idx]);
                 $saved++;
@@ -158,9 +158,9 @@ class ImportAdminMasterController extends Controller
             }
         }
 
-        if ($target === 'joinprodiusers' && !empty($affectedJoinProdiUserIds)) {
+        if ($target === 'prodiusers' && !empty($affectedProdiUserIds)) {
             $affectedUsers = User::query()
-                ->whereIn('nidn', array_values(array_unique($affectedJoinProdiUserIds)))
+                ->whereIn('nidn', array_values(array_unique($affectedProdiUserIds)))
                 ->get(['id']);
 
             foreach ($affectedUsers as $affectedUser) {
@@ -250,7 +250,7 @@ class ImportAdminMasterController extends Controller
                 $user->assignRole('dosen');
                 return;
 
-            case 'joinprodiusers':
+            case 'prodiusers':
                 $kodeProdi = $this->required($row['kode_prodi'] ?? null, 'kode_prodi');
                 $nidn = $this->required($row['nidn'] ?? null, 'nidn');
 
@@ -264,7 +264,7 @@ class ImportAdminMasterController extends Controller
                     throw new \RuntimeException('User dosen tidak ditemukan untuk NIDN: ' . $nidn);
                 }
 
-                $joinProdiUser = JoinProdiUser::updateOrCreate(
+                $prodiUser = ProdiUser::updateOrCreate(
                     [
                         'prodi_id' => $prodi->id,
                         'user_id' => $user->id,
@@ -274,7 +274,7 @@ class ImportAdminMasterController extends Controller
                     ]
                 );
 
-                $this->syncPimpinanProdiRole((int) $joinProdiUser->user_id);
+                $this->syncPimpinanProdiRole((int) $prodiUser->user_id);
                 return;
         }
 
@@ -338,7 +338,7 @@ class ImportAdminMasterController extends Controller
 
         $role = Role::findOrCreate($roleName, Guard::getDefaultName($user));
 
-        $isPimpinan = JoinProdiUser::query()
+        $isPimpinan = ProdiUser::query()
             ->where('user_id', $userId)
             ->where('status_pimpinan', true)
             ->exists();
@@ -357,11 +357,11 @@ class ImportAdminMasterController extends Controller
 
     private function decoratePreviewRow(string $target, array $row): array
     {
-        if (!in_array($target, ['users', 'joinprodiusers'], true)) {
+        if (!in_array($target, ['users', 'prodiusers'], true)) {
             return $row;
         }
 
-        if ($target === 'joinprodiusers') {
+        if ($target === 'prodiusers') {
             $kodeProdi = trim((string) ($row['kode_prodi'] ?? ''));
             $nidn = trim((string) ($row['nidn'] ?? ''));
 
@@ -391,7 +391,7 @@ class ImportAdminMasterController extends Controller
                 ]);
             }
 
-            $exists = JoinProdiUser::query()
+            $exists = ProdiUser::query()
                 ->where('prodi_id', $prodi->id)
                 ->where('user_id', $user->id)
                 ->exists();

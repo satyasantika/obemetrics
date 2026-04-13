@@ -30,7 +30,7 @@ class KontrakMkController extends Controller
         $prodiIds = [];
 
         if ($user->hasRole('prodi')) {
-            $prodiIds = $user->joinProdiUsers->pluck('prodi_id')->toArray();
+            $prodiIds = $user->prodiUsers->pluck('prodi_id')->toArray();
         }
 
         $kurikulumId = request()->query('kurikulum');
@@ -59,7 +59,7 @@ class KontrakMkController extends Controller
         // Validasi tambahan untuk role prodi
         $user = auth()->user();
         if ($user->hasRole('prodi')) {
-            $prodiIds = $user->joinProdiUsers->pluck('prodi_id')->toArray();
+            $prodiIds = $user->prodiUsers->pluck('prodi_id')->toArray();
             $mahasiswa = Mahasiswa::find($request->mahasiswa_id);
 
             if (!in_array($mahasiswa->prodi_id, $prodiIds)) {
@@ -96,7 +96,7 @@ class KontrakMkController extends Controller
         // Validasi tambahan untuk role prodi
         $user = auth()->user();
         if ($user->hasRole('prodi')) {
-            $prodiIds = $user->joinProdiUsers->pluck('prodi_id')->toArray();
+            $prodiIds = $user->prodiUsers->pluck('prodi_id')->toArray();
             $mahasiswa = Mahasiswa::find($request->mahasiswa_id);
 
             if (!in_array($mahasiswa->prodi_id, $prodiIds)) {
@@ -120,7 +120,7 @@ class KontrakMkController extends Controller
         // Validasi tambahan untuk role prodi
         $user = auth()->user();
         if ($user->hasRole('prodi')) {
-            $prodiIds = $user->joinProdiUsers->pluck('prodi_id')->toArray();
+            $prodiIds = $user->prodiUsers->pluck('prodi_id')->toArray();
 
             if (!in_array($kontrakmk->mahasiswa->prodi_id, $prodiIds)) {
                 return back()->with('error', 'Anda tidak memiliki akses untuk menghapus kontrak untuk mahasiswa dari prodi ini.');
@@ -139,7 +139,7 @@ class KontrakMkController extends Controller
 
         // Filter berdasarkan prodi jika user memiliki role prodi
         if ($user->hasRole('prodi')) {
-            $prodiIds = $user->joinProdiUsers->pluck('prodi_id')->toArray();
+            $prodiIds = $user->prodiUsers->pluck('prodi_id')->toArray();
         }
 
         // Query mahasiswa

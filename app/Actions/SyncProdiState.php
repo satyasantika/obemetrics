@@ -19,7 +19,7 @@ class SyncProdiState
             return;
         }
 
-        $hasUsers = $prodi->joinProdiUsers()->exists();
+        $hasUsers = $prodi->prodiUsers()->exists();
         $targetName = $hasUsers ? Aktif::$name : Draft::$name;
 
         if ($prodi->getRawOriginal('status') !== $targetName) {

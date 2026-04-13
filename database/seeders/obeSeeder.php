@@ -24,14 +24,14 @@ class obeSeeder extends Seeder
         Permission::create(['name' => 'update prodis'])->syncRoles('admin','operator prodi','pimpinan prodi');
         Permission::create(['name' => 'delete prodis'])->assignRole('admin');
 
-        Permission::create(['name' => 'create join prodi users'])->assignRole('admin','operator prodi','pimpinan prodi');
-        Permission::create(['name' => 'read join prodi users'])->assignRole('admin','operator prodi','pimpinan prodi');
-        Permission::create(['name' => 'update join prodi users'])->assignRole('admin','operator prodi','pimpinan prodi');
-        Permission::create(['name' => 'delete join prodi users'])->assignRole('admin','operator prodi','pimpinan prodi');
+        Permission::create(['name' => 'create prodi users'])->assignRole('admin','operator prodi','pimpinan prodi');
+        Permission::create(['name' => 'read prodi users'])->assignRole('admin','operator prodi','pimpinan prodi');
+        Permission::create(['name' => 'update prodi users'])->assignRole('admin','operator prodi','pimpinan prodi');
+        Permission::create(['name' => 'delete prodi users'])->assignRole('admin','operator prodi','pimpinan prodi');
 
-        Permission::create(['name' => 'read bulk-import joinprodiusers'])->assignRole('admin','operator prodi','pimpinan prodi');
-        Permission::create(['name' => 'create bulk-import joinprodiusers'])->assignRole('admin','operator prodi','pimpinan prodi');
-        Permission::create(['name' => 'delete bulk-import joinprodiusers'])->assignRole('admin','operator prodi','pimpinan prodi');
+        Permission::create(['name' => 'read bulk-import prodiusers'])->assignRole('admin','operator prodi','pimpinan prodi');
+        Permission::create(['name' => 'create bulk-import prodiusers'])->assignRole('admin','operator prodi','pimpinan prodi');
+        Permission::create(['name' => 'delete bulk-import prodiusers'])->assignRole('admin','operator prodi','pimpinan prodi');
 
         Permission::create(['name' => 'create semesters'])->assignRole('admin');
         Permission::create(['name' => 'read semesters'])->assignRole('admin');

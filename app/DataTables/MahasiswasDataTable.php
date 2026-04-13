@@ -54,7 +54,7 @@ class MahasiswasDataTable extends DataTable
         $user = auth()->user();
 
         if ($user && $user->hasRole('pimpinan prodi')) {
-            $managedProdiIds = $user->joinProdiUsers()
+            $managedProdiIds = $user->prodiUsers()
                 ->where('status_pimpinan', true)
                 ->pluck('prodi_id')
                 ->filter()

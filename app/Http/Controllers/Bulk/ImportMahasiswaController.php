@@ -28,7 +28,7 @@ class ImportMahasiswaController extends Controller
             $prodis = Prodi::all();
         } else {
             // Get managed prodi for pimpinan prodi
-            $managedProdiIds = $user->joinProdiUsers()
+            $managedProdiIds = $user->prodiUsers()
                 ->where('status_pimpinan', true)
                 ->whereHas('user', function ($query) {
                     $query->role('pimpinan prodi');
@@ -132,7 +132,7 @@ class ImportMahasiswaController extends Controller
             if ($isAdmin) {
                 $prodis = Prodi::all();
             } else {
-                $managedProdiIds = $user->joinProdiUsers()
+                $managedProdiIds = $user->prodiUsers()
                     ->where('status_pimpinan', true)
                     ->whereHas('user', function ($query) {
                         $query->role('pimpinan prodi');

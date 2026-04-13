@@ -50,45 +50,4 @@
         </a>
     </li>
 
-    {{-- <li class="nav-item {{ request()->routeIs('settings.import.*') ? 'menu-open' : '' }}">
-        <a href="#" class="nav-link {{ request()->routeIs('settings.import.*') ? 'active' : '' }}">
-            <i class="nav-icon fas fa-file-import"></i>
-            <p>
-                Bulk Import
-                <i class="right fas fa-angle-left"></i>
-            </p>
-        </a>
-        <ul class="nav nav-treeview">
-            <li class="nav-item">
-                <a href="{{ route('settings.import.admin-master') }}" class="nav-link {{ request()->routeIs('settings.import.admin-master*') ? 'active' : '' }}">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Program Studi</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('settings.import.users') }}" class="nav-link {{ request()->routeIs('settings.import.users*') ? 'active' : '' }}">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Dosen</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('settings.import.mahasiswas') }}" class="nav-link {{ request()->routeIs('settings.import.mahasiswas*') ? 'active' : '' }}">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Mahasiswa</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('settings.import.joinprodiusers') }}" class="nav-link {{ request()->routeIs('settings.import.joinprodiusers*') ? 'active' : '' }}">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Dosen Prodi</p>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{{ route('settings.import.kontrakmks') }}" class="nav-link {{ request()->routeIs('settings.import.kontrakmks*') ? 'active' : '' }}">
-                    <i class="far fa-circle nav-icon"></i>
-                    <p>Kontrak MK</p>
-                </a>
-            </li>
-        </ul>
-    </li> --}}
 @endcan

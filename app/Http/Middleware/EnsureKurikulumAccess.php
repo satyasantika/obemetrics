@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Bk;
 use App\Models\Cpl;
-use App\Models\JoinProdiUser;
+use App\Models\ProdiUser;
 use App\Models\Kurikulum;
 use App\Models\Mk;
 use App\Models\Prodi;
@@ -27,7 +27,7 @@ class EnsureKurikulumAccess
             return $next($request);
         }
 
-        $hasAccess = JoinProdiUser::query()
+        $hasAccess = ProdiUser::query()
             ->where('user_id', $user->id)
             ->where('prodi_id', $targetProdiId)
             ->where('status_pimpinan', true)

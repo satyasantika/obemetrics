@@ -7,7 +7,7 @@ use App\Models\Role;
 use App\Models\Permission;
 use App\Models\KontrakMk;
 use App\Models\JoinMkUser;
-use App\Models\JoinProdiUser;
+use App\Models\ProdiUser;
 use Illuminate\Http\Request;
 use App\DataTables\UsersDataTable;
 use Illuminate\Support\Facades\DB;
@@ -60,7 +60,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $name = strtoupper($user->name);
-        $isUsed = $user->joinProdiUsers()->exists()
+        $isUsed = $user->prodiUsers()->exists()
             || $user->joinMkUsers()->exists()
             || KontrakMk::query()->where('user_id', $user->id)->exists();
 
@@ -122,7 +122,7 @@ class UserController extends Controller
             ->toArray();
 
         $usedUserIds = collect()
-            ->merge(JoinProdiUser::query()->pluck('user_id'))
+            ->merge(ProdiUser::query()->pluck('user_id'))
             ->merge(JoinMkUser::query()->pluck('user_id'))
             ->merge(KontrakMk::query()->pluck('user_id'))
             ->filter()

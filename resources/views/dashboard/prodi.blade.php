@@ -51,7 +51,7 @@
                         </a>
 
                         {{-- Dosen Card --}}
-                        <a href="{{ route('prodis.joinprodiusers.index', ['prodi' => $detail['id']]) }}" class="dashboard-stat-link">
+                        <a href="{{ route('prodis.prodiusers.index', ['prodi' => $detail['id']]) }}" class="dashboard-stat-link">
                             <div class="dashboard-stat-card">
                                 <div class="dashboard-stat-icon">
                                     <i class="fas fa-chalkboard-user"></i>

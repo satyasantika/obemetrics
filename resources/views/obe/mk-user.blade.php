@@ -25,7 +25,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @forelse ($join_prodi_users as $join_prodi_user)
+                                @forelse ($prodi_users as $join_prodi_user)
                                     <tr style="vertical-align: text-top;">
                                         <th>
                                             {{ $join_prodi_user->user->name }}

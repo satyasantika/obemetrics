@@ -38,11 +38,14 @@ return new class extends Migration
             $table->timestamps();
         });
         // user pada prodi
-        Schema::create('join_prodi_users', function (Blueprint $table) {
+        Schema::create('prodi_users', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
             $table->foreignUuid('prodi_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->foreignUuid('user_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->boolean('status_pimpinan')->default(0);
+            $table->unique(['prodi_id', 'user_id'], 'uniq_prodi_user');
+            $table->index('prodi_id', 'idx_prodi_users_prodi_id');
+            $table->index('user_id', 'idx_prodi_users_user_id');
             $table->timestamps();
         });
 
@@ -379,11 +382,11 @@ return new class extends Migration
         // semester
         Schema::dropIfExists('semesters');
         // prodi_users
-        Schema::table('join_prodi_users', function (Blueprint $table) {
-            $table->dropForeign('join_prodi_users_prodi_id_foreign');
-            $table->dropForeign('join_prodi_users_user_id_foreign');
+        Schema::table('prodi_users', function (Blueprint $table) {
+            $table->dropForeign('prodi_users_prodi_id_foreign');
+            $table->dropForeign('prodi_users_user_id_foreign');
         });
-        Schema::dropIfExists('join_prodi_users');
+        Schema::dropIfExists('prodi_users');
         // identitas program studi
         Schema::dropIfExists('prodis');
     }

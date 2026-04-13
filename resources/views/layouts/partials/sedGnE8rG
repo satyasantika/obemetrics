@@ -74,7 +74,7 @@
                     }
 
                     if ($selectedKurikulum) {
-                        $hasPimpinanAccess = \App\Models\JoinProdiUser::query()
+                        $hasPimpinanAccess = \App\Models\ProdiUser::query()
                             ->where('user_id', auth()->id())
                             ->where('prodi_id', $selectedKurikulum->prodi_id)
                             ->where('status_pimpinan', true)

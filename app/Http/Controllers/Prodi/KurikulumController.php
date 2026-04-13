@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Prodi;
 use App\Models\Prodi;
 use App\Models\Kurikulum;
 use Illuminate\Http\Request;
-use App\Models\JoinProdiUser;
+use App\Models\ProdiUser;
 use App\Http\Controllers\Controller;
 use App\DataTables\KurikulumsDataTable;
 
@@ -74,7 +74,7 @@ class KurikulumController extends Controller
 
     private function _dataSelection($prodi, $kurikulum)
     {
-        $prodi_ids = JoinProdiUser::where('user_id', auth()->id())->pluck('prodi_id');
+        $prodi_ids = ProdiUser::where('user_id', auth()->id())->pluck('prodi_id');
         $prodis = Prodi::whereIn('id', $prodi_ids)->get();
         return [
             'header' => 'Data Kurikulum Program Studi '.Prodi::find($prodi->id)->nama,

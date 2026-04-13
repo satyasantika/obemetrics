@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Setting;
 
 use App\Models\Prodi;
-use App\Models\JoinProdiUser;
+use App\Models\ProdiUser;
 use App\Actions\SyncProdiState;
 use App\States\Prodi\Aktif as ProdiAktif;
 use App\States\Prodi\Draft as ProdiDraft;
@@ -62,7 +62,7 @@ class ProdiController extends Controller
 
         $isUsed = $prodi->kurikulums()->exists()
             || $prodi->mahasiswas()->exists()
-            || JoinProdiUser::query()->where('prodi_id', $prodi->id)->exists();
+            || ProdiUser::query()->where('prodi_id', $prodi->id)->exists();
 
         if ($isUsed) {
             return to_route('prodis.index')->with('error','Prodi '.$name.' tidak dapat dihapus karena sudah digunakan pada tabel relasi.');
@@ -77,7 +77,7 @@ class ProdiController extends Controller
         $usedProdiIds = collect()
             ->merge(DB::table('kurikulums')->pluck('prodi_id'))
             ->merge(DB::table('mahasiswas')->pluck('prodi_id'))
-            ->merge(DB::table('join_prodi_users')->pluck('prodi_id'))
+            ->merge(DB::table('prodi_users')->pluck('prodi_id'))
             ->filter()
             ->map(fn ($id) => (string) $id)
             ->unique()

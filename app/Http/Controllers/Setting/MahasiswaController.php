@@ -72,7 +72,7 @@ class MahasiswaController extends Controller
         $managedProdiIds = collect();
 
         if ($user && $user->hasRole('pimpinan prodi')) {
-            $managedProdiIds = $user->joinProdiUsers()
+            $managedProdiIds = $user->prodiUsers()
                 ->where('status_pimpinan', true)
                 ->pluck('prodi_id')
                 ->filter()

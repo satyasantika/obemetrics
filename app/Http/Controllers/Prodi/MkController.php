@@ -26,7 +26,7 @@ class MkController extends Controller
             ->withCount(['joinCplMks', 'joinMkUsers', 'kontrakMks', 'cpmks', 'penugasans'])
             ->get();
 
-        $joinProdiUsers = $kurikulum->prodi->joinProdiUsers()->with('user')->get();
+        $prodiUsers = $kurikulum->prodi->prodiUsers()->with('user')->get();
 
         $joinMkUsers = JoinMkUser::with('user')
             ->where('kurikulum_id', $kurikulum->id)
@@ -59,7 +59,7 @@ class MkController extends Controller
         return view('obe.mk', compact(
             'kurikulum',
             'mks',
-            'joinProdiUsers',
+            'prodiUsers',
             'assignedByMk',
             'linkedByMkUser',
             'lockedByMk',

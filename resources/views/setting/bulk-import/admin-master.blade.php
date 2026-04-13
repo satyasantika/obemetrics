@@ -70,7 +70,7 @@
 
                         @php
                             $columns = $targets[$target]['columns'] ?? [];
-                            $showStatus = in_array($target, ['users', 'joinprodiusers'], true);
+                            $showStatus = in_array($target, ['users', 'prodiusers'], true);
                         @endphp
 
                         <form action="{{ route('settings.import.admin-master.commit') }}" method="POST">

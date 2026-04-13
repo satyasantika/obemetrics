@@ -11,9 +11,9 @@
         <span>Manajemen Mata Kuliah Dosen</span>
     </div>
     <div class="card-body">
-        @forelse ($joinProdiUsers as $joinProdiUser)
+        @forelse ($prodiUsers as $prodiUser)
             @php
-                $prodi = $joinProdiUser->prodi;
+                $prodi = $prodiUser->prodi;
                 $kurikulumGroups = $mkByProdiKurikulum->get($prodi->id, collect());
             @endphp
 

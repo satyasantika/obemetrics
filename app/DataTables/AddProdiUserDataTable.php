@@ -3,7 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\User;
-use App\Models\JoinProdiUser;
+use App\Models\ProdiUser;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\EloquentDataTable;
@@ -13,7 +13,7 @@ use Yajra\DataTables\Services\DataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 
-class AddJoinProdiUsersDataTable extends DataTable
+class AddProdiUserDataTable extends DataTable
 {
     /**
      * Build the DataTable class.
@@ -26,7 +26,7 @@ class AddJoinProdiUsersDataTable extends DataTable
             ->addColumn('action', function($row){
                 $action = '<div class="row">';
                 $action .= ' <div class="col-auto">';
-                $action .= '  <form action="'.route('prodis.joinprodiusers.store', [$this->prodi_id]).'" method="POST" style="display:inline;">';
+                $action .= '  <form action="'.route('prodis.prodiusers.store', [$this->prodi_id]).'" method="POST" style="display:inline;">';
                 $action .= '   <input type="hidden" name="_token" value="'.csrf_token().'">';
                 $action .= '   <input type="hidden" name="user_id" value="'.$row->id.'">';
                 $action .= '   <input type="hidden" name="prodi_id" value="'.$this->prodi_id.'">';
@@ -52,7 +52,7 @@ class AddJoinProdiUsersDataTable extends DataTable
      */
     public function query(User $model): QueryBuilder
     {
-        return $model->whereNotIn('id',JoinProdiUser::select('user_id')->where('prodi_id', $this->prodi_id))->newQuery()->role('dosen');
+        return $model->whereNotIn('id',ProdiUser::select('user_id')->where('prodi_id', $this->prodi_id))->newQuery()->role('dosen');
     }
 
     /**
@@ -61,7 +61,7 @@ class AddJoinProdiUsersDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-                    ->setTableId('addjoinprodiusers-table')
+                    ->setTableId('addprodiusers-table')
                     ->columns($this->getColumns())
                     ->minifiedAjax()
                     ->dom("<'row mb-2'<'col-auto'B><'col-auto'f><'col-auto'l>>" .
@@ -100,7 +100,7 @@ class AddJoinProdiUsersDataTable extends DataTable
                         Button::make([
                                         'text'   => '<i class="bi bi-left-arrow"></i> Back to User Prodi',
                                         'className' => 'btn btn-primary',
-                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('prodis.joinprodiusers.index',$this->prodi_id).'"; }',
+                                        'action' => 'function(e, dt, node, config){ window.location.href = "'.route('prodis.prodiusers.index',$this->prodi_id).'"; }',
                                     ]),
                                 ]);
     }
@@ -128,6 +128,6 @@ class AddJoinProdiUsersDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'AddJoinProdiUsers_' . date('YmdHis');
+        return 'AddProdiUsers_' . date('YmdHis');
     }
 }
