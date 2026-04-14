@@ -12,25 +12,31 @@
 
     <div class="sidebar">
         <nav class="mt-2">
+
             @php
-                $isProdiSidebarMode = request()->routeIs(
-                    'ruang.prodi',
-                    'mks.users.*',
-                    'kontrakmks.*',
-                    'kurikulums.profils.*',
-                    'kurikulums.cpls.*',
-                    'kurikulums.bks.*',
-                    'kurikulums.mks.*',
-                    'kurikulums.profilcpls.*',
-                    'kurikulums.cplbks.*',
-                    'kurikulums.cplmks.*',
-                    'kurikulums.rencana-asesmen',
-                    'kurikulums.analisis-asesmen',
-                    'kurikulums.spyderweb-cpl',
-                    'kurikulums.laporan-mahasiswa',
-                    'settings.import.kurikulum-master',
-                    'settings.import.kontrakmks*'
-                );
+                $user = auth()->user();
+                $isAdmin = $user && $user->can('access admin dashboard');
+                $isProdiSidebarMode = false;
+                if (!$isAdmin) {
+                    $isProdiSidebarMode = request()->routeIs(
+                        'ruang.prodi',
+                        'mks.users.*',
+                        'kontrakmks.*',
+                        'kurikulums.profils.*',
+                        'kurikulums.cpls.*',
+                        'kurikulums.bks.*',
+                        'kurikulums.mks.*',
+                        'kurikulums.profilcpls.*',
+                        'kurikulums.cplbks.*',
+                        'kurikulums.cplmks.*',
+                        'kurikulums.rencana-asesmen',
+                        'kurikulums.analisis-asesmen',
+                        'kurikulums.spyderweb-cpl',
+                        'kurikulums.laporan-mahasiswa',
+                        'settings.import.kurikulum-master',
+                        'settings.import.kontrakmks*'
+                    );
+                }
 
                 $isMkSidebarMode = request()->routeIs(
                     'ruang.dosen',
