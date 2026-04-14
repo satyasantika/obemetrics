@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Bulk;
 
+use App\Actions\SyncProdiState;
 use App\Models\ProdiUser;
 use App\Models\Role;
 use App\Models\User;
@@ -159,6 +160,7 @@ class ImportProdiUserController extends Controller
         $savedCount = 0;
         $errorCount = 0;
         $affectedUserIds = [];
+        $affectedProdiIds = [];
 
         foreach ($selectedIndexes as $idx) {
             if (!isset($rows[$idx])) {
@@ -182,13 +184,21 @@ class ImportProdiUserController extends Controller
                 ]
             );
 
-            $affectedUserIds[] = (int) $prodiUser->user_id;
-            $this->syncPimpinanProdiRole((int) $prodiUser->user_id);
+            $affectedUserIds[] = (string) $prodiUser->user_id;
+            $affectedProdiIds[] = (string) $prodiUser->prodi_id;
+            $this->syncPimpinanProdiRole((string) $prodiUser->user_id);
             $savedCount++;
         }
 
         foreach (array_unique($affectedUserIds) as $affectedUserId) {
-            $this->syncPimpinanProdiRole((int) $affectedUserId);
+            $this->syncPimpinanProdiRole((string) $affectedUserId);
+        }
+
+        foreach (array_unique($affectedProdiIds) as $affectedProdiId) {
+            $prodi = Prodi::query()->find($affectedProdiId);
+            if ($prodi) {
+                SyncProdiState::sync($prodi);
+            }
         }
 
         session()->forget('import_prodiuser_preview');
@@ -265,7 +275,7 @@ class ImportProdiUserController extends Controller
         return $candidate !== '' ? $candidate : route('settings.import.prodiusers');
     }
 
-    private function syncPimpinanProdiRole(int $userId): void
+    private function syncPimpinanProdiRole(string $userId): void
     {
         $roleName = 'pimpinan prodi';
 

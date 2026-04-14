@@ -45,7 +45,16 @@ class ProdisDataTable extends DataTable
             ->editColumn('status', function($row) {
                 $st = $row->status;
                 if ($st === null) {
-                    return '<span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle px-2 py-1">—</span>';
+                    $statusBadge = '<span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle px-2 py-1">—</span>';
+
+                    $pimpinanCount = (int) ($row->pimpinan_count ?? 0);
+                    $dosenCount = (int) ($row->dosen_count ?? 0);
+                    if (($pimpinanCount + $dosenCount) === 0) {
+                        return $statusBadge;
+                    }
+
+                    return $statusBadge
+                        . '<div class="mt-1 small text-muted">Pimpinan: <strong>'.$pimpinanCount.'</strong> | Dosen: <strong>'.$dosenCount.'</strong></div>';
                 }
 
                 [$bgClass, $textClass, $borderClass, $icon] = match (true) {
@@ -56,8 +65,17 @@ class ProdisDataTable extends DataTable
                 };
 
                 $label = e($st->label());
-                return '<span class="badge rounded-pill '.$bgClass.' '.$textClass.' border '.$borderClass.' px-2 py-1" style="font-size:0.78rem;font-weight:600;letter-spacing:0.02em;">'
+                $statusBadge = '<span class="badge rounded-pill '.$bgClass.' '.$textClass.' border '.$borderClass.' px-2 py-1" style="font-size:0.78rem;font-weight:600;letter-spacing:0.02em;">'
                     . '<i class="bi '.$icon.' me-1"></i>'.$label.'</span>';
+
+                $pimpinanCount = (int) ($row->pimpinan_count ?? 0);
+                $dosenCount = (int) ($row->dosen_count ?? 0);
+                if (($pimpinanCount + $dosenCount) === 0) {
+                    return $statusBadge;
+                }
+
+                return $statusBadge
+                    . '<div class="mt-1 small text-muted">Pimpinan: <strong>'.$pimpinanCount.'</strong> | Dosen: <strong>'.$dosenCount.'</strong></div>';
             })
             ->rawColumns(['action', 'status'])
             ->setRowId('id');
@@ -68,7 +86,13 @@ class ProdisDataTable extends DataTable
      */
     public function query(Prodi $model): QueryBuilder
     {
-        return $model->newQuery();
+        return $model->newQuery()
+            ->withCount([
+                'prodiUsers as pimpinan_count' => fn ($query) => $query->where('status_pimpinan', true),
+                'prodiUsers as dosen_count' => fn ($query) => $query->whereHas('user.roles', function ($roleQuery) {
+                    $roleQuery->where('name', 'dosen');
+                }),
+            ]);
     }
 
     /**

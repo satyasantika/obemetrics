@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Bulk;
 
+use App\Actions\SyncProdiState;
 use App\Http\Controllers\Controller;
 use App\Models\ProdiUser;
 use App\Models\Prodi;
@@ -136,6 +137,7 @@ class ImportAdminMasterController extends Controller
         $saved = 0;
         $skipped = [];
         $affectedProdiUserIds = [];
+        $affectedProdiIds = [];
 
         foreach ($selectedIndexes as $idx) {
             if (!isset($rows[$idx])) {
@@ -152,6 +154,14 @@ class ImportAdminMasterController extends Controller
                     $affectedProdiUserIds[] = trim((string) $rows[$idx]['nidn']);
                 }
                 $this->persistRow($target, $rows[$idx]);
+                if ($target === 'prodiusers' && isset($rows[$idx]['kode_prodi'])) {
+                    $affectedProdiId = Prodi::query()
+                        ->where('kode_prodi', trim((string) $rows[$idx]['kode_prodi']))
+                        ->value('id');
+                    if ($affectedProdiId) {
+                        $affectedProdiIds[] = (string) $affectedProdiId;
+                    }
+                }
                 $saved++;
             } catch (\Throwable $e) {
                 $skipped[] = 'Baris ' . ($idx + 2) . ': ' . $e->getMessage();
@@ -160,11 +170,21 @@ class ImportAdminMasterController extends Controller
 
         if ($target === 'prodiusers' && !empty($affectedProdiUserIds)) {
             $affectedUsers = User::query()
-                ->whereIn('nidn', array_values(array_unique($affectedProdiUserIds)))
-                ->get(['id']);
+            ->whereIn('nidn', array_values(array_unique($affectedProdiUserIds)))
+            ->get(['id']);
 
             foreach ($affectedUsers as $affectedUser) {
-                $this->syncPimpinanProdiRole((int) $affectedUser->id);
+                $this->syncPimpinanProdiRole((string) $affectedUser->id);
+            }
+        }
+
+        if ($target === 'prodiusers' && !empty($affectedProdiIds)) {
+            $affectedProdis = Prodi::query()
+                ->whereIn('id', array_values(array_unique($affectedProdiIds)))
+                ->get();
+
+            foreach ($affectedProdis as $affectedProdi) {
+                SyncProdiState::sync($affectedProdi);
             }
         }
 
@@ -274,7 +294,7 @@ class ImportAdminMasterController extends Controller
                     ]
                 );
 
-                $this->syncPimpinanProdiRole((int) $prodiUser->user_id);
+                $this->syncPimpinanProdiRole((string) $prodiUser->user_id);
                 return;
         }
 
@@ -327,7 +347,7 @@ class ImportAdminMasterController extends Controller
         return $text;
     }
 
-    private function syncPimpinanProdiRole(int $userId): void
+    private function syncPimpinanProdiRole(string $userId): void
     {
         $roleName = 'pimpinan prodi';
 

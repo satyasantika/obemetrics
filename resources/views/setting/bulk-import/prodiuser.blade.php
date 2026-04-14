@@ -93,7 +93,7 @@
                                                     name="selected[]"
                                                     value="{{ $index }}"
                                                     class="form-check-input row-check"
-                                                    @checked(!$row['exists'] && !$hasError)
+                                                    @checked(!$hasError)
                                                     @disabled($hasError)
                                                 >
                                             </td>
@@ -108,7 +108,7 @@
                                                 @elseif (!$row['dosen_exists'])
                                                     <span class="badge bg-danger">Dosen tidak ditemukan</span>
                                                 @elseif ($row['exists'])
-                                                    <span class="badge bg-warning text-dark">Sudah ada</span>
+                                                    <span class="badge bg-warning text-dark">Sudah ada (update jika dipilih)</span>
                                                 @else
                                                     <span class="badge bg-success">Baru</span>
                                                 @endif
