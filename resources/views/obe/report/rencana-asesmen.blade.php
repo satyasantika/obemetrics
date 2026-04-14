@@ -56,7 +56,7 @@
                                             {{-- Cetak baris MK pertama --}}
                                             @php $firstMk = $matkuls->first(); @endphp
                                             <td>
-                                                {{ $firstMk->nama }} ({{ $firstMk->kode }})
+                                                {{ $firstMk->nama }} ({{ $firstMk->pivot->kode_mk ?? '-' }})
                                             </td>
                                             <td class="text-center">
                                                 <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle">{{ $firstMk->sks }}</span>
@@ -77,7 +77,7 @@
                                         @foreach ($matkuls->skip(1) as $mk)
                                             <tr>
                                                 <td>
-                                                    {{ $mk->nama }} ({{ $mk->kode }})
+                                                    {{ $mk->nama }} ({{ $mk->pivot->kode_mk ?? '-' }})
                                                 </td>
                                                 <td class="text-center">
                                                     <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle">{{ $mk->sks }}</span>

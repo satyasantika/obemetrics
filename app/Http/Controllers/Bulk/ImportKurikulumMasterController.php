@@ -2222,7 +2222,7 @@ class ImportKurikulumMasterController extends Controller
             $summary['cpls']++;
         });
 
-$this->importBundleSheet($spreadsheet, 'BK', ['kode', 'nama', 'deskripsi'], ['kode', 'nama'], function (array $row) use ($kurikulum, &$summary) {
+        $this->importBundleSheet($spreadsheet, 'BK', ['kode', 'nama', 'deskripsi'], ['kode', 'nama'], function (array $row) use ($kurikulum, &$summary) {
             $kode = $this->required($row['kode'] ?? null, 'kode');
             $nama = $this->required($row['nama'] ?? null, 'nama');
             $existingPivotBk = KurikulumBk::where('kurikulum_id', $kurikulum->id)

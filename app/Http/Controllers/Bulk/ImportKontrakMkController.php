@@ -97,10 +97,24 @@ class ImportKontrakMkController extends Controller
                 $namaDosen = trim((string) ($row[$headerMap['nama_dosen']] ?? ''));
                 $kelas = trim((string) ($row[$headerMap['kelas']] ?? ''));
 
+
                 // Check mahasiswa
                 $mahasiswa = Mahasiswa::where('nim', $nim)->first();
-                // Check mk
-                $mk = Mk::where('kode', $kodeMk)->first();
+
+                // Check mk berdasarkan kode_mk dari pivot kurikulum_mks
+                $kurikulumId = $request->query('kurikulum') ?? $request->input('kurikulum_id') ?? ($preview['kurikulum_id'] ?? null);
+                $mk = null;
+                if ($kurikulumId) {
+                    $kurikulum = Kurikulum::find($kurikulumId);
+                    if ($kurikulum) {
+                        $mk = $kurikulum->mks()->whereRaw('LOWER(TRIM(kurikulum_mks.kode_mk)) = ?', [Str::lower($kodeMk)])->first();
+                    }
+                }
+                // Fallback jika tidak ada kurikulum
+                if (!$mk) {
+                    $mk = Mk::where('kode', $kodeMk)->first();
+                }
+
                 // Check dosen (user dengan nidn)
                 $dosen = User::where('nidn', $nidn)->first();
 

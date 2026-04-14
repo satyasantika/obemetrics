@@ -372,7 +372,7 @@ class AsesmenCplController extends Controller
 
         $byMahasiswa = $kontrakMks->groupBy('mahasiswa_id');
 
-        $detailPerMahasiswa = $byMahasiswa->map(function ($kontraks, $mahasiswaId) use ($cpls, $mksPerCpl, $profils, $profilCplsByProfil, $target, $resolveHuruf, $hurufToBobot, $poinToHuruf, $gradePointMap) {
+        $detailPerMahasiswa = $byMahasiswa->map(function ($kontraks, $mahasiswaId) use ($cpls, $mksPerCpl, $profils, $profilCplsByProfil, $target, $resolveHuruf, $hurufToBobot, $poinToHuruf, $gradePointMap, $kurikulum) {
             $mahasiswa = $kontraks->first()->mahasiswa;
 
             $totalSks = (int) $kontraks->sum(fn ($kontrak) => (int) optional($kontrak->mk)->sks);
@@ -397,14 +397,27 @@ class AsesmenCplController extends Controller
             $detailMks = $kontraks
                 ->sortBy(fn ($kontrak) => optional($kontrak->mk)->nama)
                 ->values()
-                ->map(function ($kontrak) use ($totalSks, $resolveHuruf, $hurufToBobot) {
+                ->map(function ($kontrak) use ($totalSks, $resolveHuruf, $hurufToBobot, $kurikulum) {
                     $sks = (int) optional($kontrak->mk)->sks;
                     $kontribusi = $totalSks > 0 ? round(($sks / $totalSks) * 100, 2) : 0;
                     $huruf = $resolveHuruf($kontrak);
                     $bobot = $hurufToBobot($huruf);
 
+                    // Ambil kode_mk dari pivot kurikulum_mks jika ada
+                    $kode_mk = null;
+                    if ($kontrak->mk && $kontrak->mk->kurikulumMks && $kontrak->mk->kurikulumMks->count() > 0) {
+                        $pivot = $kontrak->mk->kurikulumMks->firstWhere('kurikulum_id', $kurikulum->id);
+                        if ($pivot) {
+                            $kode_mk = $pivot->kode_mk;
+                        }
+                    } else if ($kontrak->mk && $kontrak->mk->pivot && isset($kontrak->mk->pivot->kode_mk)) {
+                        // fallback jika ada pivot
+                        $kode_mk = $kontrak->mk->pivot->kode_mk;
+                    }
+
                     return [
                         'kode' => optional($kontrak->mk)->kode,
+                        'kode_mk' => $kode_mk,
                         'nama' => optional($kontrak->mk)->nama,
                         'sks' => $sks,
                         'nilai' => $kontrak->nilai_angka !== null ? round((float) $kontrak->nilai_angka, 2) : null,
@@ -499,9 +512,12 @@ class AsesmenCplController extends Controller
 
     private function resolveMksPerCpl(Kurikulum $kurikulum)
     {
+        // Ambil semua cplMk beserta relasi mk dan pivot kurikulum_mks
         return $kurikulum->cplMks()
             ->with([
-                'mk',
+                'mk.kurikulumMks' => function ($q) use ($kurikulum) {
+                    $q->where('kurikulum_id', $kurikulum->id);
+                },
                 'cplBk:id,cpl_id',
             ])
             ->get()
@@ -512,9 +528,17 @@ class AsesmenCplController extends Controller
                     && (string) $cplMk->mk->kurikulum_id === (string) $kurikulum->id;
             })
             ->groupBy(fn ($cplMk) => (string) $cplMk->cplBk->cpl_id)
-            ->map(function ($items) {
+            ->map(function ($items) use ($kurikulum) {
+                // Untuk setiap MK, inject kode_mk dari pivot kurikulum_mks ke properti virtual kode_mk_pivot
                 return $items
-                    ->pluck('mk')
+                    ->map(function ($cplMk) use ($kurikulum) {
+                        $mk = $cplMk->mk;
+                        // Cari relasi kurikulumMks yang sesuai kurikulum
+                        $pivot = $mk->kurikulumMks->firstWhere('kurikulum_id', $kurikulum->id);
+                        // Set properti virtual agar bisa diakses di blade
+                        $mk->pivot = (object) ['kode_mk' => $pivot->kode_mk ?? null];
+                        return $mk;
+                    })
                     ->filter()
                     ->unique('id')
                     ->sortBy('nama')

@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function () {
             detailMkBody.innerHTML = detailMks.length
                 ? detailMks.map(function (item) {
                     return `<tr>
-                        <td><strong>${item.kode ?? '-'}</strong><br>${item.nama ?? '-'}</td>
+                        <td><strong>${item.kode_mk ?? item.kode ?? '-'}</strong><br>${item.nama ?? '-'}</td>
                         <td class="text-end">${toNumber(item.sks)}</td>
                         <td class="text-end">${item.nilai === null ? '-' : toNumber(item.nilai).toFixed(2)}</td>
                         <td class="text-end">${item.nilai_huruf ?? '-'}</td>
