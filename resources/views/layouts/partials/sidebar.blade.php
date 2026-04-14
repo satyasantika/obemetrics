@@ -317,35 +317,44 @@
                             </a>
                         </li>
 
-                        @if($selectedKurikulum->status instanceof \App\States\Kurikulum\NonAktif)
-                            <li class="nav-item sidebar-notice-item">
-                                <div class="sidebar-notice sidebar-notice-warning">
-                                    <span class="sidebar-notice-icon"><i class="bi bi-slash-circle-fill"></i></span>
-                                    <span class="sidebar-notice-text">Kurikulum ini berstatus <strong>Non Aktif</strong>. Aktifkan kembali untuk melanjutkan pengisian.</span>
-                                </div>
-                            </li>
-                        @elseif($selectedKurikulum->status instanceof \App\States\Kurikulum\Draft)
-                            <li class="nav-item sidebar-notice-item">
-                                <div class="sidebar-notice sidebar-notice-warning">
-                                    <span class="sidebar-notice-icon"><i class="bi bi-exclamation-diamond-fill"></i></span>
-                                    <span class="sidebar-notice-text">Lengkapi data master (Profil, CPL, BK, MK) untuk mengaktifkan menu Interaksi &amp; Laporan.</span>
-                                </div>
-                            </li>
-                        @elseif($selectedKurikulum->status instanceof \App\States\Kurikulum\BelumInteraksi)
-                            <li class="nav-item sidebar-notice-item">
-                                <div class="sidebar-notice sidebar-notice-warning">
-                                    <span class="sidebar-notice-icon"><i class="bi bi-exclamation-diamond-fill"></i></span>
-                                    <span class="sidebar-notice-text">Upload data interaksi terlebih dahulu.</span>
-                                </div>
-                            </li>
-                        @elseif($selectedKurikulum->status instanceof \App\States\Kurikulum\BelumBobot)
-                            <li class="nav-item sidebar-notice-item">
-                                <div class="sidebar-notice sidebar-notice-warning">
-                                    <span class="sidebar-notice-icon"><i class="bi bi-exclamation-diamond-fill"></i></span>
-                                    <span class="sidebar-notice-text">Lengkapi pembobotan CPL tiap MK terlebih dahulu.</span>
-                                </div>
-                            </li>
-                        @endif
+                        @php
+                            $kurikulumState = null;
+                            if ($selectedKurikulum->status instanceof \App\States\Kurikulum\NonAktif) {
+                                $kurikulumState = 'nonaktif';
+                            } elseif ($selectedKurikulum->status instanceof \App\States\Kurikulum\Draft) {
+                                $kurikulumState = 'draft';
+                            } elseif ($selectedKurikulum->status instanceof \App\States\Kurikulum\BelumInteraksi) {
+                                $kurikulumState = 'beluminteraksi';
+                            } elseif ($selectedKurikulum->status instanceof \App\States\Kurikulum\BelumBobot) {
+                                $kurikulumState = 'belumbobot';
+                            } else {
+                                // Cek kontrak mk hanya jika status bukan state di atas
+                                $noKontrakMk = \App\Models\KontrakMk::whereHas('mk.kurikulumMks', function ($query) use ($selectedKurikulum) {
+                                    $query->where('kurikulum_id', $selectedKurikulum->id);
+                                })->count() == 0;
+                                if ($noKontrakMk) {
+                                    $kurikulumState = 'belumkontrakmk';
+                                }
+                            }
+                        @endphp
+                        <li class="nav-item sidebar-notice-item">
+                            <div class="sidebar-notice sidebar-notice-warning">
+                                <span class="sidebar-notice-icon"><i class="bi bi-exclamation-diamond-fill"></i></span>
+                                <span class="sidebar-notice-text">
+                                    @if($selectedKurikulum->status instanceof \App\States\Kurikulum\NonAktif)
+                                        Kurikulum ini berstatus <strong>Non Aktif</strong>. Aktifkan kembali untuk melanjutkan pengisian.
+                                    @elseif($selectedKurikulum->status instanceof \App\States\Kurikulum\Draft)
+                                        Lengkapi data master (Profil, CPL, BK, MK) untuk mengaktifkan menu Interaksi &amp; Laporan.
+                                    @elseif($selectedKurikulum->status instanceof \App\States\Kurikulum\BelumInteraksi)
+                                        Upload data interaksi terlebih dahulu.
+                                    @elseif($selectedKurikulum->status instanceof \App\States\Kurikulum\BelumBobot)
+                                        Lengkapi pembobotan CPL tiap MK terlebih dahulu.
+                                    @elseif($selectedKurikulum->status instanceof \App\States\Kurikulum\BelumKontrak)
+                                        Belum ada data kontrak MK untuk kurikulum ini. Silakan input kontrak MK terlebih dahulu.
+                                    @endif
+                                </span>
+                            </div>
+                        </li>
                     @else
                         <li class="nav-item sidebar-notice-item">
                             <div class="sidebar-notice sidebar-notice-warning">
