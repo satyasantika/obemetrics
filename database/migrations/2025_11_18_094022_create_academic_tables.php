@@ -153,7 +153,6 @@ return new class extends Migration
             $table->uuid('id')->primary('id');
             $table->string('kode')->nullable();
             $table->string('nama')->nullable();
-            $table->integer('semester')->default(0);
             $table->integer('sks')->default(0);
             $table->integer('sks_teori')->default(0);
             $table->integer('sks_praktik')->default(0);
@@ -168,6 +167,7 @@ return new class extends Migration
             $table->foreignUuid('kurikulum_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->foreignUuid('mk_id')->constrained('mks')->onUpdate('cascade')->onDelete('cascade');
             $table->string('kode_mk')->nullable();
+            $table->integer('semester_ke')->default(0);
             $table->unique(['kurikulum_id', 'mk_id'], 'uniq_kurikulum_mk');
             $table->index('kurikulum_id', 'idx_kurikulum_mks_kurikulum_id');
             $table->index('mk_id', 'idx_kurikulum_mks_mk_id');

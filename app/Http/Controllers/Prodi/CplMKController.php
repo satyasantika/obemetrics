@@ -41,7 +41,7 @@ class CplMKController extends Controller
             ->groupBy('cpl_id');
 
         $mks = $kurikulum->mks()
-            ->orderBy('semester')
+            ->orderBy('kurikulum_mks.semester_ke')
             ->orderBy('kurikulum_mks.kode_mk')
             ->get();
 

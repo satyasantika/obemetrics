@@ -25,8 +25,19 @@ class Mk extends Model
     public function kurikulums(): BelongsToMany
     {
         return $this->belongsToMany(Kurikulum::class, 'kurikulum_mks')
-            ->withPivot('kode_mk')
+            ->withPivot('kode_mk', 'semester_ke')
             ->withTimestamps();
+    }
+    /**
+     * Akses semester_ke dari pivot (kurikulum_mks)
+     */
+    public function getSemesterKeAttribute(): ?int
+    {
+        if (isset($this->pivot) && isset($this->pivot->semester_ke)) {
+            return $this->pivot->semester_ke;
+        }
+        // fallback jika tidak ada pivot
+        return null;
     }
 
     public function kurikulumMks(): HasMany

@@ -24,7 +24,7 @@ class MkController extends Controller
     public function index(Kurikulum $kurikulum)
     {
         $mks = $kurikulum->mks()
-            ->orderBy('semester')
+            ->orderBy('kurikulum_mks.semester_ke')
             ->orderBy('kurikulum_mks.kode_mk')
             ->withCount(['cplMks', 'joinMkUsers', 'kontrakMks', 'cpmks', 'penugasans'])
             ->get();
@@ -92,7 +92,6 @@ class MkController extends Controller
         $name = $request->nama;
         $mk = Mk::create([
             'nama' => $request->nama,
-            'semester' => $request->semester,
             'sks_teori' => $request->sks_teori,
             'sks_praktik' => $request->sks_praktik,
             'sks_lapangan' => $request->sks_lapangan,
@@ -105,6 +104,7 @@ class MkController extends Controller
             'kurikulum_id' => $kurikulum->id,
             'mk_id' => $mk->id,
             'kode_mk' => $kode,
+            'semester_ke' => $request->semester,
         ]);
 
         SyncKurikulumState::sync($kurikulum);
@@ -138,11 +138,13 @@ class MkController extends Controller
         $name = $mk->nama;
         KurikulumMk::where('kurikulum_id', $kurikulum->id)
             ->where('mk_id', $mk->id)
-            ->update(['kode_mk' => $kode]);
+            ->update([
+                'kode_mk' => $kode,
+                'semester_ke' => $request->semester,
+            ]);
 
         $mk->fill([
             'nama' => $request->nama,
-            'semester' => $request->semester,
             'sks_teori' => $request->sks_teori,
             'sks_praktik' => $request->sks_praktik,
             'sks_lapangan' => $request->sks_lapangan,

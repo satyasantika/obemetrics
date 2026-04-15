@@ -730,17 +730,18 @@ class ImportKurikulumMasterController extends Controller
                 if ($existingPivotMk) {
                     $existingPivotMk->mk->fill([
                         'nama' => $nama,
-                        'semester' => $semester,
                         'sks_teori' => $sksTeori,
                         'sks_praktik' => $sksPraktik,
                         'sks_lapangan' => $sksLapangan,
                         'sks' => $sks,
                         'deskripsi' => $row['deskripsi'] ?? null,
                     ])->save();
+                    $existingPivotMk->fill([
+                        'semester_ke' => $semester,
+                    ])->save();
                 } else {
                     $mk = Mk::create([
                         'nama' => $nama,
-                        'semester' => $semester,
                         'sks_teori' => $sksTeori,
                         'sks_praktik' => $sksPraktik,
                         'sks_lapangan' => $sksLapangan,
@@ -752,6 +753,7 @@ class ImportKurikulumMasterController extends Controller
                         'kurikulum_id' => $kurikulum->id,
                         'mk_id' => $mk->id,
                         'kode_mk' => $kode,
+                        'semester_ke' => $semester,
                     ]);
                 }
                 return;
@@ -1774,11 +1776,13 @@ class ImportKurikulumMasterController extends Controller
                 'name' => 'MK',
                 'columns' => ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan', 'deskripsi'],
                 'required' => ['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan'],
-                'rows' => $kurikulum->mks()->orderBy('kode')->get(['kode', 'nama', 'semester', 'sks_teori', 'sks_praktik', 'sks_lapangan', 'deskripsi'])
+                'rows' => $kurikulum->mks()
+                    ->orderBy('kurikulum_mks.kode_mk')
+                    ->get(['mks.nama', 'mks.sks_teori', 'mks.sks_praktik', 'mks.sks_lapangan', 'mks.deskripsi'])
                     ->map(fn ($item) => [
                         'kode' => (string) ($item->kode ?? ''),
                         'nama' => (string) ($item->nama ?? ''),
-                        'semester' => (string) ($item->semester ?? ''),
+                        'semester' => (string) ($item->semester_ke ?? ''),
                         'sks_teori' => (string) ($item->sks_teori ?? 0),
                         'sks_praktik' => (string) ($item->sks_praktik ?? 0),
                         'sks_lapangan' => (string) ($item->sks_lapangan ?? 0),
@@ -1980,8 +1984,8 @@ class ImportKurikulumMasterController extends Controller
             ->get();
 
         $mks = $kurikulum->mks()
-            ->orderBy('semester')
-            ->orderBy('kode')
+            ->orderBy('kurikulum_mks.semester_ke')
+            ->orderBy('kurikulum_mks.kode_mk')
             ->get();
 
         $kurikulumBkCodeByBkId = $kurikulum->bks()
@@ -2265,7 +2269,6 @@ class ImportKurikulumMasterController extends Controller
 
                 $mk = Mk::create([
                     'nama' => $this->required($row['nama'] ?? null, 'nama'),
-                    'semester' => (int) $this->required($row['semester'] ?? null, 'semester'),
                     'sks_teori' => $sksTeori,
                     'sks_praktik' => $sksPraktik,
                     'sks_lapangan' => $sksLapangan,
@@ -2277,6 +2280,7 @@ class ImportKurikulumMasterController extends Controller
                     'kurikulum_id' => $kurikulum->id,
                     'mk_id' => $mk->id,
                     'kode_mk' => $kode,
+                    'semester_ke' => (int) $this->required($row['semester'] ?? null, 'semester'),
                 ]);
 
                 $summary['mks']++;

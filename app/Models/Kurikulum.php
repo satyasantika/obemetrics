@@ -65,7 +65,7 @@ class Kurikulum extends Model
     public function mks(): BelongsToMany
     {
         return $this->belongsToMany(Mk::class, 'kurikulum_mks')
-            ->withPivot('kode_mk')
+            ->withPivot('kode_mk', 'semester_ke')
             ->withTimestamps();
     }
 

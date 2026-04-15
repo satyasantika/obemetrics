@@ -37,7 +37,7 @@
                                 @forelse ($mks as $mk)
                                     <tr style="vertical-align: text-top;">
                                         <td>
-                                            <span class="badge bg-{{ $mk->semester % 2 == 0 ? 'primary' : 'secondary' }}">semester {{ $mk->semester }}</span>
+                                            <span class="badge bg-{{ ($mk->semester_ke ?? 0) % 2 == 0 ? 'primary' : 'secondary' }}">semester {{ $mk->semester_ke ?? '-' }}</span>
                                             <br>
                                             {{-- Edit MK --}}
                                             <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" data-bs-toggle="modal" data-bs-target="#modalEditMk-{{ $mk->id }}" title="Edit MK">
@@ -163,7 +163,7 @@
                             <select name="semester" class="form-select" required>
                                 <option value="">- Pilih Semester -</option>
                                 @for ($i = 1; $i <= 8; $i++)
-                                    <option value="{{ $i }}" @selected($mk->semester == $i)>{{ $i }}</option>
+                                    <option value="{{ $i }}" @selected(($mk->semester_ke ?? null) == $i)>{{ $i }}</option>
                                 @endfor
                             </select>
                         </div>
