@@ -172,6 +172,10 @@ class ImportMkMasterController extends Controller
                     $redirect->with('danger', "{$result['removed']} interaksi dibuang karena sel pada template dikosongkan.");
                 }
 
+                if (($result['skipped_locked'] ?? 0) > 0) {
+                    $redirect->with('warning', "{$result['skipped_locked']} interaksi terkunci dipertahankan meski tidak ada pada template (sudah memiliki SubCPMK).");
+                }
+
                 SyncMkState::sync($mk->fresh());
                 return $redirect;
             }
@@ -1130,9 +1134,15 @@ class ImportMkMasterController extends Controller
 
         $desiredKeys = array_keys($desiredPairs);
         $removed = 0;
+        $skippedLocked = 0;
         foreach ($existingRows as $existingRow) {
             $key = $existingRow->cpmk_id . '_' . $existingRow->join_cpl_bk_id;
             if (!in_array($key, $desiredKeys, true)) {
+                if ($existingRow->subcpmks()->exists()) {
+                    // Interaksi terkunci (sudah punya SubCPMK) — tidak boleh dihapus oleh import
+                    $skippedLocked++;
+                    continue;
+                }
                 $existingRow->delete();
                 $removed++;
             }
@@ -1152,6 +1162,7 @@ class ImportMkMasterController extends Controller
         return [
             'linked' => count($desiredPairs),
             'removed' => $removed,
+            'skipped_locked' => $skippedLocked,
         ];
     }
 

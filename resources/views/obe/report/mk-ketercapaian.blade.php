@@ -56,6 +56,7 @@
                                         id="{{ $kelasPaneId }}-tab"
                                         data-bs-toggle="tab"
                                         data-bs-target="#{{ $kelasPaneId }}"
+                                        data-kelas="{{ $kelas }}"
                                         type="button"
                                         role="tab"
                                         aria-controls="{{ $kelasPaneId }}"
@@ -124,8 +125,31 @@ document.addEventListener('DOMContentLoaded', function () {
     const semesterFilter = document.getElementById('semester-filter');
 
     const kelasList = @json($kelasList);
+    const kelasPerSemester = @json($kelasPerSemester);
     const hierarchyData = @json($hierarchyData);
     const rnData = @json($rnData);
+
+    const updateKelasTabsForSemester = function (semId) {
+        if (!semId) return;
+        const semesterKelas = kelasPerSemester[String(semId)];
+        const visible = semesterKelas ? new Set(semesterKelas.map(String)) : null;
+        const navItems = document.querySelectorAll('#kelasTab .nav-item');
+        let firstVisibleBtn = null;
+        let activeIsHidden = false;
+
+        navItems.forEach(function (navItem) {
+            const btn = navItem.querySelector('.nav-link');
+            if (!btn) return;
+            const isVisible = !visible || visible.has(String(btn.getAttribute('data-kelas') || ''));
+            navItem.style.display = isVisible ? '' : 'none';
+            if (isVisible && !firstVisibleBtn) firstVisibleBtn = btn;
+            if (!isVisible && btn.classList.contains('active')) activeIsHidden = true;
+        });
+
+        if (activeIsHidden && firstVisibleBtn && window.bootstrap && window.bootstrap.Tab) {
+            window.bootstrap.Tab.getOrCreateInstance(firstVisibleBtn).show();
+        }
+    };
 
     const escapeHtml = function (text) {
         const div = document.createElement('div');
@@ -360,6 +384,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const renderAllTables = function () {
         const semesterId = semesterFilter ? String(semesterFilter.value || '') : '';
+        updateKelasTabsForSemester(semesterId);
 
         kelasList.forEach(function (kelas) {
             renderCplTable(kelas, semesterId);

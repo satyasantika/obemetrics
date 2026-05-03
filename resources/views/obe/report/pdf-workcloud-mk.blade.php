@@ -56,6 +56,21 @@
                         </div>
                     </div>
 
+                    @if (collect($semesters ?? [])->isNotEmpty())
+                    <div class="row mb-3">
+                        <div class="col-lg-6">
+                            <div class="p-3 rounded-3 border bg-white d-flex flex-column align-items-start gap-2">
+                                <span>Semester :</span>
+                                <select id="laporan-semester-filter" class="form-control form-control-sm w-100" style="max-width: 320px;">
+                                    @foreach ($semesters as $sem)
+                                        <option value="{{ $sem->id }}" @selected((string) $sem->id === $selectedSemesterId)>{{ $sem->kode }} - {{ $sem->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
                     @php
                         $defaultKelas = collect($kelasList)->first();
                     @endphp
@@ -670,6 +685,15 @@
                 window.print();
             });
         });
+
+        const laporanSemesterFilter = document.getElementById('laporan-semester-filter');
+        if (laporanSemesterFilter) {
+            laporanSemesterFilter.addEventListener('change', function () {
+                const url = new URL(window.location.href);
+                url.searchParams.set('semester_id', this.value);
+                window.location.href = url.toString();
+            });
+        }
     });
 </script>
 @endpush

@@ -79,15 +79,17 @@
                                                     @php
                                                         $cek = isset($linkedPairMap[$profil->id . '|' . $cpl->id]);
                                                     @endphp
-                                                    <div class="form-check form-switch d-flex align-items-center justify-content-center gap-2 mb-0">
-                                                        <input
-                                                            class="form-check-input"
-                                                            type="checkbox"
-                                                            name="is_linked"
-                                                            id="is_linked_{{ $profil->id }}_{{ $cpl->id }}"
-                                                            onchange="this.form.requestSubmit()"
-                                                            @checked($cek)
-                                                        >
+                                                    <div class="d-flex flex-column align-items-center justify-content-center gap-1 mb-0">
+                                                        <div class="form-check form-switch mb-0">
+                                                            <input
+                                                                class="form-check-input"
+                                                                type="checkbox"
+                                                                name="is_linked"
+                                                                id="is_linked_{{ $profil->id }}_{{ $cpl->id }}"
+                                                                onchange="this.form.requestSubmit()"
+                                                                @checked($cek)
+                                                            >
+                                                        </div>
                                                         <span class="save-status small text-muted"></span>
                                                     </div>
                                                 </form>

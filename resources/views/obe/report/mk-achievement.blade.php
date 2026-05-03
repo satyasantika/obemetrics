@@ -56,6 +56,7 @@
                                         id="{{ $kelasPaneId }}-tab"
                                         data-bs-toggle="tab"
                                         data-bs-target="#{{ $kelasPaneId }}"
+                                        data-kelas="{{ $kelas }}"
                                         type="button"
                                         role="tab"
                                         aria-controls="{{ $kelasPaneId }}"
@@ -144,11 +145,34 @@ document.addEventListener('DOMContentLoaded', function () {
     const targetKelulusanInput = document.getElementById('target-kelulusan');
 
     const kelasList = @json($kelasList);
+    const kelasPerSemester = @json($kelasPerSemester);
     const cplRows = @json($cplRows);
     const gradeOrder = @json($gradeOrder);
     const achievementData = @json($achievementData);
     const componentsData = @json($componentsDataByCpl);
     const gradeDistributionData = @json($gradeDistributionData);
+
+    const updateKelasTabsForSemester = function (semId) {
+        if (!semId) return;
+        const semesterKelas = kelasPerSemester[String(semId)];
+        const visible = semesterKelas ? new Set(semesterKelas.map(String)) : null;
+        const navItems = document.querySelectorAll('#kelasTab .nav-item');
+        let firstVisibleBtn = null;
+        let activeIsHidden = false;
+
+        navItems.forEach(function (navItem) {
+            const btn = navItem.querySelector('.nav-link');
+            if (!btn) return;
+            const isVisible = !visible || visible.has(String(btn.getAttribute('data-kelas') || ''));
+            navItem.style.display = isVisible ? '' : 'none';
+            if (isVisible && !firstVisibleBtn) firstVisibleBtn = btn;
+            if (!isVisible && btn.classList.contains('active')) activeIsHidden = true;
+        });
+
+        if (activeIsHidden && firstVisibleBtn && window.bootstrap && window.bootstrap.Tab) {
+            window.bootstrap.Tab.getOrCreateInstance(firstVisibleBtn).show();
+        }
+    };
 
     const escapeHtml = function (text) {
         const div = document.createElement('div');
@@ -224,6 +248,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const renderAllTables = function () {
         const semesterId = semesterFilter ? String(semesterFilter.value || '') : '';
         const target = targetKelulusanInput ? Number(targetKelulusanInput.textContent.replace('%', '')) : NaN;
+        updateKelasTabsForSemester(semesterId);
 
         kelasList.forEach(function (kelas) {
             renderCplTable(kelas, semesterId, target);

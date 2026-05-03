@@ -54,6 +54,7 @@
                                         id="{{ $kelasPaneId }}-tab"
                                         data-bs-toggle="tab"
                                         data-bs-target="#{{ $kelasPaneId }}"
+                                        data-kelas="{{ $kelas }}"
                                         type="button"
                                         role="tab"
                                         aria-controls="{{ $kelasPaneId }}"
@@ -207,6 +208,29 @@ document.addEventListener('DOMContentLoaded', function () {
     const semesterFilter = document.getElementById('semester-filter');
     const matrixTables = document.querySelectorAll('.nilai-matrix-table');
     const exportButtons = document.querySelectorAll('.btn-export-kelas');
+    const kelasPerSemester = @json($kelasPerSemester);
+
+    const updateKelasTabsForSemester = function (semId) {
+        if (!semId) return;
+        const semesterKelas = kelasPerSemester[String(semId)];
+        const visible = semesterKelas ? new Set(semesterKelas.map(String)) : null;
+        const navItems = document.querySelectorAll('#kelasTab .nav-item');
+        let firstVisibleBtn = null;
+        let activeIsHidden = false;
+
+        navItems.forEach(function (navItem) {
+            const btn = navItem.querySelector('.nav-link');
+            if (!btn) return;
+            const isVisible = !visible || visible.has(String(btn.getAttribute('data-kelas') || ''));
+            navItem.style.display = isVisible ? '' : 'none';
+            if (isVisible && !firstVisibleBtn) firstVisibleBtn = btn;
+            if (!isVisible && btn.classList.contains('active')) activeIsHidden = true;
+        });
+
+        if (activeIsHidden && firstVisibleBtn && window.bootstrap && window.bootstrap.Tab) {
+            window.bootstrap.Tab.getOrCreateInstance(firstVisibleBtn).show();
+        }
+    };
 
     const syncExportLinks = function () {
         const selectedSemesterId = semesterFilter ? semesterFilter.value : '';
@@ -259,8 +283,12 @@ document.addEventListener('DOMContentLoaded', function () {
             syncExportLinks();
         };
 
-        semesterFilter.addEventListener('change', applySemesterFilter);
+        semesterFilter.addEventListener('change', function () {
+            applySemesterFilter();
+            updateKelasTabsForSemester(semesterFilter.value);
+        });
         applySemesterFilter();
+        updateKelasTabsForSemester(semesterFilter ? semesterFilter.value : '');
     } else {
         syncExportLinks();
     }

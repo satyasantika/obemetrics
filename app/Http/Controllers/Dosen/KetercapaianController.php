@@ -66,6 +66,26 @@ class KetercapaianController extends Controller
             return $angkaToHuruf($kontrak->nilai_angka ?? null);
         };
 
+        $semestersForFilter = $mk->kontrakMks()
+            ->whereNotNull('semester_id')
+            ->when($currentUserId, fn ($q) => $q->where('user_id', $currentUserId))
+            ->with('semester')
+            ->get()
+            ->pluck('semester')
+            ->filter()
+            ->unique('id')
+            ->sortByDesc('status_aktif')
+            ->sortByDesc('kode')
+            ->values();
+
+        $requestedSemesterId = request()->query('semester_id');
+        $selectedSemester = ($requestedSemesterId
+            ? $semestersForFilter->firstWhere('id', (int) $requestedSemesterId)
+            : null)
+            ?? $semestersForFilter->firstWhere('status_aktif', true)
+            ?? $semestersForFilter->first();
+        $selectedSemesterId = $selectedSemester?->id;
+
         $kontrakQuery = KontrakMk::query()
             ->with(['mahasiswa', 'mk'])
             ->where('mk_id', $mk->id)
@@ -75,6 +95,10 @@ class KetercapaianController extends Controller
             $kontrakQuery->where('user_id', $currentUserId);
         } else {
             $kontrakQuery->whereRaw('1 = 0');
+        }
+
+        if ($selectedSemesterId) {
+            $kontrakQuery->where('semester_id', $selectedSemesterId);
         }
 
         $kontrakMks = $kontrakQuery
@@ -281,6 +305,8 @@ class KetercapaianController extends Controller
 
         return view('obe.report.laporan-mk')
             ->with('mk', $mk)
+            ->with('semesters', $semestersForFilter)
+            ->with('selectedSemesterId', (string) ($selectedSemesterId ?? ''))
             ->with('mahasiswas', $mahasiswas)
             ->with('detailPerMahasiswa', $detailPerMahasiswa);
     }
@@ -320,6 +346,16 @@ class KetercapaianController extends Controller
         if ($kelasList->isNotEmpty()) {
             $kelasList = collect(['__SEMUA_KELAS__'])->merge($kelasList)->values();
         }
+
+        $kelasPerSemester = $kontrakMks
+            ->groupBy('semester_id')
+            ->mapWithKeys(function ($items, $semId) {
+                $kelas = $items
+                    ->map(fn ($item) => trim((string) ($item->kelas ?? '')) ?: 'Tanpa Kelas')
+                    ->unique()->sort()->values();
+                return [(string) $semId => collect(['__SEMUA_KELAS__'])->merge($kelas)->values()];
+            })
+            ->all();
 
         $mappingRows = DB::table('join_subcpmk_penugasans as jsp')
             ->join('subcpmks as s', 's.id', '=', 'jsp.subcpmk_id')
@@ -474,6 +510,7 @@ class KetercapaianController extends Controller
             'mk',
             'semesters',
             'kelasList',
+            'kelasPerSemester',
             'defaultSemesterId',
             'hierarchyData',
             'rnData'
@@ -485,14 +522,23 @@ class KetercapaianController extends Controller
         $baseData = $this->buildNilaiPageData($mk);
         $currentUserId = auth()->id();
 
-        /** @var Collection<int, \App\Models\Semester> $semesters */
-        $semesters = collect($baseData['semesters'] ?? []);
-        $semester = $semesters->firstWhere('id', $baseData['defaultSemesterId'] ?? null) ?? $semesters->first();
-        $semesterId = $semester?->id;
-
-        $kelasList = collect($baseData['kelasList'] ?? [])
-            ->reject(fn ($kelas) => (string) $kelas === '__SEMUA_KELAS__')
+        $semesters = $mk->kontrakMks()
+            ->whereNotNull('semester_id')
+            ->when($currentUserId, fn ($q) => $q->where('user_id', $currentUserId))
+            ->with('semester')
+            ->get()
+            ->pluck('semester')
+            ->filter()
+            ->unique('id')
+            ->sortByDesc('status_aktif')
+            ->sortByDesc('kode')
             ->values();
+
+        $requestedSemesterId = request()->query('semester_id');
+        $semester = ($requestedSemesterId ? $semesters->firstWhere('id', (int) $requestedSemesterId) : null)
+            ?? $semesters->firstWhere('status_aktif', true)
+            ?? $semesters->first();
+        $semesterId = $semester?->id;
 
         $targetKelulusan = (float) ($mk->kurikulum->target_capaian_lulusan ?? 100);
         $gradeOrder = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D', 'E'];
@@ -564,6 +610,8 @@ class KetercapaianController extends Controller
         }
 
         $kontrakRows = collect($kontrakRowsQuery->get());
+
+        $kelasList = $kontrakRows->pluck('kelas_key')->unique()->sort()->values();
 
         $nilaiRowsQuery = DB::table('kontrak_mks as km')
             ->join('nilais as n', function ($join) {
@@ -968,6 +1016,8 @@ class KetercapaianController extends Controller
         return view('obe.report.pdf-workcloud-mk', [
             'mk' => $mk,
             'semester' => $semester,
+            'semesters' => $semesters,
+            'selectedSemesterId' => (string) ($semesterId ?? ''),
             'kelasList' => $kelasList,
             'targetKelulusan' => $targetKelulusan,
             'gradeOrder' => $gradeOrder,

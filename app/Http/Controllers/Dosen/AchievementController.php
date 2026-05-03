@@ -47,6 +47,16 @@ class AchievementController extends Controller
             $kelasList = collect(['__SEMUA_KELAS__'])->merge($kelasList)->values();
         }
 
+        $kelasPerSemester = $kontrakMks
+            ->groupBy('semester_id')
+            ->mapWithKeys(function ($items, $semId) {
+                $kelas = $items
+                    ->map(fn ($item) => trim((string) ($item->kelas ?? '')) ?: 'Tanpa Kelas')
+                    ->unique()->sort()->values();
+                return [(string) $semId => collect(['__SEMUA_KELAS__'])->merge($kelas)->values()];
+            })
+            ->all();
+
         $gradeOrder = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D', 'E'];
         $targetKelulusan = $mk->kurikulum->target_capaian_lulusan;
 
@@ -248,6 +258,7 @@ class AchievementController extends Controller
             'mk',
             'semesters',
             'kelasList',
+            'kelasPerSemester',
             'defaultSemesterId',
             'targetKelulusan',
             'gradeOrder',

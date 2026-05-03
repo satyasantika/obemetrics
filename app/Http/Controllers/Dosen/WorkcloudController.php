@@ -336,6 +336,15 @@ class WorkcloudController extends Controller
             })
             ->all();
 
-        return compact('mk', 'semesters', 'penugasans', 'kontrakMks', 'workclouds', 'workcloudMetas', 'avgByWorkcloud', 'classAvgByWorkcloud');
+        $kelasPerSemester = $kontrakMks
+            ->groupBy('semester_id')
+            ->mapWithKeys(function ($items, $semId) {
+                return [(string) $semId => $items
+                    ->map(fn ($item) => trim((string) ($item->kelas ?? '')) ?: 'Tanpa Kelas')
+                    ->unique()->sort()->values()];
+            })
+            ->all();
+
+        return compact('mk', 'semesters', 'penugasans', 'kontrakMks', 'workclouds', 'workcloudMetas', 'avgByWorkcloud', 'classAvgByWorkcloud', 'kelasPerSemester');
     }
 }

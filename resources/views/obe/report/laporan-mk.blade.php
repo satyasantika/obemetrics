@@ -18,6 +18,21 @@
                     icon="bi bi-mortarboard-fill" />
                 <div class="card-body">
 
+                    @if (collect($semesters ?? [])->isNotEmpty())
+                    <div class="row mb-3">
+                        <div class="col-lg-6">
+                            <div class="p-3 rounded-3 border bg-white d-flex flex-column align-items-start gap-2">
+                                <span>Semester :</span>
+                                <select id="spyderweb-semester-filter" class="form-control form-control-sm w-100" style="max-width: 320px;">
+                                    @foreach ($semesters as $sem)
+                                        <option value="{{ $sem->id }}" @selected((string) $sem->id === $selectedSemesterId)>{{ $sem->kode }} - {{ $sem->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
                     <div class="row">
                         <div class="col">
                             {{-- tabel ditampilkan dalam format datatable dengan kolom: NPM, Nama, nilai angka dan nilai huruf dari tabel kontrak_mks dan action untuk melihat detail capaian CPL per mahasiswa. Setiap baris mahasiswa dapat diklik untuk melihat rincian capaian CPL mereka dalam bentuk tabel yang menunjukkan mata kuliah yang diambil, SKS, dan persentase kontribusi terhadap capaian CPL. --}}
@@ -129,6 +144,15 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const detailPerMahasiswa = @json($detailPerMahasiswa);
+
+    const spyderwebSemesterFilter = document.getElementById('spyderweb-semester-filter');
+    if (spyderwebSemesterFilter) {
+        spyderwebSemesterFilter.addEventListener('change', function () {
+            const url = new URL(window.location.href);
+            url.searchParams.set('semester_id', this.value);
+            window.location.href = url.toString();
+        });
+    }
 
     if (window.jQuery && $.fn.DataTable && $('#table-laporan-mk').length) {
         $('#table-laporan-mk').DataTable({

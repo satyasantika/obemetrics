@@ -82,15 +82,14 @@ class JoinSubcpmkPenugasanController extends Controller
                 ->with('bobotTotalByPenugasan', $bobotTotalByPenugasan);
     }
 
-    public function update(Request $request, Subcpmk $subcpmk, Penugasan $penugasan)
+    public function update(Request $request, Mk $mk, Subcpmk $subcpmk, Penugasan $penugasan)
     {
         $payload = $request->validate([
-            'mk_id' => 'required|exists:mks,id',
             'semester_id' => 'required|exists:semesters,id',
             'bobot' => 'nullable|numeric|min:0|max:100',
         ]);
 
-        $mkId = (string) $payload['mk_id'];
+        $mkId = $mk->id;
         $semesterId = (string) $payload['semester_id'];
 
         if ((string) $penugasan->mk_id !== $mkId) {
@@ -100,13 +99,11 @@ class JoinSubcpmkPenugasanController extends Controller
             ], 422);
         }
 
-        $relationQuery = JoinSubcpmkPenugasan::query()
+        $existingRows = JoinSubcpmkPenugasan::query()
             ->where('mk_id', $mkId)
             ->where('semester_id', $semesterId)
             ->where('subcpmk_id', $subcpmk->id)
-            ->where('penugasan_id', $penugasan->id);
-
-        $existingRows = $relationQuery
+            ->where('penugasan_id', $penugasan->id)
             ->orderBy('created_at')
             ->get();
 
@@ -123,7 +120,7 @@ class JoinSubcpmkPenugasanController extends Controller
                     ->delete();
             }
 
-            SyncMkState::sync(Mk::find($mkId));
+            SyncMkState::sync($mk->fresh());
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
                     'status' => 'ok',
@@ -142,7 +139,7 @@ class JoinSubcpmkPenugasanController extends Controller
                     ->whereIn('id', $existingRows->pluck('id'))
                     ->delete();
 
-                SyncMkState::sync(Mk::find($mkId));
+                SyncMkState::sync($mk->fresh());
                 if ($request->expectsJson() || $request->ajax()) {
                     return response()->json([
                         'status' => 'ok',
@@ -171,10 +168,7 @@ class JoinSubcpmkPenugasanController extends Controller
             $existing->bobot = $bobot;
             $existing->save();
 
-            $duplicateIds = $existingRows
-                ->skip(1)
-                ->pluck('id');
-
+            $duplicateIds = $existingRows->skip(1)->pluck('id');
             if ($duplicateIds->isNotEmpty()) {
                 JoinSubcpmkPenugasan::query()
                     ->whereIn('id', $duplicateIds)
@@ -201,10 +195,7 @@ class JoinSubcpmkPenugasanController extends Controller
 
             $link = $latestRows->first() ?? $link;
 
-            $duplicateIds = $latestRows
-                ->skip(1)
-                ->pluck('id');
-
+            $duplicateIds = $latestRows->skip(1)->pluck('id');
             if ($duplicateIds->isNotEmpty()) {
                 JoinSubcpmkPenugasan::query()
                     ->whereIn('id', $duplicateIds)
@@ -212,7 +203,7 @@ class JoinSubcpmkPenugasanController extends Controller
             }
         }
 
-        SyncMkState::sync(Mk::find($mkId));
+        SyncMkState::sync($mk->fresh());
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json([
                 'status' => 'ok',
@@ -223,6 +214,5 @@ class JoinSubcpmkPenugasanController extends Controller
 
         return to_route('mks.joinsubcpmkpenugasans.index', ['mk' => $mkId, 'semester_id' => $semesterId])
             ->with('success', 'Bobot ' . $subcpmk->kode . ' untuk ' . $penugasan->nama . ' berhasil diperbarui.');
-
     }
 }

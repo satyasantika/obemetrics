@@ -10,9 +10,19 @@ use App\States\Kurikulum\BelumKontrak;
 use App\States\Kurikulum\Draft;
 use App\States\Kurikulum\NonAktif;
 use Spatie\ModelStates\Exceptions\TransitionNotAllowed;
+use Spatie\ModelStates\Exceptions\TransitionNotFound;
 
 class SyncKurikulumState
 {
+    // Urutan state dari paling awal ke paling lengkap
+    private const STATE_ORDER = [
+        Draft::class,
+        BelumInteraksi::class,
+        BelumBobot::class,
+        BelumKontrak::class,
+        Aktif::class,
+    ];
+
     public static function sync(Kurikulum $kurikulum): void
     {
         // Jangan ubah state NonAktif secara otomatis — hanya via aksi manual
@@ -43,12 +53,30 @@ class SyncKurikulumState
             default                                                                  => Draft::class,
         };
 
-        if (!($kurikulum->status instanceof $target)) {
-            try {
-                $kurikulum->status->transitionTo($target);
-            } catch (TransitionNotAllowed $e) {
-                // Transisi tidak diizinkan dari state saat ini; abaikan
+        if ($kurikulum->status instanceof $target) {
+            return;
+        }
+
+        // Transisi step-by-step agar tidak melompati state yang tidak terdaftar
+        $currentIndex = array_search(get_class($kurikulum->status), self::STATE_ORDER);
+        $targetIndex  = array_search($target, self::STATE_ORDER);
+
+        if ($currentIndex === false || $targetIndex === false) {
+            return;
+        }
+
+        try {
+            while ($currentIndex !== $targetIndex) {
+                $nextIndex = $currentIndex < $targetIndex
+                    ? $currentIndex + 1
+                    : $currentIndex - 1;
+
+                $kurikulum->status->transitionTo(self::STATE_ORDER[$nextIndex]);
+                $kurikulum->refresh();
+                $currentIndex = $nextIndex;
             }
+        } catch (TransitionNotAllowed | TransitionNotFound $e) {
+            // Transisi tidak dapat dilanjutkan; berhenti di state saat ini
         }
     }
 }

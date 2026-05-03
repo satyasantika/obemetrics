@@ -29,10 +29,11 @@
                     </div>
                     <hr>
 
-                    {{-- daftar profil --}}
-
                     <div class="row g-3">
                         @forelse ($profils as $profil)
+                        @php
+                            $profilindikators = \App\Models\ProfilIndikator::where('profil_id',$profil->id)->get();
+                        @endphp
                         <div class="col-lg-6">
                             <div class="card border-0 shadow-sm rounded-4 h-100 overflow-hidden">
                                 <div class="card-header bg-white border-bottom py-3">
@@ -57,9 +58,6 @@
                                         </button>
                                     </div>
                                     <ol class="list-group list-group-flush rounded-3 border overflow-hidden">
-                                        @php
-                                            $profilindikators = \App\Models\ProfilIndikator::where('profil_id',$profil->id)->get();
-                                        @endphp
                                         @forelse ($profilindikators as $profilindikator)
                                         <li class="list-group-item d-flex align-items-center justify-content-between gap-2 py-2">
                                             <span class="small text-dark">{{ $profilindikator->nama }}</span>
@@ -74,153 +72,11 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="modal fade" id="modalEditProfil-{{ $profil->id }}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <form action="{{ route('kurikulums.profils.update',[$kurikulum->id,$profil->id]) }}" method="post">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Edit Profil: {{ $profil->nama }}</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="row mb-3">
-                                                <div class="col">
-                                                    <label class="form-label">Nama Profil <span class="text-danger">(*)</span></label>
-                                                    <input type="text" name="nama" class="form-control" value="{{ $profil->nama }}" required>
-                                                </div>
-                                            </div>
-                                            <div class="row mb-3">
-                                                <div class="col">
-                                                    <label class="form-label">Kode Profil <span class="text-danger">(*)</span></label>
-                                                    <input type="text" name="kode" class="form-control" value="{{ $profil->kode }}" required>
-                                                </div>
-                                            </div>
-                                            <div class="row mb-3">
-                                                <div class="col">
-                                                    <label class="form-label">Deskripsi</label>
-                                                    <textarea name="deskripsi" rows="8" class="form-control">{{ $profil->deskripsi }}</textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            @php
-                                                $canDeleteProfil = !in_array((string) $profil->id, $nonDeletableProfilIds ?? [], true);
-                                            @endphp
-                                            @if ($canDeleteProfil)
-                                                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold shadow-sm me-auto" onclick="if(confirm('Yakin akan menghapus profil {{ $profil->kode }}: {{ $profil->nama }}?')){ document.getElementById('delete-profil-{{ $profil->id }}').submit(); }">
-                                                    <i class="bi bi-trash"></i> Hapus
-                                                </button>
-                                            @else
-                                                <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
-                                            @endif
-                                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-dismiss="modal">Close</button>
-                                            <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-save"></i> Save</button>
-                                        </div>
-                                    </form>
-                                    @if ($canDeleteProfil)
-                                        <form id="delete-profil-{{ $profil->id }}" action="{{ route('kurikulums.profils.destroy',[$kurikulum->id,$profil->id]) }}" method="POST" class="d-none">
-                                            @csrf
-                                            @method('DELETE')
-                                        </form>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="modal fade" id="modalCreateProfilIndikator-{{ $profil->id }}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <form action="{{ route('profils.profilindikators.store',$profil) }}" method="post">
-                                        @csrf
-                                        <input type="hidden" name="profil_id" value="{{ $profil->id }}">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Tambah Indikator - {{ $profil->nama }}</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="row mb-3">
-                                                <div class="col">
-                                                    <label class="form-label">Nama Indikator <span class="text-danger">(*)</span></label>
-                                                    <input type="text" name="nama" class="form-control" required>
-                                                </div>
-                                            </div>
-                                            <div class="row mb-3">
-                                                <div class="col">
-                                                    <label class="form-label">Deskripsi</label>
-                                                    <textarea name="deskripsi" rows="10" class="form-control"></textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-dismiss="modal">Close</button>
-                                            <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-save"></i> Save</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-
-                        @foreach ($profilindikators as $profilindikator)
-                        <div class="modal fade" id="modalEditProfilIndikator-{{ $profilindikator->id }}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <form action="{{ route('profils.profilindikators.update',[$profil->id,$profilindikator->id]) }}" method="post">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="profil_id" value="{{ $profil->id }}">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Edit Indikator - {{ $profil->nama }}</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="row mb-3">
-                                                <div class="col">
-                                                    <label class="form-label">Nama Indikator <span class="text-danger">(*)</span></label>
-                                                    <input type="text" name="nama" class="form-control" value="{{ $profilindikator->nama }}" required>
-                                                </div>
-                                            </div>
-                                            <div class="row mb-3">
-                                                <div class="col">
-                                                    <label class="form-label">Deskripsi</label>
-                                                    <textarea name="deskripsi" rows="10" class="form-control">{{ $profilindikator->deskripsi }}</textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            @php
-                                                $canDeleteProfilIndikator = !in_array((string) $profilindikator->id, $nonDeletableProfilIndikatorIds ?? [], true);
-                                            @endphp
-                                            @if ($canDeleteProfilIndikator)
-                                                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold shadow-sm me-auto" onclick="if(confirm('Yakin akan menghapus indikator {{ $profilindikator->nama }}?')){ document.getElementById('delete-profilindikator-{{ $profilindikator->id }}').submit(); }">
-                                                    <i class="bi bi-trash"></i> Hapus
-                                                </button>
-                                            @else
-                                                <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
-                                            @endif
-                                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-dismiss="modal">Close</button>
-                                            <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-save"></i> Save</button>
-                                        </div>
-                                    </form>
-                                    @if ($canDeleteProfilIndikator)
-                                        <form id="delete-profilindikator-{{ $profilindikator->id }}" action="{{ route('profils.profilindikators.destroy',[$profil->id,$profilindikator->id]) }}" method="POST" class="d-none">
-                                            @csrf
-                                            @method('DELETE')
-                                        </form>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
                         @empty
                         <div class="col">
                             <span class="bg-warning text-dark p-2">Belum ada data profil lulusan untuk kurikulum ini.</span>
                         </div>
                         @endforelse
-
                     </div>
                 </div>
             </div>
@@ -228,6 +84,14 @@
     </div>
 </div>
 
+{{--
+    Semua modal ditempatkan di luar .card untuk menghindari masalah stacking context CSS.
+    .card memiliki backdrop-filter: blur() yang membuat stacking context baru, sehingga
+    z-index modal-backdrop (1050 di root) lebih tinggi dari modal dialog (1055 di dalam
+    stacking context card), menyebabkan backdrop memblokir interaksi modal.
+--}}
+
+{{-- Create Profil --}}
 <div class="modal fade" id="modalCreateProfil" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -267,5 +131,154 @@
     </div>
 </div>
 
+{{-- Per-profil modals: Edit Profil, Tambah Indikator, Edit Indikator --}}
+@foreach ($profils as $profil)
+@php
+    $profilindikators = \App\Models\ProfilIndikator::where('profil_id', $profil->id)->get();
+    $canDeleteProfil = !in_array((string) $profil->id, $nonDeletableProfilIds ?? [], true);
+@endphp
+
+{{-- Edit Profil --}}
+<div class="modal fade" id="modalEditProfil-{{ $profil->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form action="{{ route('kurikulums.profils.update',[$kurikulum->id,$profil->id]) }}" method="post">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Profil: {{ $profil->nama }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Nama Profil <span class="text-danger">(*)</span></label>
+                            <input type="text" name="nama" class="form-control" value="{{ $profil->nama }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Kode Profil <span class="text-danger">(*)</span></label>
+                            <input type="text" name="kode" class="form-control" value="{{ $profil->kode }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="deskripsi" rows="8" class="form-control">{{ $profil->deskripsi }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    @if ($canDeleteProfil)
+                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold shadow-sm me-auto" onclick="if(confirm('Yakin akan menghapus profil {{ $profil->kode }}: {{ $profil->nama }}?')){ document.getElementById('delete-profil-{{ $profil->id }}').submit(); }">
+                            <i class="bi bi-trash"></i> Hapus
+                        </button>
+                    @else
+                        <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+                    @endif
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+            @if ($canDeleteProfil)
+                <form id="delete-profil-{{ $profil->id }}" action="{{ route('kurikulums.profils.destroy',[$kurikulum->id,$profil->id]) }}" method="POST" class="d-none">
+                    @csrf
+                    @method('DELETE')
+                </form>
+            @endif
+        </div>
+    </div>
+</div>
+
+{{-- Tambah Indikator --}}
+<div class="modal fade" id="modalCreateProfilIndikator-{{ $profil->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form action="{{ route('profils.profilindikators.store',$profil) }}" method="post">
+                @csrf
+                <input type="hidden" name="profil_id" value="{{ $profil->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Tambah Indikator - {{ $profil->nama }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Nama Indikator <span class="text-danger">(*)</span></label>
+                            <input type="text" name="nama" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="deskripsi" rows="10" class="form-control"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Edit Indikator --}}
+@foreach ($profilindikators as $profilindikator)
+@php
+    $canDeleteProfilIndikator = !in_array((string) $profilindikator->id, $nonDeletableProfilIndikatorIds ?? [], true);
+@endphp
+<div class="modal fade" id="modalEditProfilIndikator-{{ $profilindikator->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form action="{{ route('profils.profilindikators.update',[$profil->id,$profilindikator->id]) }}" method="post">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="profil_id" value="{{ $profil->id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Indikator - {{ $profil->nama }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Nama Indikator <span class="text-danger">(*)</span></label>
+                            <input type="text" name="nama" class="form-control" value="{{ $profilindikator->nama }}" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="form-label">Deskripsi</label>
+                            <textarea name="deskripsi" rows="10" class="form-control">{{ $profilindikator->deskripsi }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    @if ($canDeleteProfilIndikator)
+                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold shadow-sm me-auto" onclick="if(confirm('Yakin akan menghapus indikator {{ $profilindikator->nama }}?')){ document.getElementById('delete-profilindikator-{{ $profilindikator->id }}').submit(); }">
+                            <i class="bi bi-trash"></i> Hapus
+                        </button>
+                    @else
+                        <span class="badge bg-secondary me-auto">Data digunakan, tidak dapat dihapus</span>
+                    @endif
+                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-save"></i> Save</button>
+                </div>
+            </form>
+            @if ($canDeleteProfilIndikator)
+                <form id="delete-profilindikator-{{ $profilindikator->id }}" action="{{ route('profils.profilindikators.destroy',[$profil->id,$profilindikator->id]) }}" method="POST" class="d-none">
+                    @csrf
+                    @method('DELETE')
+                </form>
+            @endif
+        </div>
+    </div>
+</div>
+@endforeach
+
+@endforeach
 
 @endsection

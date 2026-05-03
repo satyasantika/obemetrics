@@ -91,15 +91,17 @@
                                                         <input type="hidden" name="cpl_id" value="{{ $cpl->id }}">
                                                         <input type="hidden" name="bk_id" value="{{ $bk->id }}">
                                                         <input type="hidden" name="kurikulum_id" value="{{ $kurikulum->id }}">
-                                                        <div class="form-check form-switch d-flex align-items-center justify-content-center gap-2 mb-0">
-                                                            <input
-                                                                class="form-check-input"
-                                                                type="checkbox"
-                                                                name="is_linked"
-                                                                onchange="this.form.requestSubmit()"
-                                                                @checked($cek)
-                                                                @disabled($isLocked)
-                                                            >
+                                                        <div class="d-flex flex-column align-items-center justify-content-center gap-1 mb-0">
+                                                            <div class="form-check form-switch mb-0">
+                                                                <input
+                                                                    class="form-check-input"
+                                                                    type="checkbox"
+                                                                    name="is_linked"
+                                                                    onchange="this.form.requestSubmit()"
+                                                                    @checked($cek)
+                                                                    @disabled($isLocked)
+                                                                >
+                                                            </div>
                                                             <span class="save-status small text-muted"></span>
                                                         </div>
                                                     </form>

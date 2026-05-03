@@ -9,9 +9,18 @@ use App\States\Mk\Draft;
 use App\States\Mk\MappingSubCPMK;
 use App\States\Mk\NonAktif;
 use Spatie\ModelStates\Exceptions\TransitionNotAllowed;
+use Spatie\ModelStates\Exceptions\TransitionNotFound;
 
 class SyncMkState
 {
+    // Urutan state dari paling awal ke paling lengkap
+    private const STATE_ORDER = [
+        Draft::class,
+        MappingSubCPMK::class,
+        BelumNilai::class,
+        Aktif::class,
+    ];
+
     public static function sync(Mk $mk): void
     {
         // Jangan ubah state NonAktif secara otomatis — hanya via aksi manual
@@ -49,12 +58,30 @@ class SyncMkState
             default                                            => Draft::class,
         };
 
-        if (!($mk->status instanceof $target)) {
-            try {
-                $mk->status->transitionTo($target);
-            } catch (TransitionNotAllowed $e) {
-                // Transisi tidak diizinkan dari state saat ini; abaikan
+        if ($mk->status instanceof $target) {
+            return;
+        }
+
+        // Transisi step-by-step agar tidak melompati state yang tidak terdaftar
+        $currentIndex = array_search(get_class($mk->status), self::STATE_ORDER);
+        $targetIndex  = array_search($target, self::STATE_ORDER);
+
+        if ($currentIndex === false || $targetIndex === false) {
+            return;
+        }
+
+        try {
+            while ($currentIndex !== $targetIndex) {
+                $nextIndex = $currentIndex < $targetIndex
+                    ? $currentIndex + 1
+                    : $currentIndex - 1;
+
+                $mk->status->transitionTo(self::STATE_ORDER[$nextIndex]);
+                $mk->refresh();
+                $currentIndex = $nextIndex;
             }
+        } catch (TransitionNotAllowed | TransitionNotFound $e) {
+            // Transisi tidak dapat dilanjutkan; berhenti di state saat ini
         }
     }
 }

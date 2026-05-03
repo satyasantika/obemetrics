@@ -49,9 +49,10 @@ class JoinCplCpmkController extends Controller
                 ->with('lockedPairMap', $lockedPairMap);
     }
 
-    public function update(Request $request, JoinCplBk $joincplbk, Cpmk $cpmk)
+    public function update(Request $request, Mk $mk, JoinCplBk $joincplbk, Cpmk $cpmk)
     {
-        $joincplcpmk = JoinCplCpmk::where('join_cpl_bk_id', $joincplbk->id)
+        $joincplcpmk = JoinCplCpmk::where('mk_id', $mk->id)
+                                        ->where('join_cpl_bk_id', $joincplbk->id)
                                         ->where('cpmk_id', $cpmk->id)
                                         ->first();
         $expectsJson = $request->expectsJson() || $request->ajax();
@@ -61,11 +62,11 @@ class JoinCplCpmkController extends Controller
                 JoinCplCpmk::create([
                     'join_cpl_bk_id' => $joincplbk->id,
                     'cpmk_id' => $cpmk->id,
-                    'mk_id' => $request->mk_id,
+                    'mk_id' => $mk->id,
                 ]);
             }
 
-            SyncMkState::sync(Mk::find($request->mk_id));
+            SyncMkState::sync($mk->fresh());
             if ($expectsJson) {
                 return response()->json([
                     'status' => 'ok',
@@ -74,7 +75,7 @@ class JoinCplCpmkController extends Controller
                 ]);
             }
 
-            return to_route('mks.joincplcpmks.index',$request->mk_id)
+            return to_route('mks.joincplcpmks.index', $mk->id)
                     ->with('success', $cpmk->kode . ' telah diinteraksi dengan ' . $joincplbk->cpl->kode);
         } else {
             if ($joincplcpmk) {
@@ -87,12 +88,12 @@ class JoinCplCpmkController extends Controller
                         ], 422);
                     }
 
-                    return to_route('mks.joincplcpmks.index',$request->mk_id)
+                    return to_route('mks.joincplcpmks.index', $mk->id)
                             ->with('error', 'Interaksi dikunci karena sudah digunakan pada data SubCPMK.');
                 }
                 $joincplcpmk->delete();
-                SyncMkState::sync(Mk::find($request->mk_id));
-                }
+                SyncMkState::sync($mk->fresh());
+            }
 
             if ($expectsJson) {
                 return response()->json([
@@ -102,9 +103,8 @@ class JoinCplCpmkController extends Controller
                 ]);
             }
 
-            return to_route('mks.joincplcpmks.index',$request->mk_id)
+            return to_route('mks.joincplcpmks.index', $mk->id)
                     ->with('warning', $cpmk->kode . ' sudah tidak berinteraksi dengan ' . $joincplbk->cpl->kode);
         }
-
     }
 }
