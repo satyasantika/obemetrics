@@ -265,11 +265,6 @@ class NilaiController extends Controller
 
     private function buildNilaiPageData(Mk $mk, Request $request): array
     {
-        $penugasans = $mk->penugasans()
-            ->with('joinSubcpmkPenugasans.subcpmk.joinCplCpmk.joinCplBk.Cpl')
-            ->orderBy('kode')
-            ->get();
-
         $semesterOptions = $mk->kontrakMks()
             ->with('semester')
             ->whereNotNull('mahasiswa_id')
@@ -282,10 +277,21 @@ class NilaiController extends Controller
             ->sortByDesc('kode')
             ->values();
 
-        $requestedSemesterId = $request->integer('semester_id');
+        $requestedSemesterId = $request->query('semester_id');
         $defaultSemesterId = $semesterOptions->firstWhere('status_aktif', true)?->id
             ?? $semesterOptions->first()?->id;
-        $selectedSemesterId = $requestedSemesterId ?: $defaultSemesterId;
+        $selectedSemesterId = ($requestedSemesterId ?: null) ?? $defaultSemesterId;
+
+        $penugasans = $mk->penugasans()
+            ->with('joinSubcpmkPenugasans.subcpmk.joinCplCpmk.joinCplBk.Cpl')
+            ->when($selectedSemesterId, function ($q) use ($selectedSemesterId) {
+                $q->where(function ($q2) use ($selectedSemesterId) {
+                    $q2->where('semester_id', $selectedSemesterId)
+                        ->orWhereNull('semester_id');
+                });
+            })
+            ->orderBy('kode')
+            ->get();
 
         $kontrakMks = $mk->kontrakMks()
             ->with(['mahasiswa', 'semester'])

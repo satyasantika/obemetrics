@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\KontrakMk;
 use App\Models\Mk;
 use App\Models\Nilai;
-use App\Models\Semester;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -80,7 +79,7 @@ class KetercapaianController extends Controller
 
         $requestedSemesterId = request()->query('semester_id');
         $selectedSemester = ($requestedSemesterId
-            ? $semestersForFilter->firstWhere('id', (int) $requestedSemesterId)
+            ? $semestersForFilter->firstWhere('id', $requestedSemesterId)
             : null)
             ?? $semestersForFilter->firstWhere('status_aktif', true)
             ?? $semestersForFilter->first();
@@ -315,9 +314,18 @@ class KetercapaianController extends Controller
     {
         $currentUserId = auth()->id();
 
-        $semesters = Semester::query()->orderBy('kode')->get();
-        $activeSemester = $semesters->firstWhere('status_aktif', true) ?? $semesters->first();
-        $defaultSemesterId = $activeSemester?->id;
+        $semesters = $mk->kontrakMks()
+            ->whereNotNull('semester_id')
+            ->when($currentUserId, fn ($q) => $q->where('user_id', $currentUserId))
+            ->with('semester')
+            ->get()
+            ->pluck('semester')
+            ->filter()
+            ->unique('id')
+            ->sortByDesc('status_aktif')
+            ->sortByDesc('kode')
+            ->values();
+        $defaultSemesterId = ($semesters->firstWhere('status_aktif', true) ?? $semesters->first())?->id;
 
         $kontrakMksQuery = $mk->kontrakMks()
             ->with(['mahasiswa', 'semester'])
@@ -535,7 +543,7 @@ class KetercapaianController extends Controller
             ->values();
 
         $requestedSemesterId = request()->query('semester_id');
-        $semester = ($requestedSemesterId ? $semesters->firstWhere('id', (int) $requestedSemesterId) : null)
+        $semester = ($requestedSemesterId ? $semesters->firstWhere('id', $requestedSemesterId) : null)
             ?? $semesters->firstWhere('status_aktif', true)
             ?? $semesters->first();
         $semesterId = $semester?->id;

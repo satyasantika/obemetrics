@@ -183,7 +183,7 @@ class WorkcloudController extends Controller
         $safeKelas = Str::slug($kelas, '-');
         $semesterLabel = '';
         if ($semesterId !== null && $semesterId !== '') {
-            $semester = $semesters->firstWhere('id', (int) $semesterId);
+            $semester = $semesters->firstWhere('id', $semesterId);
             if ($semester) {
                 $semesterLabel = '-' . Str::slug((string) $semester->kode, '-');
             }

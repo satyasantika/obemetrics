@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const kelasPerSemester = @json($kelasPerSemester);
     const hierarchyData = @json($hierarchyData);
     const rnData = @json($rnData);
+    const targetKelulusan = parseFloat((document.getElementById('target-kelulusan')?.textContent ?? '100').replace('%', '')) || 100;
 
     const updateKelasTabsForSemester = function (semId) {
         if (!semId) return;
@@ -180,12 +181,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         const ratio = totalPkRn > 0 ? (totalPkRn / totalPk) * 100 : 0;
-        return {
-            totalPk,
-            totalPkRn,
-            ratio,
-            text: formatNum(totalPkRn) + '% dari perkiraan ' + formatNum(totalPk) + '% (' + formatNum(ratio) + '%)',
-        };
+        return { totalPk, totalPkRn, ratio };
     };
 
     const calculateCpmkTotals = function (cpmk, rnMap) {
@@ -331,10 +327,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         html += '<td class="text-end">' + formatNum(pkrn) + '%</td>';
 
                         if (subcpmk === subcpmks[0] && cpmk === cpmks[0] && source === realSources[0]) {
+                            const isAchieved = cplTotals.ratio >= targetKelulusan;
+                            const ketercapaianContent = isTargetComplete
+                                ? '<strong class="d-block fs-5 ' + (isAchieved ? 'text-success' : 'text-danger') + '">' + formatNum(cplTotals.ratio) + '%</strong>'
+                                    + '<small class="text-muted d-block">(' + formatNum(cplTotals.totalPkRn) + '% dari PK ' + formatNum(cplTotals.totalPk) + '%)</small>'
+                                    + '<span class="badge ' + (isAchieved ? 'bg-success' : 'bg-danger') + ' mt-1">' + (isAchieved ? 'Tercapai' : 'Belum Tercapai') + '</span>'
+                                : '<div class="alert alert-danger mb-0 py-2 px-2 small d-flex flex-column align-items-center justify-content-center gap-1"><div class="d-flex align-items-center gap-1"><i class="bi bi-exclamation-triangle-fill"></i><span>Ketercapaian belum bisa ditampilkan.</span></div><div>Target saat ini: <strong>' + formatNum(totalPkAllCpl) + '%</strong> (menunggu 100%).</div></div>';
                             html += '<td rowspan="' + cplRowCount + '" class="text-center ' + (isTargetComplete ? '' : 'bg-danger-subtle') + '">'
-                                + (isTargetComplete
-                                    ? escapeHtml(cplTotals.text)
-                                    : '<div class="alert alert-danger mb-0 py-2 px-2 small d-flex flex-column align-items-center justify-content-center gap-1"><div class="d-flex align-items-center gap-1"><i class="bi bi-exclamation-triangle-fill"></i><span>Ketercapaian belum bisa ditampilkan.</span></div><div>Target saat ini: <strong>' + formatNum(totalPkAllCpl) + '%</strong> (menunggu 100%).</div></div>')
+                                + ketercapaianContent
                                 + '</td>';
                         }
 
