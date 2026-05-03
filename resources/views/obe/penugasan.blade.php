@@ -15,25 +15,20 @@
                 <div class="card-body bg-light-subtle">
                     <div class="row mb-3">
                         <div class="col-md-6">Semester :
-                            @php
-                                $semesterOptions = $mk->kontrakMks()
-                                    ->whereNotNull('semester_id')
-                                    ->with('semester')
-                                    ->get()
-                                    ->pluck('semester')
-                                    ->filter()
-                                    ->unique('id')
-                                    ->sortByDesc('status_aktif')
-                                    ->sortByDesc('kode')
-                                    ->values();
-                            @endphp
                             <select id="semester-filter" name="semester_id" class="form-control form-control-sm" style="max-width: 320px;">
                                 @foreach ($semesterOptions as $semester)
-                                    <option value="{{ $semester->id }}" @selected($semester->status_aktif)>{{ $semester->kode }} - {{ $semester->nama }}</option>
+                                    <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $selectedSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
                                 @endforeach
                             </select>
                             <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold shadow-sm mt-2" data-bs-toggle="modal" data-bs-target="#modalCreatePenugasan"><i class="bi bi-plus-circle"></i> Tambah Tagihan</button>
                             <a href="{{ route('settings.import.mk-master', ['mk' => $mk->id, 'target' => 'penugasans']) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-2"><i class="bi bi-upload"></i> Import Banyak Tagihan</a>
+                            <script>
+                                document.getElementById('semester-filter').addEventListener('change', function () {
+                                    const url = new URL(window.location.href);
+                                    url.searchParams.set('semester_id', this.value);
+                                    window.location.href = url.toString();
+                                });
+                            </script>
                         </div>
                         <div class="col-md-6 d-flex">
                             <div class="p-3 p-lg-4 rounded-3 border border-primary-subtle bg-primary-subtle text-primary-emphasis h-100 w-100 d-flex flex-column justify-content-between text-md-end text-start">
@@ -120,14 +115,14 @@
                             @foreach ($evaluasis->pluck('kategori')->unique() as $kategori_evaluasi)
                                 <tr class="table-secondary">
                                     <th colspan="5" class="table-secondary text-center">
-                                        <strong>{{ $kategori_evaluasi }} ({{ $evaluasis->where('kategori', $kategori_evaluasi)->map(function($evaluasi) use ($mk){
-                                            return $evaluasi->penugasans->where('mk_id', $mk->id)->sum('bobot');
+                                        <strong>{{ $kategori_evaluasi }} ({{ $evaluasis->where('kategori', $kategori_evaluasi)->map(function($evaluasi) use ($penugasans){
+                                            return $penugasans->where('evaluasi_id', $evaluasi->id)->sum('bobot');
                                         })->sum() }}%)</strong>
                                     </th>
                                 </tr>
                                 @forelse ($evaluasis->where('kategori', $kategori_evaluasi) as $evaluasi)
                                 @php
-                                    $asesmens = $evaluasi->penugasans->where('mk_id', $mk->id);
+                                    $asesmens = $penugasans->where('evaluasi_id', $evaluasi->id);
                                 @endphp
                                 <tr>
                                     <td>{{ $evaluasi->nama }}</td>
@@ -201,6 +196,7 @@
             <form action="{{ route('mks.penugasans.store', $mk->id) }}" method="post">
                 @csrf
                 <input type="hidden" name="mk_id" value="{{ $mk->id }}">
+                <input type="hidden" name="semester_id" value="{{ $selectedSemesterId }}">
                 <div class="modal-header">
                     <h5 class="modal-title">Tambah Tagihan</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -257,6 +253,7 @@
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="mk_id" value="{{ $mk->id }}">
+                <input type="hidden" name="semester_id" value="{{ $penugasan->semester_id }}">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Tagihan: {{ $penugasan->kode }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

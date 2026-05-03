@@ -117,8 +117,18 @@ Route::middleware('auth')->group(function () {
 
     // Ruang Dosen
     Route::middleware('ensure.mk.access')->group(function () {
+        // Sticky semester selection — saves chosen semester_id to session for the given MK
+        Route::post('mks/{mk}/semester', function (App\Models\Mk $mk, Illuminate\Http\Request $request) {
+            $id = $request->input('semester_id');
+            if ($id) {
+                session(['mk_semester_' . $mk->id => (string) $id]);
+            }
+            return response()->noContent();
+        })->name('mks.semester.set');
+
         // CPMK & SubCPMK
         Route::resource('mks.cpmks', App\Http\Controllers\Dosen\CpmkController::class)->except('show');
+        Route::post('mks/{mk}/subcpmks/copy-from-semester', [App\Http\Controllers\Dosen\SubCpmkController::class, 'copyFromSemester'])->name('mks.subcpmks.copy-from-semester');
         Route::resource('mks.subcpmks', App\Http\Controllers\Dosen\SubCpmkController::class)->except('show');
         // CPL >< BK
         Route::get('mks/{mk}/joincplcpmks', [App\Http\Controllers\Dosen\JoinCplCpmkController::class,'index'])->name('mks.joincplcpmks.index');

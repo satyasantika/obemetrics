@@ -393,6 +393,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (semesterFilter) {
         semesterFilter.addEventListener('change', renderAllTables);
+        semesterFilter.addEventListener('change', function () {
+            fetch('{{ route('mks.semester.set', $mk->id) }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ semester_id: semesterFilter.value })
+            });
+        });
     }
 
     renderAllTables();

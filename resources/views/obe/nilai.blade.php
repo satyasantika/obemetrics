@@ -19,7 +19,7 @@
                                 <span>Semester :</span>
                                 <select id="semester-filter" name="semester_id" class="form-control form-control-sm" style="max-width: 320px;">
                                     @foreach ($semesterOptions as $semester)
-                                        <option value="{{ $semester->id }}" @selected((int) $selectedSemesterId === (int) $semester->id)>{{ $semester->kode }} - {{ $semester->nama }}</option>
+                                        <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $selectedSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -51,12 +51,13 @@
 
                         <div class="tab-content pt-3" id="kelasTabContent">
                             @foreach ($kelasGroups as $kelasKey => $kelasRows)
-                                @php
-                                    $kelasSlug = \Illuminate\Support\Str::slug($kelasKey, '-');
-                                    $kelasPaneId = 'kelas-' . ($kelasSlug !== '' ? $kelasSlug : 'tanpa-kelas');
-                                    $kelasLabel = $kelasKey === '__SEMUA_KELAS__' ? 'Semua Kelas' : 'Kelas ' . $kelasKey;
-                                    $kelasQuery = ['kelas' => $kelasKey];
-                                @endphp
+                                    @php
+                                        $kelasSlug = \Illuminate\Support\Str::slug($kelasKey, '-');
+                                        $kelasPaneId = 'kelas-' . ($kelasSlug !== '' ? $kelasSlug : 'tanpa-kelas');
+                                        $kelasLabel = $kelasKey === '__SEMUA_KELAS__' ? 'Semua Kelas' : 'Kelas ' . $kelasKey;
+                                        $kelasQuery = ['kelas' => $kelasKey];
+                                        $importNilaiQuery = array_merge($kelasQuery, isset($selectedSemesterId) && $selectedSemesterId !== null && $selectedSemesterId !== '' ? ['semester_id' => $selectedSemesterId] : []);
+                                    @endphp
                                 <div
                                     class="tab-pane fade {{ $kelasKey === $defaultKelas ? 'show active' : '' }}"
                                     id="{{ $kelasPaneId }}"
@@ -66,7 +67,7 @@
                                     <div class="mb-3">
                                         <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold shadow-sm js-sort-tab" data-sort-key="nama" data-sort-label="Urutkan Nama" data-next-direction="asc">Urutkan Nama</button>
                                         <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold shadow-sm js-sort-tab" data-sort-key="nim" data-sort-label="Urutkan NIM" data-next-direction="asc">Urutkan NIM</button>
-                                        <a href="{{ route('settings.import.nilais', array_merge(['mk' => $mk->id], $kelasQuery)) }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm float-end">
+                                        <a href="{{ route('settings.import.nilais', array_merge(['mk' => $mk->id], $importNilaiQuery)) }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold shadow-sm float-end">
                                             <i class="bi bi-upload"></i> Import Nilai {{ $kelasLabel }}
                                         </a>
                                     </div>

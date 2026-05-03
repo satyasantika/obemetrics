@@ -6,9 +6,9 @@ use App\Models\Mk;
 use App\Models\Penugasan;
 use App\Models\Subcpmk;
 use App\Models\JoinSubcpmkPenugasan;
-use App\Models\Semester;
 use Illuminate\Http\Request;
 use App\Actions\SyncMkState;
+use App\Actions\ResolveMkSemester;
 use App\Http\Controllers\Controller;
 
 class JoinSubcpmkPenugasanController extends Controller
@@ -19,7 +19,7 @@ class JoinSubcpmkPenugasanController extends Controller
         $this->middleware('permission:update join subcpmk penugasans', ['only' => ['update']]);
     }
 
-    public function index(Mk $mk)
+    public function index(Mk $mk, Request $request)
     {
         $semesterOptions = $mk->kontrakMks()
             ->whereNotNull('semester_id')
@@ -32,15 +32,8 @@ class JoinSubcpmkPenugasanController extends Controller
             ->sortByDesc('kode')
             ->values();
 
-        if ($semesterOptions->isEmpty()) {
-            $semesterOptions = Semester::query()
-                ->orderByDesc('status_aktif')
-                ->orderByDesc('kode')
-                ->get();
-        }
-
-        $selectedSemesterId = (string) (request()->query('semester_id')
-            ?: ($semesterOptions->firstWhere('status_aktif', true)?->id ?? $semesterOptions->first()?->id ?? ''));
+        [, $selectedSemesterId] = ResolveMkSemester::resolve($mk, $request->query('semester_id'), $semesterOptions);
+        $selectedSemesterId = (string) ($selectedSemesterId ?? '');
 
         $subcpmks = Subcpmk::query()
             ->where('semester_id', $selectedSemesterId)

@@ -8,6 +8,7 @@ use App\Models\KontrakMk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Actions\SyncMkState;
+use App\Actions\ResolveMkSemester;
 use App\Http\Controllers\Controller;
 
 class NilaiController extends Controller
@@ -277,10 +278,7 @@ class NilaiController extends Controller
             ->sortByDesc('kode')
             ->values();
 
-        $requestedSemesterId = $request->query('semester_id');
-        $defaultSemesterId = $semesterOptions->firstWhere('status_aktif', true)?->id
-            ?? $semesterOptions->first()?->id;
-        $selectedSemesterId = ($requestedSemesterId ?: null) ?? $defaultSemesterId;
+        [, $selectedSemesterId] = ResolveMkSemester::resolve($mk, $request->query('semester_id'), $semesterOptions);
 
         $penugasans = $mk->penugasans()
             ->with('joinSubcpmkPenugasans.subcpmk.joinCplCpmk.joinCplBk.Cpl')

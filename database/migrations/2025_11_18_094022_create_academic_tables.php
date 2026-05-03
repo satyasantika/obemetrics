@@ -249,10 +249,10 @@ return new class extends Migration
          // penilaian mahasiswa pada penugasan
         Schema::create('nilais', function (Blueprint $table) {
             $table->uuid('id')->primary('id');
-            $table->foreignUuid('mk_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->foreignUuid('penugasan_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->foreignUuid('mahasiswa_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
-            $table->foreignUuid('semester_id')->nullable()->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('mk_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('penugasan_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('mahasiswa_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            $table->foreignUuid('semester_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->double('nilai')->nullable();
             $table->text('komentar')->nullable();
             $table->timestamps();

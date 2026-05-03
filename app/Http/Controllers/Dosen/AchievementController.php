@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Dosen;
 
+use App\Actions\ResolveMkSemester;
 use App\Http\Controllers\Controller;
 use App\Models\Mk;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,9 @@ class AchievementController extends Controller
 
     public function index(Mk $mk)
     {
-        return view('obe.report.mk-achievement', $this->buildNilaiPageData($mk));
+        $data = $this->buildNilaiPageData($mk);
+        [, $data['selectedSemesterId']] = ResolveMkSemester::resolve($mk, null, collect($data['semesters']));
+        return view('obe.report.mk-achievement', $data);
     }
 
     private function buildNilaiPageData(Mk $mk): array

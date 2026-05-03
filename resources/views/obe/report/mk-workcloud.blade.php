@@ -23,15 +23,14 @@
                                     <span>Semester :</span>
                                     <select id="semester-filter" class="form-control form-control-sm w-100" style="max-width: 320px;">
                                         @foreach ($semesters as $semester)
-                                            <option value="{{ $semester->id }}" @selected($semester->status_aktif)>{{ $semester->kode }} - {{ $semester->nama }}</option>
+                                            <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $selectedSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
                                         @endforeach
                                     </select>
                                     </div>
                                 </div>
                             </div>
                     @php
-                        $defaultSemesterIdForExport = collect($semesters)->firstWhere('status_aktif', true)?->id
-                        ?? collect($semesters)->first()?->id;
+                        $defaultSemesterIdForExport = $selectedSemesterId;
                         $kelasGroups = $kontrakMks
                         ->groupBy(function ($item) {
                             return trim((string) ($item->kelas ?? '')) !== '' ? trim((string) $item->kelas) : 'Tanpa Kelas';
@@ -286,6 +285,11 @@ document.addEventListener('DOMContentLoaded', function () {
         semesterFilter.addEventListener('change', function () {
             applySemesterFilter();
             updateKelasTabsForSemester(semesterFilter.value);
+            fetch('{{ route('mks.semester.set', $mk->id) }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ semester_id: semesterFilter.value })
+            });
         });
         applySemesterFilter();
         updateKelasTabsForSemester(semesterFilter ? semesterFilter.value : '');

@@ -23,7 +23,7 @@
                                 <span>Semester :</span>
                                 <select id="semester-filter" class="form-control form-control-sm w-100" style="max-width: 320px;">
                                     @foreach ($semesters as $semester)
-                                        <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $defaultSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
+                                        <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $selectedSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -258,6 +258,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (semesterFilter) {
         semesterFilter.addEventListener('change', renderAllTables);
+        semesterFilter.addEventListener('change', function () {
+            fetch('{{ route('mks.semester.set', $mk->id) }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ semester_id: semesterFilter.value })
+            });
+        });
     }
     if (targetKelulusanInput) {
         targetKelulusanInput.addEventListener('input', renderAllTables);

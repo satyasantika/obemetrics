@@ -20,6 +20,10 @@
                         <div class="col"><strong>{{ $mk->kurikulum->prodi->jenjang }} {{ $mk->kurikulum->prodi->nama }}</strong></div>
                     </div>
                     <div class="row">
+                        <div class="col-md-3">Semester kontrak</div>
+                        <div class="col"><strong>{{ $semesterLabel ?? '—' }}</strong></div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-3">Cakupan Import</div>
                         <div class="col"><strong>{{ $kelasLabel ?? 'Semua Kelas' }}</strong></div>
                     </div>
@@ -31,15 +35,38 @@
                         } elseif (($kelasFilter ?? null) === null) {
                             $kelasQuery['kelas'] = '__SEMUA_KELAS__';
                         }
+                        $importQuery = $kelasQuery;
+                        if (!empty($selectedSemesterId ?? null)) {
+                            $importQuery['semester_id'] = $selectedSemesterId;
+                        }
                         $templateSuffix = !empty($kelasFilter)
                             ? '-' . \Illuminate\Support\Str::slug($kelasFilter, '-')
                             : '-semua-kelas';
+                        $semSlug = !empty($selectedSemesterId ?? null)
+                            ? '-' . \Illuminate\Support\Str::slug((string) (($semesterOptions ?? collect())->firstWhere('id', $selectedSemesterId)?->kode ?? 'semester'), '-')
+                            : '';
+                        $nilaiReturnDefault = route('mks.nilais.index', array_merge(['mk' => $mk->id], !empty($selectedSemesterId ?? null) ? ['semester_id' => $selectedSemesterId] : []));
                     @endphp
 
-                    <form action="{{ route('settings.import.nilais', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST" enctype="multipart/form-data" class="mt-3">
+                    @if (($semesterOptions ?? collect())->isNotEmpty())
+                        <div class="row mt-2">
+                            <div class="col-md-3">Ubah semester</div>
+                            <div class="col">
+                                <select id="import-semester-filter" class="form-select form-select-sm" style="max-width: 320px;">
+                                    @foreach ($semesterOptions as $semester)
+                                        <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) ($selectedSemesterId ?? ''))>{{ $semester->kode }} — {{ $semester->nama }}</option>
+                                    @endforeach
+                                </select>
+                                <small class="text-muted d-block mt-1">Hanya mahasiswa yang dikontrak pada semester ini yang dapat diimpor.</small>
+                            </div>
+                        </div>
+                    @endif
+
+                    <form action="{{ route('settings.import.nilais', array_merge(['mk' => $mk->id], $importQuery)) }}" method="POST" enctype="multipart/form-data" class="mt-3">
                         @csrf
                         <input type="hidden" name="kelas" value="{{ $kelasFilter ?? '__SEMUA_KELAS__' }}">
-                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mks.nilais.index', [$mk->id]) }}">
+                        <input type="hidden" name="semester_id" value="{{ $selectedSemesterId ?? '' }}">
+                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? $nilaiReturnDefault }}">
                         <div class="row mt-3">
                             <div class="col-md-3 text-end">
                                 File Upload <span class="text-danger">*</span>
@@ -47,7 +74,7 @@
                             <div class="col">
                                 <input type="file" name="file" class="form-control" accept=".csv,.xlsx,.ods" required>
                                 <small class="text-muted d-block mt-1">
-                                    Unduh template: <a href="{{ route('settings.import.nilais.template', array_merge(['mk' => $mk->id], $kelasQuery)) }}">template-import-nilai-{{ \Illuminate\Support\Str::slug($mk->kode ?? 'mk', '-') }}{{ $templateSuffix }}.xlsx</a>
+                                    Unduh template: <a href="{{ route('settings.import.nilais.template', array_merge(['mk' => $mk->id], $importQuery)) }}">template-import-nilai-{{ \Illuminate\Support\Str::slug($mk->kode ?? 'mk', '-') }}{{ $templateSuffix }}{{ $semSlug }}.xlsx</a>
                                 </small>
                             </div>
                         </div>
@@ -55,7 +82,7 @@
                             <div class="col-md-3"></div>
                             <div class="col">
                                 <button type="submit" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-upload"></i> Upload &amp; Simpan Langsung
+                                    <i class="bi bi-upload"></i> Unggah &amp; Simpan
                                 </button>
                             </div>
                         </div>
@@ -72,10 +99,11 @@
             <div class="card mt-3">
                 <div class="card-header">
                     <span class="h5">Preview Nilai @if(!empty($preview['filename']))({{ $preview['filename'] }})@endif</span>
-                    <form action="{{ route('settings.import.nilais.clear', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST" class="float-end" style="display: inline;">
+                    <form action="{{ route('settings.import.nilais.clear', array_merge(['mk' => $mk->id], $importQuery)) }}" method="POST" class="float-end" style="display: inline;">
                         @csrf
                         <input type="hidden" name="kelas" value="{{ $kelasFilter ?? '__SEMUA_KELAS__' }}">
-                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mks.nilais.index', [$mk->id]) }}">
+                        <input type="hidden" name="semester_id" value="{{ $selectedSemesterId ?? '' }}">
+                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? $nilaiReturnDefault }}">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus preview data?');">
                             <i class="bi bi-x-circle"></i> Kosongkan Preview
                         </button>
@@ -87,10 +115,11 @@
                         <label for="select-all" class="form-check-label">Pilih semua baris valid</label>
                     </div>
 
-                    <form action="{{ route('settings.import.nilais.commit', array_merge(['mk' => $mk->id], $kelasQuery)) }}" method="POST">
+                    <form action="{{ route('settings.import.nilais.commit', array_merge(['mk' => $mk->id], $importQuery)) }}" method="POST">
                         @csrf
                         <input type="hidden" name="kelas" value="{{ $kelasFilter ?? '__SEMUA_KELAS__' }}">
-                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? route('mks.nilais.index', [$mk->id]) }}">
+                        <input type="hidden" name="semester_id" value="{{ $selectedSemesterId ?? '' }}">
+                        <input type="hidden" name="return_url" value="{{ $returnUrl ?? $nilaiReturnDefault }}">
                         <div class="table-responsive">
                             <table class="table table-bordered" id="preview-table">
                                 <thead>
@@ -151,6 +180,20 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const semesterFilter = document.getElementById('import-semester-filter');
+    if (semesterFilter) {
+        semesterFilter.addEventListener('change', function () {
+            const selectedSemesterId = (semesterFilter.value ?? '').trim();
+            const url = new URL(window.location.href);
+            if (selectedSemesterId === '') {
+                url.searchParams.delete('semester_id');
+            } else {
+                url.searchParams.set('semester_id', selectedSemesterId);
+            }
+            window.location.assign(url.toString());
+        });
+    }
+
     const selectAll = document.getElementById('select-all');
     const rowChecks = document.querySelectorAll('.row-check:not([disabled])');
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Dosen;
 
+use App\Actions\ResolveMkSemester;
 use App\Http\Controllers\Controller;
 use App\Models\KontrakMk;
 use App\Models\Mk;
@@ -77,13 +78,7 @@ class KetercapaianController extends Controller
             ->sortByDesc('kode')
             ->values();
 
-        $requestedSemesterId = request()->query('semester_id');
-        $selectedSemester = ($requestedSemesterId
-            ? $semestersForFilter->firstWhere('id', $requestedSemesterId)
-            : null)
-            ?? $semestersForFilter->firstWhere('status_aktif', true)
-            ?? $semestersForFilter->first();
-        $selectedSemesterId = $selectedSemester?->id;
+        [$selectedSemester, $selectedSemesterId] = ResolveMkSemester::resolve($mk, request()->query('semester_id'), $semestersForFilter);
 
         $kontrakQuery = KontrakMk::query()
             ->with(['mahasiswa', 'mk'])
@@ -325,7 +320,7 @@ class KetercapaianController extends Controller
             ->sortByDesc('status_aktif')
             ->sortByDesc('kode')
             ->values();
-        $defaultSemesterId = ($semesters->firstWhere('status_aktif', true) ?? $semesters->first())?->id;
+        [, $defaultSemesterId] = ResolveMkSemester::resolve($mk, null, $semesters);
 
         $kontrakMksQuery = $mk->kontrakMks()
             ->with(['mahasiswa', 'semester'])
@@ -542,11 +537,7 @@ class KetercapaianController extends Controller
             ->sortByDesc('kode')
             ->values();
 
-        $requestedSemesterId = request()->query('semester_id');
-        $semester = ($requestedSemesterId ? $semesters->firstWhere('id', $requestedSemesterId) : null)
-            ?? $semesters->firstWhere('status_aktif', true)
-            ?? $semesters->first();
-        $semesterId = $semester?->id;
+        [$semester, $semesterId] = ResolveMkSemester::resolve($mk, request()->query('semester_id'), $semesters);
 
         $targetKelulusan = (float) ($mk->kurikulum->target_capaian_lulusan ?? 100);
         $gradeOrder = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D', 'E'];
