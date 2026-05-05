@@ -1,153 +1,187 @@
 @php
-    use App\States\Mk\Draft as MkDraft;
-    use App\States\Mk\MappingSubCPMK as MkMappingSubCPMK;
-    use App\States\Mk\BelumNilai as MkBelumNilai;
-    use App\States\Mk\Aktif as MkAktif;
-    use App\States\Mk\NonAktif as MkNonAktif;
+    use Illuminate\Support\Facades\DB;
 
-    $st = $mk->status;
+    /** Same resolution order as ResolveMkSemester output: explicit > query > session */
+    $semesterId = isset($selectedSemesterId) && $selectedSemesterId !== null && $selectedSemesterId !== ''
+        ? (string) $selectedSemesterId
+        : null;
+    if ($semesterId === null) {
+        $reqSem = request()->query('semester_id');
+        if ($reqSem !== null && $reqSem !== '') {
+            $semesterId = (string) $reqSem;
+        }
+    }
+    if ($semesterId === null) {
+        $stored = session('mk_semester_' . $mk->id);
+        $semesterId = ($stored !== null && $stored !== '') ? (string) $stored : null;
+    }
 
-    $step1Done = $st instanceof MkMappingSubCPMK || $st instanceof MkBelumNilai || $st instanceof MkAktif;
-    $step2Done = $st instanceof MkBelumNilai || $st instanceof MkAktif;
-    $step3Done = $st instanceof MkAktif;
-    $step4Done = false; // Laporan selalu tersedia sebagai tindakan, tidak ada state setelahnya
+    $sp = $semesterId ? '?semester_id=' . $semesterId : '';
+
+    // Step 1 — CPMK (MK-wide, no semester filter)
+    $step1Done = $mk->cpmks()->exists();
+
+    // Step 2 — SubCPMK (semester-aware)
+    $step2Done = $step1Done && DB::table('subcpmks as s')
+        ->join('join_cpl_cpmks as jcc', 'jcc.id', '=', 's.join_cpl_cpmk_id')
+        ->where('jcc.mk_id', $mk->id)
+        ->when($semesterId, fn ($q) => $q->where('s.semester_id', $semesterId))
+        ->exists();
+
+    // Step 3 — Pengisian Tugas / Penugasan (semester-aware)
+    $step3Done = $step2Done && $mk->penugasans()
+        ->when($semesterId, fn ($q) => $q->where('semester_id', $semesterId))
+        ->exists();
+
+    // Step 4 — Pembobotan Tugas (mapping per semester pada tabel join)
+    $step4Done = $step3Done && DB::table('join_subcpmk_penugasans as jsp')
+        ->where('jsp.mk_id', $mk->id)
+        ->when($semesterId, fn ($q) => $q->where('jsp.semester_id', $semesterId))
+        ->exists();
+
+    // Step 5 — Pengisian Nilai (semester-aware)
+    $step5Done = $step4Done && DB::table('nilais')
+        ->where('mk_id', $mk->id)
+        ->when($semesterId, fn ($q) => $q->where('semester_id', $semesterId))
+        ->exists();
+
+    $allDone = $step5Done;
+
+    // Navigation URLs — carry semester context where applicable
+    $cpmkUrl    = route('mks.cpmks.index', $mk->id);
+    $subcpmkUrl = route('mks.subcpmks.index', $mk->id) . $sp;
+    $tugasUrl   = route('mks.penugasans.index', $mk->id) . $sp;
+    $bobotUrl   = route('mks.joinsubcpmkpenugasans.index', $mk->id) . $sp;
+    $nilaiUrl   = route('mks.nilais.index', $mk->id) . $sp;
+
+    // Progress fill — 5 nodes, 4 gaps, each gap = 20% of the container width
+    if      ($step4Done) $progressPct = '80%';
+    elseif  ($step3Done) $progressPct = '60%';
+    elseif  ($step2Done) $progressPct = '40%';
+    elseif  ($step1Done) $progressPct = '20%';
+    else                 $progressPct = '0%';
+
+    $flowSteps = [
+        ['label' => 'Pengisian CPMK',    'url' => $cpmkUrl,    'done' => $step1Done, 'active' => !$step1Done],
+        ['label' => 'Pengisian SubCPMK', 'url' => $subcpmkUrl, 'done' => $step2Done, 'active' => $step1Done  && !$step2Done],
+        ['label' => 'Pengisian Tugas',   'url' => $tugasUrl,   'done' => $step3Done, 'active' => $step2Done  && !$step3Done],
+        ['label' => 'Pembobotan Tugas',  'url' => $bobotUrl,   'done' => $step4Done, 'active' => $step3Done  && !$step4Done],
+        ['label' => 'Pengisian Nilai',   'url' => $nilaiUrl,   'done' => $step5Done, 'active' => $step4Done  && !$step5Done],
+    ];
 @endphp
 
-<div class="position-relative mt-2">
-            {{-- Gray background connector --}}
-            <div class="position-absolute"
-                 style="top: 1rem; left: 12.5%; right: 12.5%; height: 2px; background-color: #dee2e6; z-index: 0;"></div>
+@if ($allDone)
 
-            {{-- Colored progress fill --}}
-            @php
-                if ($step3Done)      $progressPct = '75%';
-                elseif ($step2Done) $progressPct = '50%';
-                elseif ($step1Done) $progressPct = '25%';
-                else                $progressPct = '0%';
-            @endphp
-            <div class="position-absolute"
-                 style="top: 1rem; left: 12.5%; width: {{ $progressPct }}; height: 2px; background-color: #198754; z-index: 0;"></div>
+    {{-- All 5 steps done: stepper hidden, laporan alert only --}}
+    <div class="alert alert-success mt-2 mb-0 py-2 px-3">
+        <div class="fw-semibold mb-1">Semua data sudah lengkap. Lihat laporan ketercapaian:</div>
+        <div class="d-flex flex-wrap gap-2 mt-1">
+            <a href="{{ route('mks.workclouds.index', $mk->id) }}{{ $sp }}"
+               class="btn btn-success btn-sm rounded-pill fw-semibold">
+                <i class="bi bi-grid-1x2-fill me-1"></i> Portofolio Penilaian
+            </a>
+            <a href="{{ route('mks.achievements.index', $mk->id) }}{{ $sp }}"
+               class="btn btn-success btn-sm rounded-pill fw-semibold">
+                <i class="bi bi-award-fill me-1"></i> Evaluasi CPL v1
+            </a>
+            <a href="{{ route('mks.ketercapaians.index', $mk->id) }}{{ $sp }}"
+               class="btn btn-success btn-sm rounded-pill fw-semibold">
+                <i class="bi bi-bar-chart-steps me-1"></i> Evaluasi CPL v2
+            </a>
+            <a href="{{ route('mks.spyderweb', $mk->id) }}{{ $sp }}"
+               class="btn btn-success btn-sm rounded-pill fw-semibold">
+                <i class="bi bi-bullseye me-1"></i> Jaring Laba-laba
+            </a>
+            <a href="{{ route('mks.laporan', $mk->id) }}{{ $sp }}"
+               class="btn btn-success btn-sm rounded-pill fw-semibold">
+                <i class="bi bi-journal-check me-1"></i> Laporan ke Prodi
+            </a>
+        </div>
+    </div>
 
-            {{-- Steps --}}
-            <div class="d-flex justify-content-between position-relative" style="z-index: 1;">
+@else
+
+    {{-- Progress stepper --}}
+    <div class="position-relative mt-2">
+
+        {{-- Gray full connector --}}
+        <div class="position-absolute"
+             style="top: 1rem; left: 10%; right: 10%; height: 2px; background-color: #dee2e6; z-index: 0;"></div>
+
+        {{-- Green progress fill --}}
+        <div class="position-absolute"
+             style="top: 1rem; left: 10%; width: {{ $progressPct }}; height: 2px; background-color: #198754; z-index: 0; transition: width .4s ease;"></div>
+
+        {{-- Step nodes --}}
+        <div class="d-flex justify-content-between position-relative" style="z-index: 1;">
+            @foreach ($flowSteps as $i => $step)
                 @php
-                    $flowSteps = [
-                        ['label' => 'Data MK',        'url' => route('mks.cpmks.index', $mk->id),                    'done' => $step1Done, 'active' => !$step1Done],
-                        ['label' => 'Tugas & Mapping', 'url' => route('mks.joinsubcpmkpenugasans.index', $mk->id),    'done' => $step2Done, 'active' => $step1Done && !$step2Done],
-                        ['label' => 'Penilaian',       'url' => route('mks.nilais.index', $mk->id),                   'done' => $step3Done, 'active' => $step2Done && !$step3Done],
-                        ['label' => 'Laporan',         'url' => route('mks.workclouds.index', $mk->id),               'done' => $step4Done, 'active' => $step3Done],
-                    ];
+                    if ($step['done']) {
+                        $bg = '#198754'; $border = '#198754'; $fg = 'white'; $lc = '#198754';
+                    } elseif ($step['active']) {
+                        $bg = '#fff3cd'; $border = '#ffc107'; $fg = '#664d03'; $lc = '#664d03';
+                    } else {
+                        $bg = '#f8f9fa'; $border = '#dee2e6'; $fg = '#adb5bd'; $lc = '#adb5bd';
+                    }
                 @endphp
-                @foreach($flowSteps as $i => $flowStep)
-                    @php
-                        if ($flowStep['done']) {
-                            $bg = '#198754'; $border = '#198754'; $fg = 'white'; $lc = '#198754';
-                        } elseif ($flowStep['active']) {
-                            $bg = '#fff3cd'; $border = '#ffc107'; $fg = '#664d03'; $lc = '#664d03';
-                        } else {
-                            $bg = '#f8f9fa'; $border = '#dee2e6'; $fg = '#adb5bd'; $lc = '#adb5bd';
-                        }
-                    @endphp
-                    <a href="{{ $flowStep['url'] }}" class="d-flex flex-column align-items-center text-decoration-none" style="width: 25%;">
-                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-semibold"
-                             style="width: 2rem; height: 2rem; font-size: 0.8rem;
-                                    background-color: {{ $bg }}; border: 2px solid {{ $border }}; color: {{ $fg }};">
-                            @if($flowStep['done']) &#10003; @else {{ $i + 1 }} @endif
-                        </div>
-                        <div class="text-center mt-1 fw-medium"
-                             style="font-size: 0.7rem; line-height: 1.3; max-width: 100px; color: {{ $lc }};">
-                            {{ $flowStep['label'] }}
-                        </div>
-                    </a>
-                @endforeach
-            </div>
+                <a href="{{ $step['url'] }}"
+                   class="d-flex flex-column align-items-center text-decoration-none"
+                   style="width: 20%;">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-semibold"
+                         style="width: 2rem; height: 2rem; font-size: 0.8rem;
+                                background-color: {{ $bg }}; border: 2px solid {{ $border }}; color: {{ $fg }};">
+                        @if ($step['done']) &#10003; @else {{ $i + 1 }} @endif
+                    </div>
+                    <div class="text-center mt-1 fw-medium"
+                         style="font-size: 0.7rem; line-height: 1.3; max-width: 80px; color: {{ $lc }};">
+                        {{ $step['label'] }}
+                    </div>
+                </a>
+            @endforeach
         </div>
+    </div>
 
-        @if ($st instanceof MkAktif)
-        <div class="alert alert-success mt-3 mb-0 py-2 px-3">
-            <div class="fw-semibold mb-1">Semua data sudah lengkap. Lihat laporan ketercapaian:</div>
+    {{-- Contextual next-action alert --}}
+    @if (!$step1Done)
+        <div class="alert alert-warning mt-2 mb-0 py-2 px-3">
+            <div class="fw-semibold mb-1">Belum ada CPMK. Mulai dengan mengisi CPMK mata kuliah ini.</div>
+            <a href="{{ $cpmkUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold">
+                <i class="bi bi-diagram-3 me-1"></i> Pengisian CPMK
+            </a>
+        </div>
+    @elseif (!$step2Done)
+        <div class="alert alert-warning mt-2 mb-0 py-2 px-3">
+            <div class="fw-semibold mb-1">CPMK tersedia. Lanjutkan dengan pengisian SubCPMK{{ $semesterId ? ' untuk semester ini' : '' }}.</div>
+            <a href="{{ $subcpmkUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold">
+                <i class="bi bi-list-nested me-1"></i> Pengisian SubCPMK
+            </a>
+        </div>
+    @elseif (!$step3Done)
+        <div class="alert alert-warning mt-2 mb-0 py-2 px-3">
+            <div class="fw-semibold mb-1">SubCPMK tersedia. Lanjutkan dengan pengisian tugas{{ $semesterId ? ' untuk semester ini' : '' }}.</div>
+            <a href="{{ $tugasUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold">
+                <i class="bi bi-clipboard2-check me-1"></i> Pengisian Tugas
+            </a>
+        </div>
+    @elseif (!$step4Done)
+        <div class="alert alert-warning mt-2 mb-0 py-2 px-3">
+            <div class="fw-semibold mb-1">Tugas tersedia. Lanjutkan dengan pembobotan SubCPMK ke tugas{{ $semesterId ? ' untuk semester ini' : '' }}.</div>
+            <a href="{{ $bobotUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold">
+                <i class="bi bi-sliders me-1"></i> Pembobotan Tugas
+            </a>
+        </div>
+    @elseif (!$step5Done)
+        <div class="alert alert-warning mt-2 mb-0 py-2 px-3">
+            <div class="fw-semibold mb-1">Pembobotan selesai. Lanjutkan dengan pengisian nilai mahasiswa{{ $semesterId ? ' untuk semester ini' : '' }}.</div>
             <div class="d-flex flex-wrap gap-2 mt-1">
-                <a href="{{ route('mks.workclouds.index', $mk->id) }}" class="btn btn-success btn-sm rounded-pill fw-semibold text-decoration-none">
-                    <i class="fas fa-cloud-upload-alt me-1"></i> Portofolio Penilaian
+                <a href="{{ $nilaiUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold">
+                    <i class="bi bi-clipboard2-data me-1"></i> Pengisian Nilai
                 </a>
-                <a href="{{ route('mks.achievements.index', $mk->id) }}" class="btn btn-success btn-sm rounded-pill fw-semibold text-decoration-none">
-                    <i class="fas fa-chart-line me-1"></i> Evaluasi CPL v1
-                </a>
-                <a href="{{ route('mks.ketercapaians.index', $mk->id) }}" class="btn btn-success btn-sm rounded-pill fw-semibold text-decoration-none">
-                    <i class="fas fa-chart-area me-1"></i> Evaluasi CPL v2
-                </a>
-                <a href="{{ route('mks.spyderweb', $mk->id) }}" class="btn btn-success btn-sm rounded-pill fw-semibold text-decoration-none">
-                    <i class="fas fa-bullseye me-1"></i> Jaring Laba-laba
-                </a>
-                <a href="{{ route('mks.laporan', $mk->id) }}" class="btn btn-success btn-sm rounded-pill fw-semibold text-decoration-none">
-                    <i class="fas fa-file-alt me-1"></i> Laporan ke Prodi
-                </a>
-            </div>
-        </div>
-        @elseif ($st instanceof MkNonAktif)
-        <div class="alert alert-warning mt-3 mb-0 py-2 px-3">
-            Mata kuliah ini berstatus <strong>Non Aktif</strong>. Aktifkan kembali untuk melanjutkan pengisian.
-        </div>
-        @elseif ($st instanceof MkDraft)
-        @php
-            $cpmkExists        = $mk->cpmks()->exists();
-            $joinCplCpmkExists = $mk->joinCplCpmks()->exists();
-            $subcpmkExists     = $mk->joinCplCpmks()->whereHas('subcpmks')->exists();
-            $penugasanExists   = $mk->penugasans()->exists();
-
-            $missingItems = [];
-            if (!$cpmkExists)        $missingItems[] = ['label' => 'CPMK',              'target' => 'cpmks'];
-            if (!$joinCplCpmkExists) $missingItems[] = ['label' => 'Relasi CPL–CPMK',   'target' => 'join_cpl_cpmks'];
-            if (!$subcpmkExists)     $missingItems[] = ['label' => 'SubCPMK',            'target' => 'subcpmks'];
-            if (!$penugasanExists)   $missingItems[] = ['label' => 'Tagihan Tugas',      'target' => 'penugasans'];
-
-            $allMissing = count($missingItems) === 4;
-            $bundleUrl  = route('settings.import.mk-master', ['mk' => $mk->id, 'target' => 'mk_bundle', 'return_url' => url()->current()]);
-        @endphp
-        <div class="alert alert-warning mt-3 mb-0 py-2 px-3">
-            @if ($allMissing)
-                <div class="mb-1">Data MK masih kosong. Upload sekaligus menggunakan template bundle:</div>
-                <a href="{{ $bundleUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold text-decoration-none">
-                    <i class="bi bi-upload me-1"></i> Upload Template Bundle MK
-                </a>
-            @else
-                <div class="fw-semibold mb-1">Data MK belum lengkap. Yang masih kosong:</div>
-                <ul class="mb-2 ps-3">
-                    @foreach ($missingItems as $item)
-                        <li><strong>{{ $item['label'] }}</strong></li>
-                    @endforeach
-                </ul>
-                <a href="{{ $bundleUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold text-decoration-none">
-                    <i class="bi bi-upload me-1"></i> Upload Template Bundle MK
-                </a>
-            @endif
-        </div>
-        @elseif ($st instanceof MkMappingSubCPMK)
-        @php
-            $mappingPageUrl   = route('mks.joinsubcpmkpenugasans.index', $mk->id);
-        @endphp
-        <div class="alert alert-warning mt-3 mb-0 py-2 px-3">
-            <div class="fw-semibold mb-1">Data MK sudah lengkap. Lanjutkan dengan mapping SubCPMK ke Tugas:</div>
-            <div class="d-flex flex-wrap gap-2 mt-1">
-                <a href="{{ $mappingPageUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold text-decoration-none">
-                    <i class="bi bi-diagram-3 me-1"></i> Halaman Mapping SubCPMK–Tugas
-                </a>
-            </div>
-        </div>
-        @elseif ($st instanceof MkBelumNilai)
-        @php
-            $nilaiPageUrl   = route('mks.nilais.index', $mk->id);
-            $nilaiImportUrl = route('settings.import.nilais', $mk->id);
-        @endphp
-        <div class="alert alert-warning mt-3 mb-0 py-2 px-3">
-            <div class="fw-semibold mb-1">Mapping sudah lengkap. Lanjutkan dengan pengisian nilai:</div>
-            <div class="d-flex flex-wrap gap-2 mt-1">
-                <a href="{{ $nilaiPageUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold text-decoration-none">
-                    <i class="bi bi-clipboard2-data me-1"></i> Halaman Pengisian Nilai
-                </a>
-                <a href="{{ $nilaiImportUrl }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold text-decoration-none">
+                <a href="{{ route('settings.import.nilais', $mk->id) }}{{ $sp }}" class="btn btn-secondary btn-sm rounded-pill fw-semibold">
                     <i class="bi bi-upload me-1"></i> Upload Nilai
                 </a>
             </div>
         </div>
-        @endif
+    @endif
+
+@endif

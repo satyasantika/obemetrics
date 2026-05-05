@@ -7,6 +7,11 @@
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
 
+            <x-mk-semester-bar
+                mode="server"
+                :semesterOptions="$semesterOptions"
+                :selectedSemesterId="$selectedSemesterId" />
+
             <div class="card">
                 <x-obe.header
                     title="Set SubCPMK untuk Setiap Tugas Mata Kuliah"
@@ -16,12 +21,6 @@
                     <div class="row mb-3 g-3">
                         <div class="col-md-6 d-flex">
                             <div class="p-3 rounded-3 border bg-white d-flex flex-column align-items-start gap-2 h-100 w-100">
-                                <span>Semester :</span>
-                                <select id="semester-filter" name="semester_id" class="form-control form-control-sm w-100" style="max-width: 320px;">
-                                    @foreach ($semesterOptions as $semester)
-                                        <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $selectedSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
-                                    @endforeach
-                                </select>
                                 <a href="{{ route('settings.import.mk-master', ['mk' => $mk->id, 'target' => 'join_subcpmk_penugasans', 'semester_id' => $selectedSemesterId]) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-upload"></i> Import banyak SubCPMK untuk Penugasan</a>
                             </div>
                         </div>
@@ -163,17 +162,7 @@ document.addEventListener('DOMContentLoaded', function () {
         new bootstrap.Popover(el);
     });
 
-    const semesterFilter = document.getElementById('semester-filter');
     const forms = document.querySelectorAll('form[action*="joinsubcpmkpenugasans"]');
-
-    if (semesterFilter) {
-        semesterFilter.addEventListener('change', function () {
-            const url = new URL(window.location.href);
-            url.searchParams.set('semester_id', semesterFilter.value || '');
-            window.location.href = url.toString();
-        });
-    }
-
     forms.forEach(function (form) {
         const input = form.querySelector('input[name="bobot"]');
         const statusEl = form.querySelector('.save-status');

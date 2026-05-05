@@ -7,28 +7,25 @@
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
 
+            <x-mk-semester-bar
+                mode="server"
+                :semesterOptions="$semesterOptions"
+                :selectedSemesterId="$selectedSemesterId" />
+
             <div class="card">
                 <x-obe.header
                     title="Rancangan Tugas"
                     subtitle="Kelola komponen tugas dan bobot penilaian"
                     icon="bi bi-journal-richtext" />
                 <div class="card-body bg-light-subtle">
-                    <div class="row mb-3">
-                        <div class="col-md-6">Semester :
-                            <select id="semester-filter" name="semester_id" class="form-control form-control-sm" style="max-width: 320px;">
-                                @foreach ($semesterOptions as $semester)
-                                    <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $selectedSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
-                                @endforeach
-                            </select>
-                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold shadow-sm mt-2" data-bs-toggle="modal" data-bs-target="#modalCreatePenugasan"><i class="bi bi-plus-circle"></i> Tambah Tagihan</button>
-                            <a href="{{ route('settings.import.mk-master', ['mk' => $mk->id, 'target' => 'penugasans']) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm mt-2"><i class="bi bi-upload"></i> Import Banyak Tagihan</a>
-                            <script>
-                                document.getElementById('semester-filter').addEventListener('change', function () {
-                                    const url = new URL(window.location.href);
-                                    url.searchParams.set('semester_id', this.value);
-                                    window.location.href = url.toString();
-                                });
-                            </script>
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-6 d-flex">
+                            <div class="p-3 rounded-3 border bg-white d-flex flex-column align-items-start gap-2 h-100 w-100">
+                                <div class="d-flex flex-wrap gap-2">
+                                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreatePenugasan"><i class="bi bi-plus-circle"></i> Tambah Tagihan</button>
+                                    <a href="{{ route('settings.import.mk-master', ['mk' => $mk->id, 'target' => 'penugasans']) }}" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold shadow-sm"><i class="bi bi-upload"></i> Import Banyak Tagihan</a>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6 d-flex">
                             <div class="p-3 p-lg-4 rounded-3 border border-primary-subtle bg-primary-subtle text-primary-emphasis h-100 w-100 d-flex flex-column justify-content-between text-md-end text-start">

@@ -7,6 +7,18 @@
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
 
+            <x-mk-semester-bar
+                mode="server"
+                :semesterOptions="$semesterOptions"
+                :selectedSemesterId="$selectedSemesterId" />
+
+            @if ($semesterOptions->isEmpty())
+                <div class="alert alert-warning mb-3 py-2 px-3">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Belum ada semester kontrak untuk mata kuliah ini.
+                </div>
+            @endif
+
             <div class="card">
                 <x-obe.header
                     title="Data Sub Capaian Pembelajaran Mata Kuliah"
@@ -14,28 +26,12 @@
                     icon="bi bi-diagram-3" />
                 <div class="card-body bg-light-subtle">
 
-                    {{-- Baris filter semester + bobot --}}
+                    {{-- Aksi + ringkasan bobot (filter semester di atas, konsisten dengan halaman nilai / laporan) --}}
                     <div class="row mb-3 g-3">
                         <div class="col-md-6 d-flex">
                             <div class="p-3 rounded-3 border bg-white d-flex flex-column align-items-start gap-2 h-100 w-100">
-                                <span>Semester :</span>
-                                @if ($semesterOptions->isEmpty())
-                                    <div class="alert alert-warning mb-0 py-2 px-3 w-100">
-                                        <i class="bi bi-exclamation-triangle"></i>
-                                        Belum ada semester kontrak untuk mata kuliah ini.
-                                    </div>
-                                @else
-                                    <select id="semester-filter" class="form-control form-control-sm w-100" style="max-width: 320px;">
-                                        @foreach ($semesterOptions as $semester)
-                                            <option value="{{ $semester->id }}" @selected($semester->id === $selectedSemesterId)>
-                                                {{ $semester->kode }} - {{ $semester->nama }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                @endif
-
                                 @if ($selectedSemesterId)
-                                    <div class="d-flex flex-wrap gap-2 mt-1">
+                                    <div class="d-flex flex-wrap gap-2">
                                         <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold shadow-sm"
                                             data-bs-toggle="modal" data-bs-target="#modalCreateSubcpmk">
                                             <i class="bi bi-plus-circle"></i> Tambah Sub CPMK
@@ -51,6 +47,10 @@
                                             </button>
                                         @endif
                                     </div>
+                                @elseif ($semesterOptions->isNotEmpty())
+                                    <span class="text-muted small">Pilih semester pada bilah di atas untuk mengelola SubCPMK.</span>
+                                @else
+                                    <span class="text-muted small">Tambah kontrak MK dengan semester terlebih dahulu.</span>
                                 @endif
                             </div>
                         </div>
@@ -480,20 +480,5 @@
     </div>
     @endforeach
 @endforeach
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const semesterFilter = document.getElementById('semester-filter');
-    if (semesterFilter) {
-        semesterFilter.addEventListener('change', function () {
-            const url = new URL(window.location.href);
-            url.searchParams.set('semester_id', this.value);
-            window.location.href = url.toString();
-        });
-    }
-});
-</script>
-@endpush
 
 @endsection

@@ -14,5 +14,8 @@
         </div>
     </div>
     <hr>
-    @include('components.mk-flow-info', ['mk' => $mk])
+    @include('components.mk-flow-info', [
+        'mk' => $mk,
+        'selectedSemesterId' => $selectedSemesterId ?? $defaultSemesterId ?? null,
+    ])
 </div>
