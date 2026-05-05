@@ -105,6 +105,7 @@ class KetercapaianController extends Controller
         $nilaiByMahasiswa = Nilai::query()
             ->where('mk_id', $mk->id)
             ->whereIn('mahasiswa_id', $mahasiswaIds)
+            ->when($selectedSemesterId, fn ($q) => $q->where('semester_id', $selectedSemesterId))
             ->with([
                 'penugasan.joinSubcpmkPenugasans.subcpmk.joinCplCpmk.cpmk',
             ])
@@ -112,6 +113,7 @@ class KetercapaianController extends Controller
             ->groupBy('mahasiswa_id');
 
         $baselinePenugasanAgg = $mk->penugasans()
+            ->when($selectedSemesterId, fn ($q) => $q->where('semester_id', $selectedSemesterId))
             ->select('id', 'kode', 'nama')
             ->get()
             ->mapWithKeys(function ($penugasan) {
@@ -129,6 +131,7 @@ class KetercapaianController extends Controller
         $baselineSubcpmkAgg = DB::table('subcpmks as s')
             ->join('join_cpl_cpmks as jcc', 'jcc.id', '=', 's.join_cpl_cpmk_id')
             ->where('jcc.mk_id', $mk->id)
+            ->when($selectedSemesterId, fn ($q) => $q->where('s.semester_id', $selectedSemesterId))
             ->select('s.id', 's.kode', 's.nama')
             ->orderBy('s.kode')
             ->get()
@@ -144,8 +147,19 @@ class KetercapaianController extends Controller
             })
             ->all();
 
-        $baselineCpmkAgg = $mk->cpmks()
-            ->select('id', 'kode', 'nama')
+        $baselineCpmkAgg = DB::table('cpmks as cpmk')
+            ->join('join_cpl_cpmks as jcc', 'jcc.cpmk_id', '=', 'cpmk.id')
+            ->where('jcc.mk_id', $mk->id)
+            ->when($selectedSemesterId, function ($q) use ($selectedSemesterId) {
+                $q->whereExists(function ($sub) use ($selectedSemesterId) {
+                    $sub->from('subcpmks as s')
+                        ->whereColumn('s.join_cpl_cpmk_id', 'jcc.id')
+                        ->where('s.semester_id', $selectedSemesterId);
+                });
+            })
+            ->select('cpmk.id', 'cpmk.kode', 'cpmk.nama')
+            ->distinct()
+            ->orderBy('cpmk.kode')
             ->get()
             ->mapWithKeys(function ($cpmk) {
                 return [
@@ -337,6 +351,19 @@ class KetercapaianController extends Controller
             ->sortBy(fn ($kontrakMk) => Str::lower((string) ($kontrakMk->mahasiswa->nim ?? '')))
             ->values();
 
+        $kelasPerSemester = $kontrakMks
+            ->groupBy('semester_id')
+            ->mapWithKeys(function ($items, $semId) {
+                $kelas = $items
+                    ->map(fn ($item) => trim((string) ($item->kelas ?? '')) ?: 'Tanpa Kelas')
+                    ->unique()->sort()->values();
+                $withAll = $kelas->count() > 1
+                    ? collect(['__SEMUA_KELAS__'])->merge($kelas)->values()
+                    : $kelas;
+                return [(string) $semId => $withAll];
+            })
+            ->all();
+
         $kelasList = $kontrakMks
             ->map(function ($item) {
                 $kelas = trim((string) ($item->kelas ?? ''));
@@ -346,19 +373,10 @@ class KetercapaianController extends Controller
             ->sort()
             ->values();
 
-        if ($kelasList->isNotEmpty()) {
+        $anyMultiClass = collect($kelasPerSemester)->some(fn ($kelas) => $kelas->count() > 1);
+        if ($kelasList->isNotEmpty() && $anyMultiClass) {
             $kelasList = collect(['__SEMUA_KELAS__'])->merge($kelasList)->values();
         }
-
-        $kelasPerSemester = $kontrakMks
-            ->groupBy('semester_id')
-            ->mapWithKeys(function ($items, $semId) {
-                $kelas = $items
-                    ->map(fn ($item) => trim((string) ($item->kelas ?? '')) ?: 'Tanpa Kelas')
-                    ->unique()->sort()->values();
-                return [(string) $semId => collect(['__SEMUA_KELAS__'])->merge($kelas)->values()];
-            })
-            ->all();
 
         $mappingRows = DB::table('join_subcpmk_penugasans as jsp')
             ->join('subcpmks as s', 's.id', '=', 'jsp.subcpmk_id')

@@ -46,19 +46,23 @@ class AchievementController extends Controller
             ->sort()
             ->values();
 
-        if ($kelasList->isNotEmpty()) {
-            $kelasList = collect(['__SEMUA_KELAS__'])->merge($kelasList)->values();
-        }
-
         $kelasPerSemester = $kontrakMks
             ->groupBy('semester_id')
             ->mapWithKeys(function ($items, $semId) {
                 $kelas = $items
                     ->map(fn ($item) => trim((string) ($item->kelas ?? '')) ?: 'Tanpa Kelas')
                     ->unique()->sort()->values();
-                return [(string) $semId => collect(['__SEMUA_KELAS__'])->merge($kelas)->values()];
+                $withAll = $kelas->count() > 1
+                    ? collect(['__SEMUA_KELAS__'])->merge($kelas)->values()
+                    : $kelas;
+                return [(string) $semId => $withAll];
             })
             ->all();
+
+        $anyMultiClass = collect($kelasPerSemester)->some(fn ($kelas) => $kelas->count() > 1);
+        if ($kelasList->isNotEmpty() && $anyMultiClass) {
+            $kelasList = collect(['__SEMUA_KELAS__'])->merge($kelasList)->values();
+        }
 
         $gradeOrder = ['A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D', 'E'];
         $targetKelulusan = $mk->kurikulum->target_capaian_lulusan;

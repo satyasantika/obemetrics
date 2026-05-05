@@ -310,7 +310,9 @@ class NilaiController extends Controller
             })
             ->sortKeys();
 
-        $kelasGroups = collect(['__SEMUA_KELAS__' => $kontrakMks])->merge($kelasGroups);
+        if ($kelasGroups->count() > 1) {
+            $kelasGroups = collect(['__SEMUA_KELAS__' => $kontrakMks])->merge($kelasGroups);
+        }
         $defaultKelas = $kelasGroups->keys()->first();
 
         $kelasRowsByKey = $kelasGroups
