@@ -162,6 +162,27 @@ document.addEventListener('DOMContentLoaded', function () {
         return Number(numberValue || 0).toFixed(2);
     };
 
+    const filterHierarchyBySemester = function (data, semesterId) {
+        return data.map(function (cpl) {
+            const cpmks = (cpl.cpmks || []).map(function (cpmk) {
+                const subcpmks = (cpmk.subcpmks || []).map(function (subcpmk) {
+                    const sources = (subcpmk.sources || []).filter(function (source) {
+                        return source.semester_id === semesterId;
+                    });
+                    return Object.assign({}, subcpmk, { sources: sources });
+                }).filter(function (subcpmk) {
+                    return subcpmk.sources.length > 0;
+                });
+                return Object.assign({}, cpmk, { subcpmks: subcpmks });
+            }).filter(function (cpmk) {
+                return cpmk.subcpmks.length > 0;
+            });
+            return Object.assign({}, cpl, { cpmks: cpmks });
+        }).filter(function (cpl) {
+            return cpl.cpmks.length > 0;
+        });
+    };
+
     const calculateCplTotals = function (cpl, rnMap) {
         let totalPk = 0;
         let totalPkRn = 0;
@@ -235,15 +256,22 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
+        const semesterHierarchy = filterHierarchyBySemester(hierarchyData, semesterId);
+
+        if (semesterHierarchy.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center"><span class="text-muted">Belum ada SubCPMK dan tagihan tugas yang terkait pada semester ini.</span></td></tr>';
+            return;
+        }
+
         const rnMap = rnData?.[kelas]?.[semesterId] ?? {};
         let html = '';
-        const totalPkAllCpl = hierarchyData.reduce(function (sum, cpl) {
+        const totalPkAllCpl = semesterHierarchy.reduce(function (sum, cpl) {
             return sum + calculateCplTotals(cpl, rnMap).totalPk;
         }, 0);
         const isTargetComplete = Math.abs(totalPkAllCpl - 100) < 0.01;
         const ketercapaianRatios = [];
 
-        hierarchyData.forEach(function (cpl) {
+        semesterHierarchy.forEach(function (cpl) {
             const cpmks = Array.isArray(cpl.cpmks) ? cpl.cpmks : [];
             const cplRowCount = cpmks.reduce(function (sum, cpmk) {
                 const subcpmks = Array.isArray(cpmk.subcpmks) ? cpmk.subcpmks : [];
@@ -357,12 +385,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 + '<div class="fw-semibold text-success-emphasis">Persentase ketercapaian MK terhadap perkiraan sumbangan ke CPL</div>'
                 + '<div class="d-flex flex-wrap gap-2">'
                 + '<div class="rounded-3 border px-3 py-2 bg-white border-success-subtle text-success-emphasis text-end">'
-                + '<div class="small text-uppercase fw-semibold">Target</div>'
-                + '<div class="fs-4 fw-bold">' + formatNum(totalPkAllCpl) + '%</div>'
+                + '<div class="small text-uppercase fw-semibold">Target Kelulusan CPL</div>'
+                + '<div class="fs-4 fw-bold">' + formatNum(targetKelulusan) + '%</div>'
                 + '</div>'
                 + '<div class="rounded-3 border px-3 py-2 bg-white border-primary-subtle text-primary-emphasis text-end">'
-                + '<div class="small text-uppercase fw-semibold">Ketercapaian</div>'
-                + '<div class="fs-4 fw-bold">' + formatNum(avgRatio) + '%</div>'
+                + '<div class="small text-uppercase fw-semibold">Rata-rata Ketercapaian</div>'
+                + '<div class="fs-4 fw-bold ' + (avgRatio >= targetKelulusan ? 'text-success' : 'text-danger') + '">' + formatNum(avgRatio) + '%</div>'
                 + '</div>'
                 + '</div>'
                 + '</div>'

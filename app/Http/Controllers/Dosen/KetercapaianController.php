@@ -384,7 +384,8 @@ class KetercapaianController extends Controller
                 'p.kode as penugasan_kode',
                 'p.bobot as penugasan_bobot',
                 'e.kategori as evaluasi_kategori',
-                'jsp.bobot as indikator_bobot'
+                'jsp.bobot as indikator_bobot',
+                's.semester_id as subcpmk_semester_id'
             )
             ->orderBy('cpl.kode')
             ->orderBy('cpmk.kode')
@@ -434,6 +435,7 @@ class KetercapaianController extends Controller
                 'kode' => $row->penugasan_kode,
                 'kategori' => $row->evaluasi_kategori,
                 'pk' => round($pk, 2),
+                'semester_id' => $row->subcpmk_semester_id ? (string) $row->subcpmk_semester_id : null,
             ];
         }
 
@@ -761,8 +763,31 @@ class KetercapaianController extends Controller
             $gradeCountsByClass[(string) $row->kelas_key][(string) $row->nilai_huruf] = (int) $row->jumlah;
         }
 
-        $hierarchyData = collect($baseData['hierarchyData'] ?? [])->values()->all();
-        $rnData = $baseData['rnData'] ?? [];
+        $hierarchyData = collect($baseData['hierarchyData'] ?? [])
+            ->map(function ($cpl) use ($semesterId) {
+                $cpl['cpmks'] = collect($cpl['cpmks'] ?? [])
+                    ->map(function ($cpmk) use ($semesterId) {
+                        $cpmk['subcpmks'] = collect($cpmk['subcpmks'] ?? [])
+                            ->map(function ($subcpmk) use ($semesterId) {
+                                $subcpmk['sources'] = collect($subcpmk['sources'] ?? [])
+                                    ->filter(fn ($src) => !$semesterId || ($src['semester_id'] ?? null) === (string) $semesterId)
+                                    ->values()
+                                    ->all();
+                                return $subcpmk;
+                            })
+                            ->filter(fn ($s) => count($s['sources']) > 0)
+                            ->values()
+                            ->all();
+                        return $cpmk;
+                    })
+                    ->filter(fn ($c) => count($c['subcpmks']) > 0)
+                    ->values()
+                    ->all();
+                return $cpl;
+            })
+            ->filter(fn ($cpl) => count($cpl['cpmks']) > 0)
+            ->values()
+            ->all();
 
         $assessmentBobotByPenugasan = $assessmentPlan
             ->mapWithKeys(function ($item) {
