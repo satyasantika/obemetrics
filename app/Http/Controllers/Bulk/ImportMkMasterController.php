@@ -47,12 +47,15 @@ class ImportMkMasterController extends Controller
             'required' => ['kode_cpl', 'kode_cpmk'],
             'requires_semester' => false,
         ],
+        // SubCPMK: uniqueness is (join_cpl_cpmk_id, semester_id, kode) — kode yang sama di MK yang
+        // sama boleh dipakai lagi di semester lain; tidak bentrok lintas semester.
         'subcpmks' => [
             'label' => 'SubCPMK',
             'columns' => ['kode_semester', 'kode_cpl', 'kode', 'nama', 'kompetensi_c', 'kompetensi_a', 'kompetensi_p', 'indikator', 'evaluasi', 'kode_cpmk', 'nama_cpmk'],
-            'required' => ['kode_semester', 'kode_cpl', 'kode', 'nama'],
+            'required' => ['kode_cpl', 'kode', 'nama'],
             'requires_semester' => true,
         ],
+        // Penugasan: uniqueness is (mk_id, semester_id, kode).
         'penugasans' => [
             'label' => 'Penugasan',
             'columns' => ['kode', 'nama', 'bobot', 'kode_evaluasi'],
@@ -631,6 +634,7 @@ class ImportMkMasterController extends Controller
 
             case 'subcpmks':
                 $this->assertSemester($semesterId);
+                $this->assertSubcpmkRowSemesterColumnMatches($row, $semesterId);
 
                 $kode = $this->required($row['kode'] ?? null, 'kode');
                 $nama = $this->required($row['nama'] ?? null, 'nama');
@@ -898,6 +902,25 @@ class ImportMkMasterController extends Controller
                 ]);
             }
 
+            $kodeSemesterCell = trim((string) ($row['kode_semester'] ?? ''));
+            if ($kodeSemesterCell !== '') {
+                $resolvedSem = $this->resolveSemesterIdFromImportCell($kodeSemesterCell);
+                if (!$resolvedSem) {
+                    return array_merge($row, [
+                        'exists' => false,
+                        'can_save' => false,
+                        'status_message' => 'Semester pada kolom kode_semester tidak ditemukan: ' . $kodeSemesterCell,
+                    ]);
+                }
+                if ((string) $resolvedSem !== (string) $semesterId) {
+                    return array_merge($row, [
+                        'exists' => false,
+                        'can_save' => false,
+                        'status_message' => 'Baris untuk semester lain (' . $kodeSemesterCell . '). Samakan dengan semester di form atau kosongkan kode_semester agar memakai semester form.',
+                    ]);
+                }
+            }
+
             $status['exists'] = Subcpmk::query()
                 ->where('join_cpl_cpmk_id', $joinCplCpmk->id)
                 ->where('semester_id', $semesterId)
@@ -956,6 +979,49 @@ class ImportMkMasterController extends Controller
     {
         if (empty($semesterId)) {
             throw new \RuntimeException('Semester wajib dipilih.');
+        }
+    }
+
+    /**
+     * Match cell to semesters.id (UUID) or semesters.kode.
+     */
+    private function resolveSemesterIdFromImportCell(string $value): ?string
+    {
+        $v = trim($value);
+        if ($v === '') {
+            return null;
+        }
+
+        $byId = Semester::query()->where('id', $v)->value('id');
+        if ($byId) {
+            return (string) $byId;
+        }
+
+        $byKode = Semester::query()->where('kode', $v)->value('id');
+
+        return $byKode ? (string) $byKode : null;
+    }
+
+    /**
+     * Jika kolom kode_semester diisi, harus sama dengan semester yang dipilih di form import
+     * (supaya baris tidak terundang ke semester lain).
+     */
+    private function assertSubcpmkRowSemesterColumnMatches(array $row, ?string $semesterId): void
+    {
+        $cell = trim((string) ($row['kode_semester'] ?? ''));
+        if ($cell === '') {
+            return;
+        }
+
+        $resolved = $this->resolveSemesterIdFromImportCell($cell);
+        if (!$resolved) {
+            throw new \RuntimeException('Semester pada kolom kode_semester tidak ditemukan: ' . $cell);
+        }
+
+        if ((string) $resolved !== (string) $semesterId) {
+            throw new \RuntimeException(
+                'Kolom kode_semester (' . $cell . ') tidak cocok dengan semester import yang dipilih.'
+            );
         }
     }
 
