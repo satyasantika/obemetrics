@@ -7,24 +7,17 @@
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
 
+            <x-mk-semester-bar
+                mode="server"
+                :semesterOptions="$semesterOptions"
+                :selectedSemesterId="$selectedSemesterId" />
+
             <div class="card">
                 <x-obe.header
                     title="Set Nilai Tagihan Mata Kuliah"
                     subtitle="Pengaturan nilai mahasiswa per komponen penilaian"
-                    icon="bi bi-calculator-fill"
+                    icon="bi bi-calculator-fill" />
                 <div class="card-body bg-light-subtle">
-                    <div class="row mb-3">
-                        <div class="col-lg-12">
-                            <div class="p-3 rounded-3 border bg-white d-flex flex-row align-items-start gap-2">
-                                <span>Semester :</span>
-                                <select id="semester-filter" name="semester_id" class="form-control form-control-sm" style="max-width: 320px;">
-                                    @foreach ($semesterOptions as $semester)
-                                        <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $selectedSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                    </div>
                     @if ($kontrakMks->isNotEmpty())
                         <ul class="nav nav-tabs" id="kelasTab" role="tablist">
                             @foreach ($kelasGroups as $kelasKey => $kelasRows)
@@ -192,7 +185,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     const forms = document.querySelectorAll('.live-nilai-form');
-    const semesterFilter = document.getElementById('semester-filter');
     const kelasTab = document.getElementById('kelasTab');
     const tabStateKey = `nilai-active-tab:${window.location.pathname}:${window.location.search}`;
 
@@ -369,21 +361,6 @@ document.addEventListener('DOMContentLoaded', function () {
             submitLive(true);
         });
     });
-
-    if (semesterFilter) {
-        semesterFilter.addEventListener('change', function () {
-            const selectedSemesterId = (semesterFilter.value ?? '').trim();
-            const url = new URL(window.location.href);
-
-            if (selectedSemesterId === '') {
-                url.searchParams.delete('semester_id');
-            } else {
-                url.searchParams.set('semester_id', selectedSemesterId);
-            }
-
-            window.location.assign(url.toString());
-        });
-    }
 
     const sortRowsInPane = function (pane, sortKey) {
         return sortRowsInPaneByDirection(pane, sortKey, 'asc');

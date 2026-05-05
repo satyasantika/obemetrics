@@ -6,6 +6,11 @@
         <div class="col-12">
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
+
+            <x-mk-semester-bar
+                mode="client"
+                :semesterOptions="$semesters"
+                :selectedSemesterId="$selectedSemesterId" />
         </div>
     </div>
 
@@ -17,18 +22,6 @@
                 subtitle="Rekap komponen nilai mahasiswa berdasarkan kategori penilaian"
                 icon="bi bi-grid-1x2-fill" />
                 <div class="card-body bg-light-subtle">
-                            <div class="row mb-3">
-                                <div class="col-lg-6">
-                                    <div class="p-3 rounded-3 border bg-white d-flex flex-column align-items-start gap-2">
-                                    <span>Semester :</span>
-                                    <select id="semester-filter" class="form-control form-control-sm w-100" style="max-width: 320px;">
-                                        @foreach ($semesters as $semester)
-                                            <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $selectedSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
-                                        @endforeach
-                                    </select>
-                                    </div>
-                                </div>
-                            </div>
                     @php
                         $defaultSemesterIdForExport = $selectedSemesterId;
                         $kelasGroups = $kontrakMks

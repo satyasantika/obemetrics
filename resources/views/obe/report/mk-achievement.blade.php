@@ -6,6 +6,11 @@
         <div class="col-12">
             {{-- identitas mata kuliah --}}
             @include('components.identitas-mk', $mk)
+
+            <x-mk-semester-bar
+                mode="client"
+                :semesterOptions="$semesters"
+                :selectedSemesterId="$selectedSemesterId" />
         </div>
     </div>
 
@@ -18,16 +23,6 @@
                 icon="bi bi-award-fill" />
                 <div class="card-body bg-light-subtle">
                     <div class="row mb-3 g-3">
-                        <div class="col-md-6 d-flex">
-                            <div class="p-3 rounded-3 border bg-white d-flex flex-column align-items-start gap-2 h-100 w-100">
-                                <span>Semester :</span>
-                                <select id="semester-filter" class="form-control form-control-sm w-100" style="max-width: 320px;">
-                                    @foreach ($semesters as $semester)
-                                        <option value="{{ $semester->id }}" @selected((string) $semester->id === (string) $selectedSemesterId)>{{ $semester->kode }} - {{ $semester->nama }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
                         <div class="col-md-6 d-flex">
                             <div class="p-3 p-lg-4 rounded-3 border border-primary-subtle bg-primary-subtle text-primary-emphasis h-100 w-100 d-flex flex-column justify-content-between text-md-end text-start">
                                 <div>
