@@ -132,9 +132,25 @@
                 $dosenMkMenus = collect();
                 $isMkImportMaster = false;
 
-                $mkDataComplete = false;
-                $mkSiapMenilai = false;
-                $mkPenilaianComplete = false;
+                $mkSemesterOptions = collect();
+                $sidebarSemesterModel = null;
+                $sidebarSemesterId = null;
+                $mkSp = '';
+
+                $step1Done = false;
+                $step2Done = false;
+                $step3Done = false;
+                $step4Done = false;
+                $step5Done = false;
+
+                $mkNavCpmk = false;
+                $mkNavJoinCplCpmk = false;
+                $mkNavSubcpmk = false;
+                $mkNavPenugasan = false;
+                $mkNavJoinBobot = false;
+                $mkNavNilai = false;
+                $mkNavLaporan = false;
+
                 $mkHasKontrakAccess = false;
 
                 if ($isMkSidebarMode && auth()->check()) {
@@ -164,15 +180,59 @@
 
                         $cpmkExists = $selectedMk->cpmks()->exists();
                         $joinCplCpmkExists = $selectedMk->joinCplCpmks()->exists();
-                        $subcpmkExists = $selectedMk->joinCplCpmks()->whereHas('subcpmks')->exists();
 
-                        $penugasanExists = $selectedMk->penugasans()->exists();
-                        $joinSubcpmkPenugasanExists = $selectedMk->joinsubcpmkpenugasans()->exists();
-                        $nilaiExists = $selectedMk->nilais()->exists();
+                        $currentUserId = auth()->id();
+                        $mkSemesterOptions = $selectedMk->kontrakMks()
+                            ->whereNotNull('semester_id')
+                            ->when($currentUserId, fn ($q) => $q->where('user_id', $currentUserId))
+                            ->with('semester')
+                            ->get()
+                            ->pluck('semester')
+                            ->filter()
+                            ->unique('id')
+                            ->sortByDesc('status_aktif')
+                            ->sortByDesc('kode')
+                            ->values();
 
-                        $mkDataComplete = $cpmkExists && $joinCplCpmkExists && $subcpmkExists;
-                        $mkSiapMenilai = $mkDataComplete && $penugasanExists && $joinSubcpmkPenugasanExists;
-                        $mkPenilaianComplete = $mkDataComplete && $penugasanExists && $joinSubcpmkPenugasanExists && $nilaiExists;
+                        [$sidebarSemesterModel, $sidebarSemesterId] = \App\Actions\ResolveMkSemester::resolve(
+                            $selectedMk,
+                            request()->query('semester_id'),
+                            $mkSemesterOptions
+                        );
+                        $sidebarSemesterId = ($sidebarSemesterId !== null && $sidebarSemesterId !== '')
+                            ? (string) $sidebarSemesterId
+                            : null;
+
+                        $mkSp = $sidebarSemesterId !== null
+                            ? '?' . http_build_query(['semester_id' => $sidebarSemesterId])
+                            : '';
+
+                        // Selaras resources/views/components/mk-flow-info.blade.php (progres per semester terpilih)
+                        $step1Done = $cpmkExists;
+                        $step2Done = $step1Done && \Illuminate\Support\Facades\DB::table('subcpmks as s')
+                            ->join('join_cpl_cpmks as jcc', 'jcc.id', '=', 's.join_cpl_cpmk_id')
+                            ->where('jcc.mk_id', $selectedMk->id)
+                            ->when($sidebarSemesterId, fn ($q) => $q->where('s.semester_id', $sidebarSemesterId))
+                            ->exists();
+                        $step3Done = $step2Done && $selectedMk->penugasans()
+                            ->when($sidebarSemesterId, fn ($q) => $q->where('semester_id', $sidebarSemesterId))
+                            ->exists();
+                        $step4Done = $step3Done && \Illuminate\Support\Facades\DB::table('join_subcpmk_penugasans as jsp')
+                            ->where('jsp.mk_id', $selectedMk->id)
+                            ->when($sidebarSemesterId, fn ($q) => $q->where('jsp.semester_id', $sidebarSemesterId))
+                            ->exists();
+                        $step5Done = $step4Done && \Illuminate\Support\Facades\DB::table('nilais')
+                            ->where('mk_id', $selectedMk->id)
+                            ->when($sidebarSemesterId, fn ($q) => $q->where('semester_id', $sidebarSemesterId))
+                            ->exists();
+
+                        $mkNavCpmk = true;
+                        $mkNavJoinCplCpmk = $step1Done;
+                        $mkNavSubcpmk = $step1Done && $joinCplCpmkExists;
+                        $mkNavPenugasan = $step2Done;
+                        $mkNavJoinBobot = $step3Done;
+                        $mkNavNilai = $step4Done && $mkHasKontrakAccess;
+                        $mkNavLaporan = $step5Done && $mkHasKontrakAccess;
                     }
                 }
             @endphp
@@ -374,28 +434,46 @@
 
                     @if($selectedMk)
                         <li class="nav-header nav-header-context nav-header-context-info">{{ $selectedMk->kode }} - {{ \Illuminate\Support\Str::limit($selectedMk->nama, 26) }}</li>
+                        @if ($sidebarSemesterModel)
+                            <li class="nav-item d-none d-md-block px-2 mb-1">
+                                <div class="small rounded-2 px-2 py-1 border border-light border-opacity-25 text-white text-opacity-75" style="font-size: 0.68rem; line-height: 1.35;">
+                                    <i class="bi bi-calendar3 me-1"></i><span class="fw-semibold">Semester</span>
+                                    <span class="d-block text-truncate" title="{{ $sidebarSemesterModel->nama }}">{{ $sidebarSemesterModel->kode }} — {{ \Illuminate\Support\Str::limit($sidebarSemesterModel->nama, 32) }}</span>
+                                </div>
+                            </li>
+                        @endif
 
                         <li class="nav-header">DATA</li>
                         <li class="nav-item">
-                            <a href="{{ route('settings.import.mk-master', ['mk' => $selectedMk->id, 'target' => 'mk_bundle', 'return_url' => url()->current()]) }}" class="nav-link nav-link-import nav-link-import-master {{ $isMkImportMaster ? 'active' : '' }}">
+                            @php
+                                $importMasterQuery = [
+                                    'mk' => $selectedMk->id,
+                                    'target' => 'mk_bundle',
+                                    'return_url' => url()->current(),
+                                ];
+                                if (! empty($sidebarSemesterId)) {
+                                    $importMasterQuery['semester_id'] = $sidebarSemesterId;
+                                }
+                            @endphp
+                            <a href="{{ route('settings.import.mk-master', $importMasterQuery) }}" class="nav-link nav-link-import nav-link-import-master {{ $isMkImportMaster ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-file-upload"></i>
                                 <p>Import Data Master</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ $mkDataComplete ? route('mks.cpmks.index', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.cpmks.*') ? 'active' : '' }} {{ $mkDataComplete ? '' : 'disabled' }}" @if(!$mkDataComplete) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $mkNavCpmk ? route('mks.cpmks.index', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.cpmks.*') ? 'active' : '' }} {{ $mkNavCpmk ? '' : 'disabled' }}" @if(!$mkNavCpmk) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-sliders-h"></i>
                                 <p>CPMK</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ $mkDataComplete ? route('mks.joincplcpmks.index', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.joincplcpmks.*') ? 'active' : '' }} {{ $mkDataComplete ? '' : 'disabled' }}" @if(!$mkDataComplete) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $mkNavJoinCplCpmk ? route('mks.joincplcpmks.index', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.joincplcpmks.*') ? 'active' : '' }} {{ $mkNavJoinCplCpmk ? '' : 'disabled' }}" @if(!$mkNavJoinCplCpmk) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-link"></i>
                                 <p>Set CPL >< CPMK</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ $mkDataComplete ? route('mks.subcpmks.index', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.subcpmks.*') ? 'active' : '' }} {{ $mkDataComplete ? '' : 'disabled' }}" @if(!$mkDataComplete) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $mkNavSubcpmk ? route('mks.subcpmks.index', [$selectedMk->id]) . $mkSp : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.subcpmks.*') ? 'active' : '' }} {{ $mkNavSubcpmk ? '' : 'disabled' }}" @if(!$mkNavSubcpmk) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-list"></i>
                                 <p>SubCPMK</p>
                             </a>
@@ -403,19 +481,19 @@
 
                         <li class="nav-header">TUGAS & PENILAIAN</li>
                         <li class="nav-item">
-                            <a href="{{ $mkDataComplete ? route('mks.penugasans.index', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.penugasans.*') ? 'active' : '' }} {{ $mkDataComplete ? '' : 'disabled' }}" @if(!$mkDataComplete) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $mkNavPenugasan ? route('mks.penugasans.index', [$selectedMk->id]) . $mkSp : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.penugasans.*') ? 'active' : '' }} {{ $mkNavPenugasan ? '' : 'disabled' }}" @if(!$mkNavPenugasan) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-tasks"></i>
                                 <p>Tagihan Tugas</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ $mkDataComplete ? route('mks.joinsubcpmkpenugasans.index', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.joinsubcpmkpenugasans.*') ? 'active' : '' }} {{ $mkDataComplete ? '' : 'disabled' }}" @if(!$mkDataComplete) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $mkNavJoinBobot ? route('mks.joinsubcpmkpenugasans.index', [$selectedMk->id]) . $mkSp : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.joinsubcpmkpenugasans.*') ? 'active' : '' }} {{ $mkNavJoinBobot ? '' : 'disabled' }}" @if(!$mkNavJoinBobot) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-project-diagram"></i>
                                 <p>Set SubCPMK >< Tugas</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ ($mkSiapMenilai && $mkHasKontrakAccess) ? route('mks.nilais.index', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.nilais.*', 'settings.import.nilais*') ? 'active' : '' }} {{ ($mkSiapMenilai && $mkHasKontrakAccess) ? '' : 'disabled' }}" @if(!($mkSiapMenilai && $mkHasKontrakAccess)) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $mkNavNilai ? route('mks.nilais.index', [$selectedMk->id]) . $mkSp : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.nilais.*', 'settings.import.nilais*') ? 'active' : '' }} {{ $mkNavNilai ? '' : 'disabled' }}" @if(!$mkNavNilai) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-clipboard-check"></i>
                                 <p>Pengisian Nilai</p>
                             </a>
@@ -423,31 +501,31 @@
 
                         <li class="nav-header">LAPORAN</li>
                         <li class="nav-item">
-                            <a href="{{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? route('mks.workclouds.index', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.workclouds.*') ? 'active' : '' }} {{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? '' : 'disabled' }}" @if(!($mkPenilaianComplete && $mkHasKontrakAccess)) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $mkNavLaporan ? route('mks.workclouds.index', [$selectedMk->id]) . $mkSp : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.workclouds.*') ? 'active' : '' }} {{ $mkNavLaporan ? '' : 'disabled' }}" @if(!$mkNavLaporan) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-cloud-upload-alt"></i>
                                 <p>Portofolio Penilaian</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? route('mks.achievements.index', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.achievements.*') ? 'active' : '' }} {{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? '' : 'disabled' }}" @if(!($mkPenilaianComplete && $mkHasKontrakAccess)) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $mkNavLaporan ? route('mks.achievements.index', [$selectedMk->id]) . $mkSp : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.achievements.*') ? 'active' : '' }} {{ $mkNavLaporan ? '' : 'disabled' }}" @if(!$mkNavLaporan) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-chart-line"></i>
                                 <p>Evaluasi CPL v1</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? route('mks.ketercapaians.index', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.ketercapaians.*') ? 'active' : '' }} {{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? '' : 'disabled' }}" @if(!($mkPenilaianComplete && $mkHasKontrakAccess)) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $mkNavLaporan ? route('mks.ketercapaians.index', [$selectedMk->id]) . $mkSp : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.ketercapaians.*') ? 'active' : '' }} {{ $mkNavLaporan ? '' : 'disabled' }}" @if(!$mkNavLaporan) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-chart-area"></i>
                                 <p>Evaluasi CPL v2</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? route('mks.spyderweb', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.spyderweb') ? 'active' : '' }} {{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? '' : 'disabled' }}" @if(!($mkPenilaianComplete && $mkHasKontrakAccess)) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $mkNavLaporan ? route('mks.spyderweb', [$selectedMk->id]) . $mkSp : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.spyderweb') ? 'active' : '' }} {{ $mkNavLaporan ? '' : 'disabled' }}" @if(!$mkNavLaporan) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-bullseye"></i>
                                 <p>Jaring Laba-laba</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? route('mks.laporan', [$selectedMk->id]) : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.laporan') ? 'active' : '' }} {{ ($mkPenilaianComplete && $mkHasKontrakAccess) ? '' : 'disabled' }}" @if(!($mkPenilaianComplete && $mkHasKontrakAccess)) aria-disabled="true" tabindex="-1" @endif>
+                            <a href="{{ $mkNavLaporan ? route('mks.laporan', [$selectedMk->id]) . $mkSp : 'javascript:void(0)' }}" class="nav-link {{ request()->routeIs('mks.laporan') ? 'active' : '' }} {{ $mkNavLaporan ? '' : 'disabled' }}" @if(!$mkNavLaporan) aria-disabled="true" tabindex="-1" @endif>
                                 <i class="nav-icon fas fa-file-alt"></i>
                                 <p>Laporan ke Prodi</p>
                             </a>
